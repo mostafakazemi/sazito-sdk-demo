@@ -1,0 +1,168 @@
+import { describe, expect, it } from "vitest";
+import type { Product, ProductVariant } from "@sazito/client-sdk";
+
+import {
+  attributeValue,
+  formatPrice,
+  isVariantAvailable,
+  normalizeStoreHref,
+  sanitizeProductDescription,
+  selectDefaultVariant,
+  toStoreChrome,
+  toProductCard,
+} from "./presenters";
+import { SazitoDataError, unwrapSazitoResponse } from "./response";
+
+function variant(overrides: Partial<ProductVariant> = {}): ProductVariant {
+  return {
+    id: 1,
+    enabled: true,
+    price: 399_000,
+    stockQuantity: 0,
+    isStockManaged: false,
+    attributes: [],
+    hasMaxOrder: false,
+    maxOrderQuantity: 0,
+    minOrderQuantity: 1,
+    sortIndex: 0,
+    createdAt: "2026-08-17T00:00:00Z",
+    updatedAt: "2026-08-17T00:00:00Z",
+    ...overrides,
+  };
+}
+
+function product(overrides: Partial<Product> = {}): Product {
+  return {
+    id: 17,
+    name: "غذای خشک جوندگان",
+    url: "/product/غذای-خشک-جوندگان",
+    enabled: true,
+    productType: "physical",
+    attributes: [],
+    images: [],
+    variants: [variant()],
+    categories: [],
+    createdAt: "2026-08-17T00:00:00Z",
+    updatedAt: "2026-08-17T00:00:00Z",
+    ...overrides,
+  };
+}
+
+describe("store URL routing", () => {
+  it("keeps home and product URLs in the Next.js storefront", () => {
+    expect(normalizeStoreHref("/")).toEqual({ href: "/", external: false });
+    expect(normalizeStoreHref("/product/sample")).toEqual({
+      href: "/product/sample",
+      external: false,
+    });
+  });
+
+  it("falls unsupported relative URLs back to the current Sazito theme", () => {
+    expect(normalizeStoreHref("/blog/sample")).toEqual({
+      href: "https://testmosi.sazito.com/blog/sample",
+      external: true,
+    });
+  });
+
+  it("normalizes Sazito relative upload URLs for store branding", () => {
+    const chrome = toStoreChrome(
+      {
+        shop: {
+          name: "فروشگاه تست",
+          description: "توضیحات",
+          logo: {
+            main: "/uploads/image/logo.png",
+            favicon: "/apiuploads/testmosi/favicon.png",
+          },
+          social: {
+            facebook: "",
+            instagram: "",
+            phone1: "",
+            phone2: "",
+            telegram: "",
+            twitter: "",
+            whatsapp: "",
+          },
+        },
+      },
+      [],
+      "https://testmosi.sazito.com",
+    );
+
+    expect(chrome.logoUrl).toBe(
+      "https://oss.sazito.com/apiuploads/testmosi/uploads/image/logo.png",
+    );
+    expect(chrome.faviconUrl).toBe(
+      "https://oss.sazito.com/apiuploads/testmosi/favicon.png",
+    );
+  });
+});
+
+describe("product presentation", () => {
+  it("formats SDK product prices as Persian toman values", () => {
+    expect(formatPrice(399_000)).toBe("۳۹۹٬۰۰۰ تومان");
+    expect(formatPrice(0)).toBe("۰ تومان");
+  });
+
+  it("selects an available variant before an unavailable one", () => {
+    const unavailable = variant({
+      id: 1,
+      isStockManaged: true,
+      stockQuantity: 0,
+      isAvailable: false,
+    });
+    const available = variant({ id: 2, isAvailable: true });
+
+    expect(selectDefaultVariant([unavailable, available])?.id).toBe(2);
+    expect(isVariantAvailable(unavailable)).toBe(false);
+  });
+
+  it("supports rich color attributes from the SDK", () => {
+    expect(
+      attributeValue({
+        name: "رنگ",
+        value: { value: "سبز", extra: "#2f6b57", fieldType: "color" },
+      }),
+    ).toBe("سبز");
+  });
+
+  it("preserves zero prices and exposes missing-image fallbacks", () => {
+    const card = toProductCard(
+      product({ variants: [variant({ price: 0 })], images: [] }),
+    );
+
+    expect(card.price?.current).toBe(0);
+    expect(card.image).toBeNull();
+    expect(card.available).toBe(true);
+  });
+});
+
+describe("content safety", () => {
+  it("keeps useful product markup and removes executable content", () => {
+    const sanitized = sanitizeProductDescription(
+      '<p onclick="alert(1)">توضیح <strong>محصول</strong></p><script>alert(1)</script><a href="javascript:alert(1)">bad</a>',
+    );
+
+    expect(sanitized).toContain("<strong>محصول</strong>");
+    expect(sanitized).not.toContain("onclick");
+    expect(sanitized).not.toContain("script");
+    expect(sanitized).not.toContain("javascript:");
+  });
+});
+
+describe("SDK response normalization", () => {
+  it("unwraps successful responses", () => {
+    expect(unwrapSazitoResponse({ data: { ok: true } }, "failed")).toEqual({
+      ok: true,
+    });
+  });
+
+  it("turns SDK errors into a typed data error", () => {
+    expect(() =>
+      unwrapSazitoResponse(
+        { error: { message: "offline", type: "network" } },
+        "failed",
+      ),
+    ).toThrow(SazitoDataError);
+  });
+});

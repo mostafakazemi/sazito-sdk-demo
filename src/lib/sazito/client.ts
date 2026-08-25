@@ -1,0 +1,37 @@
+import "server-only";
+
+import { createSazitoClient } from "@sazito/client-sdk";
+
+function readStoreDomain() {
+  const domain = process.env.SAZITO_STORE_DOMAIN?.trim();
+
+  if (!domain) {
+    throw new Error("SAZITO_STORE_DOMAIN is required.");
+  }
+
+  if (domain.includes("://") || domain === "sazito.com") {
+    throw new Error(
+      "SAZITO_STORE_DOMAIN must be a Sazito shop domain without protocol.",
+    );
+  }
+
+  return domain;
+}
+
+export const sazitoStoreDomain = readStoreDomain();
+export const sazitoStoreOrigin = `https://${sazitoStoreDomain}`;
+
+export const sazitoClient = createSazitoClient({
+  domain: sazitoStoreDomain,
+  timeout: 15_000,
+  retry: {
+    enabled: true,
+    retries: 2,
+    retryDelay: 700,
+  },
+  cache: {
+    products: { enabled: false },
+    categories: { enabled: false },
+    entityRoutes: { enabled: false },
+  },
+});
