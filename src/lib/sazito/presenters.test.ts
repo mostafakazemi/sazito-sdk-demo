@@ -8,6 +8,7 @@ import {
   normalizeStoreHref,
   sanitizeProductDescription,
   selectDefaultVariant,
+  toProductDetail,
   toStoreChrome,
   toProductCard,
 } from "./presenters";
@@ -115,6 +116,29 @@ describe("product presentation", () => {
 
     expect(selectDefaultVariant([unavailable, available])?.id).toBe(2);
     expect(isVariantAvailable(unavailable)).toBe(false);
+  });
+
+  it("preserves variant order limits for cart quantity controls", () => {
+    const cardProduct = product({
+      variants: [
+        variant({
+          minOrderQuantity: 2,
+          hasMaxOrder: true,
+          maxOrderQuantity: 4,
+        }),
+      ],
+    });
+    const detail = toProductDetail(
+      17,
+      cardProduct,
+      "https://testmosi.sazito.com",
+      [],
+    );
+
+    expect(detail.variants[0]).toMatchObject({
+      minQuantity: 2,
+      maxQuantity: 4,
+    });
   });
 
   it("supports rich color attributes from the SDK", () => {

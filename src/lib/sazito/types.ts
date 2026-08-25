@@ -41,6 +41,8 @@ export interface ProductVariantView {
   price: ProductPriceView;
   attributes: Array<{ name: string; value: string; extra?: string }>;
   imageId: number | null;
+  minQuantity: number;
+  maxQuantity: number | null;
 }
 
 export interface ProductCardView {

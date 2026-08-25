@@ -238,6 +238,18 @@ function toVariant(variant: ProductVariant, productName: string): ProductVariant
   const label = attributes.length
     ? attributes.map((attribute) => attribute.value).join("، ")
     : productName;
+  const minQuantity = Math.max(1, variant.minOrderQuantity || 1);
+  const maximums = [
+    variant.hasMaxOrder && variant.maxOrderQuantity > 0
+      ? variant.maxOrderQuantity
+      : null,
+    variant.isStockManaged && variant.stockQuantity > 0
+      ? variant.stockQuantity
+      : null,
+  ].filter((value): value is number => value !== null);
+  const maxQuantity = maximums.length
+    ? Math.max(minQuantity, Math.min(...maximums))
+    : null;
 
   return {
     id: variant.id,
@@ -247,6 +259,8 @@ function toVariant(variant: ProductVariant, productName: string): ProductVariant
     price: toPrice(variant),
     attributes,
     imageId: variant.imageId ?? null,
+    minQuantity,
+    maxQuantity,
   };
 }
 

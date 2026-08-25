@@ -1,10 +1,13 @@
 import type { Metadata } from "next";
 import { Estedad } from "next/font/google";
 
+import { CommerceProvider } from "@/components/commerce/commerce-provider";
 import { StoreFooter } from "@/components/store/store-footer";
 import { StoreHeader } from "@/components/store/store-header";
+import { sazitoStoreDomain } from "@/lib/sazito/client";
 import { getStoreChrome } from "@/lib/sazito/data";
 
+import "@sazito/checkout/styles.css";
 import "./globals.css";
 
 const estedad = Estedad({
@@ -33,11 +36,18 @@ export default async function RootLayout({
   const store = await getStoreChrome();
 
   return (
-    <html lang="fa" dir="rtl" className={estedad.variable}>
+    <html
+      lang="fa"
+      dir="rtl"
+      className={estedad.variable}
+      data-scroll-behavior="smooth"
+    >
       <body className="flex min-h-screen flex-col antialiased">
-        <StoreHeader store={store} />
-        <main className="flex-1">{children}</main>
-        <StoreFooter store={store} />
+        <CommerceProvider domain={sazitoStoreDomain}>
+          <StoreHeader store={store} />
+          <main className="flex-1">{children}</main>
+          <StoreFooter store={store} />
+        </CommerceProvider>
       </body>
     </html>
   );

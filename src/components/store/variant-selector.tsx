@@ -1,10 +1,24 @@
 "use client";
 
 import * as React from "react";
-import { Check, CircleOff, Info, PackageCheck } from "lucide-react";
+import Link from "next/link";
+import {
+  Check,
+  CheckCircle2,
+  CircleOff,
+  Info,
+  LoaderCircle,
+  Minus,
+  PackageCheck,
+  Plus,
+  ShoppingBag,
+} from "lucide-react";
 
+import { useCommerce } from "@/components/commerce/commerce-provider";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
+import { clampCartQuantity } from "@/lib/sazito/cart";
 import { formatPrice } from "@/lib/sazito/presenters";
 import type { ProductVariantView } from "@/lib/sazito/types";
 import { cn } from "@/lib/utils";
@@ -16,9 +30,14 @@ export function VariantSelector({
   variants: ProductVariantView[];
   defaultVariantId: number | null;
 }) {
+  const { addItem, isMutating } = useCommerce();
   const [selectedId, setSelectedId] = React.useState(
     defaultVariantId ?? variants[0]?.id ?? null,
   );
+  const [quantities, setQuantities] = React.useState<Record<number, number>>({});
+  const [feedback, setFeedback] = React.useState<
+    { type: "success" | "error"; message: string } | null
+  >(null);
   const selected =
     variants.find((variant) => variant.id === selectedId) ?? variants[0] ?? null;
 
@@ -29,6 +48,33 @@ export function VariantSelector({
       </div>
     );
   }
+
+  const quantity = clampCartQuantity(
+    quantities[selected.id] ?? selected.minQuantity,
+    selected.minQuantity,
+    selected.maxQuantity,
+  );
+  const setQuantity = (value: number) => {
+    setFeedback(null);
+    setQuantities((current) => ({
+      ...current,
+      [selected.id]: clampCartQuantity(
+        value,
+        selected.minQuantity,
+        selected.maxQuantity,
+      ),
+    }));
+  };
+  const handleAddToCart = async () => {
+    setFeedback(null);
+    const result = await addItem(selected.id, quantity);
+
+    setFeedback(
+      result.ok
+        ? { type: "success", message: "محصول به سبد خرید اضافه شد." }
+        : { type: "error", message: result.message },
+    );
+  };
 
   return (
     <div className="space-y-6">
@@ -75,7 +121,10 @@ export function VariantSelector({
                 type="button"
                 role="radio"
                 aria-checked={variant.id === selected.id}
-                onClick={() => setSelectedId(variant.id)}
+                onClick={() => {
+                  setSelectedId(variant.id);
+                  setFeedback(null);
+                }}
                 className={cn(
                   "inline-flex min-h-11 items-center gap-2 rounded-xl border bg-card px-4 py-2 text-sm font-semibold outline-none transition-colors focus-visible:ring-2 focus-visible:ring-ring",
                   variant.id === selected.id
@@ -100,9 +149,86 @@ export function VariantSelector({
       ) : null}
 
       <Separator />
+
+      <div className="space-y-3">
+        <div className="grid gap-3 sm:grid-cols-[auto_1fr]">
+          <div
+            className="flex h-13 items-center justify-between rounded-2xl border bg-card p-1"
+            aria-label="تعداد محصول"
+          >
+            <button
+              type="button"
+              onClick={() => setQuantity(quantity - 1)}
+              disabled={quantity <= selected.minQuantity || isMutating}
+              aria-label="کم کردن تعداد"
+              className="flex size-10 items-center justify-center rounded-xl text-primary outline-none transition-colors hover:bg-secondary focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-35"
+            >
+              <Minus className="size-4" />
+            </button>
+            <span className="min-w-10 text-center font-black" aria-live="polite">
+              {quantity.toLocaleString("fa-IR")}
+            </span>
+            <button
+              type="button"
+              onClick={() => setQuantity(quantity + 1)}
+              disabled={
+                isMutating ||
+                (selected.maxQuantity !== null && quantity >= selected.maxQuantity)
+              }
+              aria-label="زیاد کردن تعداد"
+              className="flex size-10 items-center justify-center rounded-xl text-primary outline-none transition-colors hover:bg-secondary focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-35"
+            >
+              <Plus className="size-4" />
+            </button>
+          </div>
+
+          <Button
+            type="button"
+            size="lg"
+            disabled={!selected.available || isMutating}
+            onClick={() => void handleAddToCart()}
+          >
+            {isMutating ? (
+              <LoaderCircle className="animate-spin" />
+            ) : (
+              <ShoppingBag />
+            )}
+            {selected.available ? "افزودن به سبد خرید" : "محصول ناموجود است"}
+          </Button>
+        </div>
+
+        <div aria-live="polite" aria-atomic="true">
+          {feedback ? (
+            <div
+              className={cn(
+                "flex flex-wrap items-center gap-2 rounded-xl px-4 py-3 text-sm font-semibold",
+                feedback.type === "success"
+                  ? "bg-secondary text-primary"
+                  : "bg-danger/10 text-danger",
+              )}
+            >
+              {feedback.type === "success" ? (
+                <CheckCircle2 className="size-4" />
+              ) : (
+                <CircleOff className="size-4" />
+              )}
+              <span>{feedback.message}</span>
+              {feedback.type === "success" ? (
+                <Link
+                  href="/checkout"
+                  className="mr-auto rounded-lg px-2 py-1 underline underline-offset-4 outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                >
+                  مشاهده سبد و تسویه
+                </Link>
+              ) : null}
+            </div>
+          ) : null}
+        </div>
+      </div>
+
       <div className="flex items-start gap-3 rounded-2xl bg-secondary/70 p-4 text-sm leading-7 text-secondary-foreground">
         <Info className="mt-1 size-4 shrink-0" />
-        <p>این نسخه برای مشاهده کاتالوگ است و امکان افزودن به سبد خرید در این مرحله فعال نیست.</p>
+        <p>سبد خرید و مراحل ارسال و پرداخت مستقیماً با زیرساخت امن سازیتو انجام می‌شود.</p>
       </div>
     </div>
   );

@@ -4,6 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { Menu, PackageOpen } from "lucide-react";
 
+import { CartButton } from "@/components/commerce/cart-button";
 import { StoreLink } from "@/components/store/store-link";
 import { Button } from "@/components/ui/button";
 import {
@@ -66,10 +67,8 @@ export function StoreHeader({ store }: { store: StoreChrome }) {
           ))}
         </nav>
 
-        <div className="hidden items-center gap-3 sm:flex">
-          <span className="rounded-full border bg-card px-3 py-1.5 text-xs font-semibold text-muted-foreground">
-            کاتالوگ آنلاین
-          </span>
+        <div className="mr-auto flex items-center gap-2 lg:mr-0">
+          <CartButton />
         </div>
 
         <Sheet>
