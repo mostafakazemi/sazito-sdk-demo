@@ -46,7 +46,7 @@ export function CartButton() {
         <button
           type="button"
           aria-label={isLoading ? "در حال دریافت سبد خرید" : `سبد خرید؛ ${count} کالا`}
-          className="relative inline-flex h-11 items-center gap-2 rounded-xl border bg-card px-3 text-sm font-bold outline-none transition-colors hover:border-primary/40 hover:bg-secondary focus-visible:ring-2 focus-visible:ring-ring"
+          className="relative inline-flex h-11 items-center gap-2 rounded-full border border-border/80 bg-card px-3 text-sm font-bold shadow-sm outline-none transition-[border-color,background-color,box-shadow] hover:border-primary/40 hover:bg-secondary hover:shadow-md focus-visible:ring-2 focus-visible:ring-ring"
         >
           {isLoading ? (
             <LoaderCircle className="size-5 animate-spin text-muted-foreground" />

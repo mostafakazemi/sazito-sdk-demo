@@ -7,23 +7,25 @@ export function StoreLink({
   item,
   className,
   children,
+  current = false,
 }: {
   item: Pick<StoreLinkType, "href" | "external" | "label">;
   className?: string;
   children?: React.ReactNode;
+  current?: boolean;
 }) {
   const content = children ?? item.label;
 
   if (item.external) {
     return (
-      <a href={item.href} className={cn(className)}>
+      <a href={item.href} className={cn(className)} aria-current={current ? "page" : undefined}>
         {content}
       </a>
     );
   }
 
   return (
-    <Link href={item.href} className={cn(className)}>
+    <Link href={item.href} className={cn(className)} aria-current={current ? "page" : undefined}>
       {content}
     </Link>
   );

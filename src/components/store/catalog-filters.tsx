@@ -9,6 +9,40 @@ import type { CategoryView } from "@/lib/sazito/types";
 const inputClass =
   "h-11 w-full rounded-xl border bg-card px-3 text-sm outline-none transition-colors placeholder:text-muted-foreground focus:border-primary focus:ring-2 focus:ring-ring/25";
 
+function FilterSwitch({
+  name,
+  label,
+  defaultChecked,
+}: {
+  name: string;
+  label: string;
+  defaultChecked: boolean;
+}) {
+  return (
+    <label className="group flex cursor-pointer items-center justify-between gap-4 rounded-2xl border border-border/70 bg-background/55 px-3.5 py-3 font-semibold transition-[border-color,background-color,box-shadow] hover:border-primary/30 hover:bg-secondary/45 has-[:checked]:border-primary/25 has-[:checked]:bg-secondary/60 has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-ring/30">
+      <span>{label}</span>
+      <span className="relative inline-flex h-6 w-11 shrink-0 items-center">
+        <input
+          type="checkbox"
+          role="switch"
+          name={name}
+          value="1"
+          defaultChecked={defaultChecked}
+          className="peer sr-only"
+        />
+        <span
+          aria-hidden="true"
+          className="absolute inset-0 rounded-full bg-muted shadow-inner transition-colors peer-checked:bg-primary"
+        />
+        <span
+          aria-hidden="true"
+          className="absolute right-0.5 size-5 rounded-full bg-card shadow-sm transition-transform duration-200 ease-out peer-checked:-translate-x-5"
+        />
+      </span>
+    </label>
+  );
+}
+
 export function CatalogFilters({
   action,
   query,
@@ -70,6 +104,21 @@ export function CatalogFilters({
           </label>
         ) : null}
 
+        {showProductFilters ? (
+          <div className="space-y-2.5 text-sm">
+            <FilterSwitch
+              name="available"
+              label="فقط کالاهای موجود"
+              defaultChecked={query.availableOnly}
+            />
+            <FilterSwitch
+              name="discounted"
+              label="فقط تخفیف‌دارها"
+              defaultChecked={query.discountedOnly}
+            />
+          </div>
+        ) : null}
+
         <fieldset className="space-y-3">
           <legend className="text-sm font-semibold">محدوده قیمت (تومان)</legend>
           <div className="grid grid-cols-2 gap-2">
@@ -99,31 +148,6 @@ export function CatalogFilters({
             </label>
           </div>
         </fieldset>
-
-        {showProductFilters ? (
-          <div className="space-y-3 text-sm">
-            <label className="flex cursor-pointer items-center gap-3 font-semibold">
-              <input
-                type="checkbox"
-                name="available"
-                value="1"
-                defaultChecked={query.availableOnly}
-                className="size-4 accent-primary"
-              />
-              فقط کالاهای موجود
-            </label>
-            <label className="flex cursor-pointer items-center gap-3 font-semibold">
-              <input
-                type="checkbox"
-                name="discounted"
-                value="1"
-                defaultChecked={query.discountedOnly}
-                className="size-4 accent-primary"
-              />
-              فقط تخفیف‌دارها
-            </label>
-          </div>
-        ) : null}
 
         <div className="grid grid-cols-2 gap-2">
           <Button type="submit">

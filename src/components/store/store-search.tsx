@@ -75,7 +75,11 @@ export function StoreSearch() {
   return (
     <Sheet open={open} onOpenChange={setOpen}>
       <SheetTrigger asChild>
-        <Button variant="outline" className="px-3 sm:px-4" aria-label="جست‌وجوی محصولات">
+        <Button
+          variant="outline"
+          className="rounded-full border-border/80 bg-card px-3 shadow-sm hover:shadow-sm sm:px-4"
+          aria-label="جست‌وجوی محصولات"
+        >
           <Search />
           <span className="hidden sm:inline">جست‌وجو</span>
         </Button>

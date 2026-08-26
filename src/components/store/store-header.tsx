@@ -2,7 +2,8 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { Menu, PackageOpen } from "lucide-react";
+import { usePathname } from "next/navigation";
+import { Home, Menu, PackageOpen } from "lucide-react";
 
 import { CartButton } from "@/components/commerce/cart-button";
 import { StoreLink } from "@/components/store/store-link";
@@ -18,81 +19,142 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet";
 import type { StoreChrome } from "@/lib/sazito/types";
+import { cn } from "@/lib/utils";
+
+const navLinkClassName =
+  "shrink-0 whitespace-nowrap rounded-xl px-3 py-2 text-[13px] font-bold text-muted-foreground outline-none transition-[color,background-color,box-shadow] hover:bg-card hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring";
+
+function isCurrentPath(pathname: string, href: string) {
+  const cleanHref = href.split(/[?#]/, 1)[0];
+  let decodedPathname = pathname;
+  let decodedHref = cleanHref;
+
+  try {
+    decodedPathname = decodeURI(pathname);
+    decodedHref = decodeURI(cleanHref);
+  } catch {
+    // Keep the original values when a malformed escape sequence is present.
+  }
+
+  if (!decodedHref.startsWith("/")) return false;
+  if (decodedHref === "/") return decodedPathname === "/";
+
+  return decodedPathname === decodedHref || decodedPathname.startsWith(`${decodedHref}/`);
+}
 
 function Brand({ store }: { store: StoreChrome }) {
   return (
-    <Link href="/" className="flex min-w-0 items-center gap-3" aria-label="صفحه اصلی">
+    <Link
+      href="/"
+      className="group flex min-w-0 items-center gap-3 rounded-2xl outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-card"
+      aria-label="صفحه اصلی"
+    >
       {store.logoUrl ? (
-        <span className="relative block size-11 shrink-0 overflow-hidden rounded-xl border bg-white sm:h-12 sm:w-20">
+        <span className="relative block h-11 w-14 shrink-0 overflow-hidden rounded-2xl border border-border/80 bg-white shadow-sm transition-[border-color,box-shadow,transform] group-hover:-translate-y-0.5 group-hover:border-primary/30 group-hover:shadow-md sm:h-13 sm:w-18">
           <Image
             src={store.logoUrl}
             alt={store.name}
             fill
-            sizes="80px"
+            sizes="72px"
             className="object-contain p-1.5"
             priority
           />
         </span>
       ) : (
-        <span className="flex size-11 shrink-0 items-center justify-center rounded-xl bg-primary text-primary-foreground">
+        <span className="flex size-11 shrink-0 items-center justify-center rounded-2xl bg-primary text-primary-foreground shadow-sm transition-transform group-hover:-translate-y-0.5 sm:size-13">
           <PackageOpen className="size-5" />
         </span>
       )}
-      <span className="min-w-0">
-        <span className="block truncate text-sm font-black sm:text-base">{store.name}</span>
-        <span className="hidden truncate text-xs text-muted-foreground sm:block">فروشگاه آنلاین</span>
+      <span className="min-w-0 max-w-40 sm:max-w-64">
+        <span className="block truncate text-sm leading-6 font-black sm:text-base">{store.name}</span>
+        <span className="hidden items-center gap-1.5 truncate text-xs text-muted-foreground sm:flex">
+          <span className="size-1.5 shrink-0 rounded-full bg-primary" aria-hidden="true" />
+          فروشگاه آنلاین
+        </span>
       </span>
     </Link>
   );
 }
 
 export function StoreHeader({ store }: { store: StoreChrome }) {
+  const pathname = usePathname();
+
   return (
-    <header className="sticky top-0 z-40 border-b border-border/70 bg-background/90 backdrop-blur-xl">
-      <div className="site-container flex h-18 items-center justify-between gap-6 sm:h-20">
+    <header className="sticky top-0 z-40 border-b border-border/70 bg-card/88 shadow-[0_8px_28px_-24px_rgba(31,42,36,0.7)] backdrop-blur-xl">
+      <div className="mx-auto flex h-18 w-[calc(100%-1.25rem)] max-w-[92rem] items-center gap-3 sm:h-20 sm:w-[calc(100%-2rem)] lg:gap-5">
         <Brand store={store} />
 
-        <nav className="hidden items-center gap-1 lg:flex" aria-label="منوی اصلی">
+        <nav
+          className="mx-auto hidden min-w-0 flex-1 items-center justify-center gap-0.5 overflow-x-auto rounded-2xl bg-muted/55 p-1 [scrollbar-width:none] xl:flex [&::-webkit-scrollbar]:hidden"
+          aria-label="منوی اصلی"
+        >
           <Link
             href="/"
-            className="rounded-xl px-4 py-2 text-sm font-semibold transition-colors hover:bg-accent"
+            aria-current={pathname === "/" ? "page" : undefined}
+            className={cn(
+              navLinkClassName,
+              "flex items-center gap-1.5",
+              pathname === "/" && "bg-card text-primary shadow-sm",
+            )}
           >
+            <Home className="size-3.5" aria-hidden="true" />
             خانه
           </Link>
-          {store.navigation.map((item) => (
-            <StoreLink
-              key={`${item.href}-${item.label}`}
-              item={item}
-              className="rounded-xl px-4 py-2 text-sm font-semibold transition-colors hover:bg-accent"
-            />
-          ))}
+          {store.navigation.map((item) => {
+            const current = !item.external && isCurrentPath(pathname, item.href);
+
+            return (
+              <StoreLink
+                key={`${item.href}-${item.label}`}
+                item={item}
+                current={current}
+                className={cn(navLinkClassName, current && "bg-card text-primary shadow-sm")}
+              />
+            );
+          })}
         </nav>
 
-        <div className="mr-auto flex items-center gap-2 lg:mr-0">
+        <div className="mr-auto flex shrink-0 items-center gap-1.5 sm:gap-2 xl:mr-0">
           <StoreSearch />
           <CartButton />
         </div>
 
         <Sheet>
           <SheetTrigger asChild>
-            <Button variant="outline" size="icon" className="lg:hidden" aria-label="باز کردن منو">
+            <Button
+              variant="outline"
+              size="icon"
+              className="rounded-full border-border/80 bg-card shadow-sm xl:hidden"
+              aria-label="باز کردن منو"
+            >
               <Menu />
             </Button>
           </SheetTrigger>
-          <SheetContent side="right">
-            <SheetHeader className="pl-10">
-              <SheetTitle>{store.name}</SheetTitle>
+          <SheetContent side="right" className="p-0">
+            <SheetHeader className="border-b bg-secondary/45 p-6 pl-12">
+              <SheetTitle className="text-xl">{store.name}</SheetTitle>
               <SheetDescription>{store.description}</SheetDescription>
             </SheetHeader>
-            <nav className="mt-8 grid gap-2" aria-label="منوی موبایل">
+            <nav className="grid gap-1.5 p-4" aria-label="منوی موبایل">
               <SheetClose asChild>
-                <Link href="/" className="rounded-xl bg-accent px-4 py-3 font-bold">
+                <Link
+                  href="/"
+                  aria-current={pathname === "/" ? "page" : undefined}
+                  className={cn(
+                    "flex items-center gap-2 rounded-2xl px-4 py-3.5 font-bold transition-colors hover:bg-accent",
+                    pathname === "/" && "bg-accent text-accent-foreground",
+                  )}
+                >
+                  <Home className="size-4" aria-hidden="true" />
                   خانه
                 </Link>
               </SheetClose>
               {store.navigation.map((item) => {
-                const className =
-                  "rounded-xl px-4 py-3 font-semibold transition-colors hover:bg-accent";
+                const current = !item.external && isCurrentPath(pathname, item.href);
+                const className = cn(
+                  "rounded-2xl px-4 py-3.5 font-semibold transition-colors hover:bg-accent",
+                  current && "bg-accent text-accent-foreground",
+                );
 
                 return (
                   <SheetClose asChild key={`${item.href}-${item.label}`}>
@@ -101,7 +163,11 @@ export function StoreHeader({ store }: { store: StoreChrome }) {
                         {item.label}
                       </a>
                     ) : (
-                      <Link href={item.href} className={className}>
+                      <Link
+                        href={item.href}
+                        className={className}
+                        aria-current={current ? "page" : undefined}
+                      >
                         {item.label}
                       </Link>
                     )}
