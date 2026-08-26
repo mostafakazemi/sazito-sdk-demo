@@ -72,6 +72,24 @@ button {
   -webkit-tap-highlight-color: transparent;
 }
 
+.filter-option-scroll {
+  scrollbar-width: thin;
+  scrollbar-color: color-mix(in srgb, var(--primary) 45%, transparent) transparent;
+}
+
+.filter-option-scroll::-webkit-scrollbar {
+  width: 0.35rem;
+}
+
+.filter-option-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.filter-option-scroll::-webkit-scrollbar-thumb {
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--primary) 45%, transparent);
+}
+
 .site-container {
   width: min(100% - 2rem, 76rem);
   margin-inline: auto;
