@@ -52,7 +52,7 @@ export function ProductGallery({
         <CarouselContent>
           {galleryImages.map((image) => (
             <CarouselItem key={image.id}>
-              <div className="relative aspect-square overflow-hidden rounded-[2rem] border bg-card">
+              <div className="relative aspect-square overflow-hidden rounded-4xl border bg-card">
                 <Image
                   src={image.src}
                   alt={image.alt}

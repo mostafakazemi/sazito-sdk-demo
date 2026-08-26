@@ -6,7 +6,7 @@ import type { ProductCardView } from "@/lib/sazito/types";
 export function CatalogGrid({ products }: { products: ProductCardView[] }) {
   if (!products.length) {
     return (
-      <div className="flex min-h-72 flex-col items-center justify-center rounded-[2rem] border border-dashed bg-card/60 p-8 text-center">
+      <div className="flex min-h-72 flex-col items-center justify-center rounded-4xl border border-dashed bg-card/60 p-8 text-center">
         <span className="flex size-14 items-center justify-center rounded-2xl bg-secondary text-primary">
           <PackageSearch className="size-6" />
         </span>

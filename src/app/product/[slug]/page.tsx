@@ -100,14 +100,14 @@ export default async function ProductPage({ params }: ProductPageProps) {
       {product.descriptionHtml || product.specifications.length ? (
         <section className="grid gap-6 lg:grid-cols-[1fr_0.55fr]">
           {product.descriptionHtml ? (
-            <div className="rounded-[2rem] border bg-card p-6 sm:p-9">
+            <div className="rounded-4xl border bg-card p-6 sm:p-9">
               <p className="text-sm font-bold text-highlight">درباره محصول</p>
               <h2 className="mt-2 text-2xl font-black">معرفی و توضیحات</h2>
               <div className="product-rich-text mt-6 text-sm sm:text-base" dangerouslySetInnerHTML={{ __html: product.descriptionHtml }} />
             </div>
           ) : null}
           {product.specifications.length ? (
-            <div className="rounded-[2rem] border bg-card p-6 sm:p-8">
+            <div className="rounded-4xl border bg-card p-6 sm:p-8">
               <div className="flex items-center gap-3">
                 <span className="flex size-10 items-center justify-center rounded-xl bg-secondary text-primary"><Layers3 className="size-5" /></span>
                 <h2 className="text-xl font-black">مشخصات محصول</h2>

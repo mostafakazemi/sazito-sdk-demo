@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 export default function ErrorPage({ reset }: { reset: () => void }) {
   return (
     <div className="site-container flex min-h-[62vh] items-center justify-center py-16">
-      <div className="max-w-lg rounded-[2rem] border bg-card p-8 text-center shadow-sm sm:p-12">
+      <div className="max-w-lg rounded-4xl border bg-card p-8 text-center shadow-sm sm:p-12">
         <span className="mx-auto flex size-14 items-center justify-center rounded-2xl bg-highlight/15 text-highlight">
           <AlertCircle className="size-7" />
         </span>

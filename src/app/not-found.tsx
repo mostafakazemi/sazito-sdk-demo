@@ -7,7 +7,7 @@ export default function NotFound() {
   return (
     <div className="site-container flex min-h-[62vh] items-center justify-center py-16">
       <div className="max-w-lg text-center">
-        <span className="mx-auto flex size-20 items-center justify-center rounded-[2rem] bg-secondary text-primary">
+        <span className="mx-auto flex size-20 items-center justify-center rounded-4xl bg-secondary text-primary">
           <PackageSearch className="size-10" />
         </span>
         <p className="mt-7 text-sm font-bold text-highlight">خطای ۴۰۴</p>

@@ -25,7 +25,7 @@ export function ProductSection({
       aria-labelledby={`${id ?? title}-title`}
       className={cn(
         "scroll-mt-28",
-        tone === "accent" && "rounded-[2rem] bg-accent/55 px-4 py-8 sm:px-8 sm:py-10",
+        tone === "accent" && "rounded-4xl bg-accent/55 px-4 py-8 sm:px-8 sm:py-10",
       )}
     >
       <div className="mb-7 max-w-2xl">

@@ -35,7 +35,7 @@ export default async function SearchPage({
     const categories = await categoriesPromise;
     return (
       <div className="site-container py-12 sm:py-20">
-        <div className="mx-auto max-w-2xl rounded-[2rem] border bg-card p-7 text-center sm:p-10">
+        <div className="mx-auto max-w-2xl rounded-4xl border bg-card p-7 text-center sm:p-10">
           <span className="mx-auto flex size-14 items-center justify-center rounded-2xl bg-secondary text-primary">
             <Search className="size-6" />
           </span>

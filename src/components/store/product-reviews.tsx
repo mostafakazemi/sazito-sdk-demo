@@ -21,7 +21,7 @@ function Stars({ value }: { value: number }) {
 export function ProductReviews({ reviews }: { reviews: ProductReviewSummary | null }) {
   if (!reviews) {
     return (
-      <section aria-labelledby="reviews-title" className="rounded-[2rem] border bg-card p-6 sm:p-8">
+      <section aria-labelledby="reviews-title" className="rounded-4xl border bg-card p-6 sm:p-8">
         <h2 id="reviews-title" className="text-2xl font-black">دیدگاه خریداران</h2>
         <p className="mt-3 text-sm leading-7 text-muted-foreground">
           هنوز دیدگاهی برای این محصول ثبت نشده است.
@@ -32,7 +32,7 @@ export function ProductReviews({ reviews }: { reviews: ProductReviewSummary | nu
 
   return (
     <section aria-labelledby="reviews-title">
-      <div className="mb-7 flex flex-col gap-5 rounded-[2rem] bg-secondary p-6 sm:flex-row sm:items-center sm:justify-between sm:p-8">
+      <div className="mb-7 flex flex-col gap-5 rounded-4xl bg-secondary p-6 sm:flex-row sm:items-center sm:justify-between sm:p-8">
         <div>
           <p className="text-sm font-bold text-primary">تجربه خریداران</p>
           <h2 id="reviews-title" className="mt-2 text-2xl font-black">دیدگاه‌های محصول</h2>

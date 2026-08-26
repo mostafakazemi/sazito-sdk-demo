@@ -16,7 +16,7 @@ export function StoreHero({
 }) {
   return (
     <section className="site-container pt-5 sm:pt-8">
-      <div className="hero-mesh relative isolate overflow-hidden rounded-[2rem] text-white shadow-[0_28px_80px_-38px_rgba(31,42,36,0.8)]">
+      <div className="hero-mesh relative isolate overflow-hidden rounded-4xl text-white shadow-[0_28px_80px_-38px_rgba(31,42,36,0.8)]">
         <div className="absolute -right-20 -top-24 size-80 rounded-full border border-white/10" />
         <div className="absolute -bottom-32 left-16 size-96 rounded-full border border-white/10" />
         <div className="relative grid min-h-[30rem] items-center gap-8 px-6 py-10 sm:px-10 lg:grid-cols-[1.05fr_0.95fr] lg:px-14 lg:py-14">
@@ -53,7 +53,7 @@ export function StoreHero({
           {product?.image ? (
             <Link
               href={product.href}
-              className="group relative mx-auto block aspect-square w-full max-w-md overflow-hidden rounded-[2rem] border border-white/20 bg-white/94 p-5 shadow-2xl"
+              className="group relative mx-auto block aspect-square w-full max-w-md overflow-hidden rounded-4xl border border-white/20 bg-white/94 p-5 shadow-2xl"
             >
               <Image
                 src={product.image.src}
@@ -71,7 +71,7 @@ export function StoreHero({
               </div>
             </Link>
           ) : (
-            <div className="mx-auto flex aspect-square w-full max-w-md items-center justify-center rounded-[2rem] border border-white/15 bg-white/8 p-10 text-center text-white/65">
+            <div className="mx-auto flex aspect-square w-full max-w-md items-center justify-center rounded-4xl border border-white/15 bg-white/8 p-10 text-center text-white/65">
               محصولات تازه فروشگاه به‌زودی اینجا دیده می‌شوند.
             </div>
           )}
