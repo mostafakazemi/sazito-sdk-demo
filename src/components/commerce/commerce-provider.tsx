@@ -5,6 +5,7 @@ import { SazitoProvider } from "@sazito/checkout/next";
 import {
   createSazitoClient,
   type Cart,
+  type FormAttributeValue,
   type SazitoClient,
 } from "@sazito/client-sdk";
 
@@ -20,7 +21,23 @@ interface CommerceContextValue {
   itemCount: number;
   isLoading: boolean;
   isMutating: boolean;
-  addItem(variantId: number, quantity: number): Promise<CartOperationResult>;
+  isCartOpen: boolean;
+  setCartOpen(open: boolean): void;
+  addItem(
+    variantId: number,
+    quantity: number,
+    formAttributes?: Record<string, FormAttributeValue>,
+  ): Promise<CartOperationResult>;
+  updateItem(
+    cartProductId: number | string,
+    variantId: number,
+    quantity: number,
+    formAttributes?: Record<string, FormAttributeValue>,
+  ): Promise<CartOperationResult>;
+  removeItem(
+    cartProductId: number | string,
+    variantId: number,
+  ): Promise<CartOperationResult>;
   refreshCart(): Promise<void>;
   syncCart(cart: Cart | null): void;
 }
@@ -62,6 +79,7 @@ export function CommerceProvider({
         cache: {
           cart: { enabled: false },
           orders: { enabled: false },
+          search: { enabled: false },
         },
         customFetchApi: createSazitoProxyFetch(domain),
       }),
@@ -70,6 +88,7 @@ export function CommerceProvider({
   const [cart, setCart] = React.useState<Cart | null>(null);
   const [isLoading, setIsLoading] = React.useState(true);
   const [isMutating, setIsMutating] = React.useState(false);
+  const [isCartOpen, setCartOpen] = React.useState(false);
 
   const syncCart = React.useCallback((nextCart: Cart | null) => {
     setCart(nextCart);
@@ -108,14 +127,18 @@ export function CommerceProvider({
   }, [refreshCart]);
 
   const addItem = React.useCallback(
-    async (variantId: number, quantity: number): Promise<CartOperationResult> => {
+    async (
+      variantId: number,
+      quantity: number,
+      formAttributes?: Record<string, FormAttributeValue>,
+    ): Promise<CartOperationResult> => {
       setIsMutating(true);
 
       try {
         const response = await client.cart.addItemWithAttributes(
           variantId,
           quantity,
-          undefined,
+          formAttributes ? { formAttributes } : undefined,
           { cache: false },
         );
 
@@ -128,12 +151,72 @@ export function CommerceProvider({
         }
 
         setCart(response.data);
+        setCartOpen(true);
         return { ok: true };
       } catch {
         return {
           ok: false,
           message: "ارتباط با فروشگاه برقرار نشد. دوباره تلاش کنید.",
         };
+      } finally {
+        setIsMutating(false);
+      }
+    },
+    [client],
+  );
+
+  const updateItem = React.useCallback(
+    async (
+      cartProductId: number | string,
+      variantId: number,
+      quantity: number,
+      formAttributes?: Record<string, FormAttributeValue>,
+    ): Promise<CartOperationResult> => {
+      setIsMutating(true);
+      try {
+        const response = await client.cart.updateItemWithAttributes(
+          cartProductId,
+          variantId,
+          quantity,
+          formAttributes ? { formAttributes } : undefined,
+          { cache: false },
+        );
+        if (response.error) {
+          return { ok: false, message: cartErrorMessage(response.error) };
+        }
+        if (!response.data) {
+          return { ok: false, message: "سبد خرید از فروشگاه دریافت نشد." };
+        }
+        setCart(response.data);
+        return { ok: true };
+      } catch {
+        return { ok: false, message: "به‌روزرسانی سبد خرید انجام نشد." };
+      } finally {
+        setIsMutating(false);
+      }
+    },
+    [client],
+  );
+
+  const removeItem = React.useCallback(
+    async (
+      cartProductId: number | string,
+      variantId: number,
+    ): Promise<CartOperationResult> => {
+      setIsMutating(true);
+      try {
+        const response = await client.cart.removeItem(
+          cartProductId,
+          variantId,
+          { cache: false },
+        );
+        if (response.error) {
+          return { ok: false, message: cartErrorMessage(response.error) };
+        }
+        setCart(response.data ?? null);
+        return { ok: true };
+      } catch {
+        return { ok: false, message: "حذف محصول از سبد خرید انجام نشد." };
       } finally {
         setIsMutating(false);
       }
@@ -148,11 +231,26 @@ export function CommerceProvider({
       itemCount: cartItemCount(cart),
       isLoading,
       isMutating,
+      isCartOpen,
+      setCartOpen,
       addItem,
+      updateItem,
+      removeItem,
       refreshCart,
       syncCart,
     }),
-    [addItem, cart, client, isLoading, isMutating, refreshCart, syncCart],
+    [
+      addItem,
+      cart,
+      client,
+      isCartOpen,
+      isLoading,
+      isMutating,
+      refreshCart,
+      removeItem,
+      syncCart,
+      updateItem,
+    ],
   );
 
   return (

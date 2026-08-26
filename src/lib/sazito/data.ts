@@ -1,12 +1,30 @@
 import "server-only";
 
 import { unstable_cache } from "next/cache";
-import type { ProductEntityRoute } from "@sazito/client-sdk";
+import type {
+  ProductEntityRoute,
+  ProductCategoryEntityRoute,
+  ProductSort,
+} from "@sazito/client-sdk";
 
 import { sazitoClient, sazitoStoreDomain, sazitoStoreOrigin } from "./client";
-import { toHomePageData, toProductDetail, toStoreChrome } from "./presenters";
+import {
+  toCategory,
+  toHomePageData,
+  toProductCollection,
+  toProductDetail,
+  toStoreChrome,
+} from "./presenters";
 import { SazitoDataError, unwrapSazitoResponse } from "./response";
-import type { HomePageData, ProductDetailView, StoreChrome } from "./types";
+import type {
+  CategoryPageData,
+  CategoryView,
+  HomePageData,
+  ProductDetailView,
+  SearchPageData,
+  StoreChrome,
+} from "./types";
+import type { CatalogQuery } from "./catalog";
 
 const cacheConfig: { revalidate: number; tags: string[] } = {
   revalidate: 300,
@@ -100,6 +118,64 @@ const resolveEntityRoute = unstable_cache(
   cacheConfig,
 );
 
+const getCategoryProducts = unstable_cache(
+  async (
+    categoryId: number,
+    page: number,
+    pageSize: number,
+    sort: ProductSort,
+    priceMin: number | null,
+    priceMax: number | null,
+    availableOnly: boolean,
+    discountedOnly: boolean,
+  ) =>
+    unwrapSazitoResponse(
+      await sazitoClient.products.list(
+        {
+          categories: categoryId,
+          page,
+          pageSize,
+          sort,
+          priceMin: priceMin ?? undefined,
+          priceMax: priceMax ?? undefined,
+          availableOnly,
+          discountedOnly,
+        },
+        { cache: false },
+      ),
+      "دریافت محصولات این دسته ناموفق بود.",
+    ),
+  ["sazito-category-products", sazitoStoreDomain],
+  cacheConfig,
+);
+
+const searchStore = unstable_cache(
+  async (
+    query: string,
+    page: number,
+    pageSize: number,
+    categoryId: number | null,
+    minPrice: number | null,
+    maxPrice: number | null,
+  ) =>
+    unwrapSazitoResponse(
+      await sazitoClient.search.query(
+        query,
+        {
+          page,
+          pageSize,
+          categoryId: categoryId ?? undefined,
+          minPrice: minPrice ?? undefined,
+          maxPrice: maxPrice ?? undefined,
+        },
+        { cache: false },
+      ),
+      "جست‌وجوی محصولات ناموفق بود.",
+    ),
+  ["sazito-search", sazitoStoreDomain],
+  cacheConfig,
+);
+
 const getRelatedProducts = unstable_cache(
   async (entityId: number) =>
     unwrapSazitoResponse(
@@ -179,6 +255,13 @@ export async function getHomePageData(): Promise<HomePageData> {
   });
 }
 
+export async function getCatalogCategories(): Promise<CategoryView[]> {
+  const result = await getCategories();
+  return result.categories
+    .filter((category) => category.enabled !== false)
+    .map((category) => toCategory(category, sazitoStoreOrigin));
+}
+
 export async function getResolvedProduct(
   slug: string,
 ): Promise<ProductEntityRoute | null> {
@@ -189,6 +272,69 @@ export async function getResolvedProduct(
     if (error instanceof SazitoDataError && error.status === 404) return null;
     throw error;
   }
+}
+
+export async function getResolvedCategory(
+  slug: string,
+): Promise<ProductCategoryEntityRoute | null> {
+  try {
+    const route = await resolveEntityRoute(`/category/${slug}`);
+    return route.entityType === "product_category" ? route : null;
+  } catch (error) {
+    if (error instanceof SazitoDataError && error.status === 404) return null;
+    throw error;
+  }
+}
+
+export async function getCategoryPageData(
+  slug: string,
+  query: CatalogQuery,
+  pageSize: number,
+): Promise<CategoryPageData | null> {
+  const route = await getResolvedCategory(slug);
+  if (!route) return null;
+
+  const products = await getCategoryProducts(
+    route.entityId,
+    query.page,
+    pageSize,
+    query.sort,
+    query.priceMin,
+    query.priceMax,
+    query.availableOnly,
+    query.discountedOnly,
+  );
+
+  return {
+    category: toCategory(route.entity, sazitoStoreOrigin),
+    products: toProductCollection(products),
+  };
+}
+
+export async function getSearchPageData(input: {
+  query: string;
+  page: number;
+  pageSize: number;
+  categoryId: number | null;
+  priceMin: number | null;
+  priceMax: number | null;
+}): Promise<SearchPageData> {
+  const result = await searchStore(
+    input.query,
+    input.page,
+    input.pageSize,
+    input.categoryId,
+    input.priceMin,
+    input.priceMax,
+  );
+
+  return {
+    query: input.query,
+    products: toProductCollection(result.products),
+    categories: result.productCategories.items
+      .filter((category) => category.enabled !== false)
+      .map((category) => toCategory(category, sazitoStoreOrigin)),
+  };
 }
 
 export async function getProductPageData(

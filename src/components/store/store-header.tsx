@@ -6,6 +6,7 @@ import { Menu, PackageOpen } from "lucide-react";
 
 import { CartButton } from "@/components/commerce/cart-button";
 import { StoreLink } from "@/components/store/store-link";
+import { StoreSearch } from "@/components/store/store-search";
 import { Button } from "@/components/ui/button";
 import {
   Sheet,
@@ -68,6 +69,7 @@ export function StoreHeader({ store }: { store: StoreChrome }) {
         </nav>
 
         <div className="mr-auto flex items-center gap-2 lg:mr-0">
+          <StoreSearch />
           <CartButton />
         </div>
 

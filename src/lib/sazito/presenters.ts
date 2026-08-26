@@ -14,6 +14,7 @@ import type {
   ProductDetailView,
   ProductImageView,
   ProductReviewSummary,
+  ProductCollectionView,
   ProductVariantView,
   StoreChrome,
   StoreLink,
@@ -130,7 +131,13 @@ export function normalizeStoreHref(
   }
 
   const path = trimmed.startsWith("/") ? trimmed : `/${trimmed}`;
-  const local = path === "/" || path.startsWith("/product/");
+  const local =
+    path === "/" ||
+    path === "/search" ||
+    path.startsWith("/search?") ||
+    path.startsWith("/product/") ||
+    path.startsWith("/category/") ||
+    path === "/checkout";
 
   return local
     ? { href: path, external: false }
@@ -229,7 +236,11 @@ function toPrice(variant: ProductVariant) {
   };
 }
 
-function toVariant(variant: ProductVariant, productName: string): ProductVariantView {
+function toVariant(
+  variant: ProductVariant,
+  productName: string,
+  productDynamicFormId?: number,
+): ProductVariantView {
   const attributes = variant.attributes.map((attribute) => ({
     name: attribute.name,
     value: attributeValue(attribute),
@@ -261,11 +272,18 @@ function toVariant(variant: ProductVariant, productName: string): ProductVariant
     imageId: variant.imageId ?? null,
     minQuantity,
     maxQuantity,
+    dynamicFormId:
+      (variant.dynamicFormId && variant.dynamicFormId > 0
+        ? variant.dynamicFormId
+        : productDynamicFormId && productDynamicFormId > 0
+          ? productDynamicFormId
+          : null),
   };
 }
 
 export function toProductCard(product: Product): ProductCardView {
   const defaultVariant = selectDefaultVariant(product.variants);
+  const dynamicFormId = defaultVariant?.dynamicFormId || product.dynamicFormId;
 
   return {
     id: product.id ?? null,
@@ -275,6 +293,15 @@ export function toProductCard(product: Product): ProductCardView {
     category: product.categories[0]?.name ?? null,
     price: defaultVariant ? toPrice(defaultVariant) : null,
     available: defaultVariant ? isVariantAvailable(defaultVariant) : false,
+    variantId: defaultVariant?.id ?? null,
+    minQuantity: Math.max(1, defaultVariant?.minOrderQuantity || 1),
+    canQuickAdd: Boolean(
+      defaultVariant &&
+        isVariantAvailable(defaultVariant) &&
+        product.variants.filter((variant) => variant.enabled).length === 1 &&
+        !dynamicFormId &&
+        !product.eventEntityId,
+    ),
   };
 }
 
@@ -287,6 +314,24 @@ export function toCategory(
     name: category.name,
     href: normalizeStoreHref(category.url, storeOrigin).href,
     count: category.productsCount ?? null,
+    description: nonEmpty(category.description) ?? undefined,
+  };
+}
+
+export function toProductCollection(input: {
+  items: Product[];
+  total: number;
+  page: number;
+  pageSize: number;
+}): ProductCollectionView {
+  const pageSize = Math.max(1, input.pageSize || input.items.length || 1);
+
+  return {
+    items: input.items.filter((product) => product.enabled).map(toProductCard),
+    total: Math.max(0, input.total),
+    page: Math.max(1, input.page),
+    pageSize,
+    totalPages: Math.max(1, Math.ceil(Math.max(0, input.total) / pageSize)),
   };
 }
 
@@ -393,7 +438,7 @@ export function toProductDetail(
       value: attributeValue(attribute),
     }));
   const variants = product.variants.map((variant) =>
-    toVariant(variant, product.name),
+    toVariant(variant, product.name, product.dynamicFormId),
   );
   const defaultVariant = selectDefaultVariant(product.variants);
   const summary = stripMarkup(descriptionHtml).slice(0, 190);

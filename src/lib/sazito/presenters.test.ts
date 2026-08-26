@@ -50,10 +50,18 @@ function product(overrides: Partial<Product> = {}): Product {
 }
 
 describe("store URL routing", () => {
-  it("keeps home and product URLs in the Next.js storefront", () => {
+  it("keeps implemented storefront URLs inside Next.js", () => {
     expect(normalizeStoreHref("/")).toEqual({ href: "/", external: false });
     expect(normalizeStoreHref("/product/sample")).toEqual({
       href: "/product/sample",
+      external: false,
+    });
+    expect(normalizeStoreHref("/category/sample")).toEqual({
+      href: "/category/sample",
+      external: false,
+    });
+    expect(normalizeStoreHref("/search?q=test")).toEqual({
+      href: "/search?q=test",
       external: false,
     });
   });
@@ -158,6 +166,29 @@ describe("product presentation", () => {
     expect(card.price?.current).toBe(0);
     expect(card.image).toBeNull();
     expect(card.available).toBe(true);
+    expect(card.canQuickAdd).toBe(true);
+    expect(card.variantId).toBe(1);
+  });
+
+  it("requires the product page when quick add needs a choice or form", () => {
+    expect(
+      toProductCard(product({ dynamicFormId: 3 })).canQuickAdd,
+    ).toBe(false);
+    expect(
+      toProductCard(product({ variants: [variant(), variant({ id: 2 })] }))
+        .canQuickAdd,
+    ).toBe(false);
+  });
+
+  it("uses the product form as a fallback for variants without their own form", () => {
+    const detail = toProductDetail(
+      17,
+      product({ dynamicFormId: 5 }),
+      "https://testmosi.sazito.com",
+      [],
+    );
+
+    expect(detail.variants[0].dynamicFormId).toBe(5);
   });
 });
 

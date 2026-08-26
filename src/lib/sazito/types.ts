@@ -43,6 +43,7 @@ export interface ProductVariantView {
   imageId: number | null;
   minQuantity: number;
   maxQuantity: number | null;
+  dynamicFormId: number | null;
 }
 
 export interface ProductCardView {
@@ -53,6 +54,9 @@ export interface ProductCardView {
   category: string | null;
   price: ProductPriceView | null;
   available: boolean;
+  variantId: number | null;
+  minQuantity: number;
+  canQuickAdd: boolean;
 }
 
 export interface CategoryView {
@@ -60,6 +64,26 @@ export interface CategoryView {
   name: string;
   href: string;
   count: number | null;
+  description?: string;
+}
+
+export interface ProductCollectionView {
+  items: ProductCardView[];
+  total: number;
+  page: number;
+  pageSize: number;
+  totalPages: number;
+}
+
+export interface CategoryPageData {
+  category: CategoryView;
+  products: ProductCollectionView;
+}
+
+export interface SearchPageData {
+  query: string;
+  products: ProductCollectionView;
+  categories: CategoryView[];
 }
 
 export interface ProductReviewView {
