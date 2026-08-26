@@ -42,7 +42,7 @@ export default async function CategoryPage({ params, searchParams }: CategoryPag
 
   return (
     <div className="site-container py-8 sm:py-12">
-      <header className="rounded-[2rem] border bg-card p-6 sm:p-8">
+      <header className="rounded-4xl border bg-card p-6 sm:p-8">
         <div className="flex flex-wrap items-center gap-3">
           <Badge variant="secondary"><FolderOpen />دسته‌بندی</Badge>
           <span className="text-sm text-muted-foreground">

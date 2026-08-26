@@ -126,6 +126,96 @@ button {
   text-underline-offset: 4px;
 }
 
+@keyframes sheet-overlay-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes sheet-overlay-out {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}
+
+@keyframes sheet-right-in {
+  from { transform: translateX(100%); }
+  to { transform: translateX(0); }
+}
+
+@keyframes sheet-right-out {
+  from { transform: translateX(0); }
+  to { transform: translateX(100%); }
+}
+
+@keyframes sheet-left-in {
+  from { transform: translateX(-100%); }
+  to { transform: translateX(0); }
+}
+
+@keyframes sheet-left-out {
+  from { transform: translateX(0); }
+  to { transform: translateX(-100%); }
+}
+
+@keyframes sheet-top-in {
+  from { transform: translateY(-100%); }
+  to { transform: translateY(0); }
+}
+
+@keyframes sheet-top-out {
+  from { transform: translateY(0); }
+  to { transform: translateY(-100%); }
+}
+
+@keyframes sheet-bottom-in {
+  from { transform: translateY(100%); }
+  to { transform: translateY(0); }
+}
+
+@keyframes sheet-bottom-out {
+  from { transform: translateY(0); }
+  to { transform: translateY(100%); }
+}
+
+.sheet-overlay[data-state="open"] {
+  animation: sheet-overlay-in 220ms ease-out both;
+}
+
+.sheet-overlay[data-state="closed"] {
+  animation: sheet-overlay-out 180ms ease-in both;
+}
+
+.sheet-content[data-side="right"][data-state="open"] {
+  animation: sheet-right-in 320ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.sheet-content[data-side="right"][data-state="closed"] {
+  animation: sheet-right-out 220ms ease-in both;
+}
+
+.sheet-content[data-side="left"][data-state="open"] {
+  animation: sheet-left-in 320ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.sheet-content[data-side="left"][data-state="closed"] {
+  animation: sheet-left-out 220ms ease-in both;
+}
+
+.sheet-content[data-side="top"][data-state="open"] {
+  animation: sheet-top-in 320ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.sheet-content[data-side="top"][data-state="closed"] {
+  animation: sheet-top-out 220ms ease-in both;
+}
+
+.sheet-content[data-side="bottom"][data-state="open"] {
+  animation: sheet-bottom-in 320ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.sheet-content[data-side="bottom"][data-state="closed"] {
+  animation: sheet-bottom-out 220ms ease-in both;
+}
+
 @media (max-width: 640px) {
   .site-container {
     width: min(100% - 1.25rem, 76rem);
