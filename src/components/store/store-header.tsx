@@ -6,8 +6,8 @@ import { usePathname } from "next/navigation";
 import { Home, Menu, PackageOpen } from "lucide-react";
 
 import { CartButton } from "@/components/commerce/cart-button";
-import { StoreLink } from "@/components/store/store-link";
 import { StoreSearch } from "@/components/store/store-search";
+import { DesktopNavigation, MobileNavigation } from "@/components/store/header-navigation";
 import { Button } from "@/components/ui/button";
 import {
   Sheet,
@@ -23,24 +23,6 @@ import { cn } from "@/lib/utils";
 
 const navLinkClassName =
   "shrink-0 whitespace-nowrap rounded-xl px-3 py-2 text-[13px] font-bold text-muted-foreground outline-none transition-[color,background-color,box-shadow] hover:bg-card hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring";
-
-function isCurrentPath(pathname: string, href: string) {
-  const cleanHref = href.split(/[?#]/, 1)[0];
-  let decodedPathname = pathname;
-  let decodedHref = cleanHref;
-
-  try {
-    decodedPathname = decodeURI(pathname);
-    decodedHref = decodeURI(cleanHref);
-  } catch {
-    // Keep the original values when a malformed escape sequence is present.
-  }
-
-  if (!decodedHref.startsWith("/")) return false;
-  if (decodedHref === "/") return decodedPathname === "/";
-
-  return decodedPathname === decodedHref || decodedPathname.startsWith(`${decodedHref}/`);
-}
 
 function Brand({ store }: { store: StoreChrome }) {
   return (
@@ -85,7 +67,7 @@ export function StoreHeader({ store }: { store: StoreChrome }) {
         <Brand store={store} />
 
         <nav
-          className="mx-auto hidden min-w-0 flex-1 items-center justify-center gap-0.5 overflow-x-auto rounded-2xl bg-muted/55 p-1 [scrollbar-width:none] xl:flex [&::-webkit-scrollbar]:hidden"
+          className="relative mx-auto hidden min-w-0 flex-1 items-center justify-center gap-0.5 overflow-visible rounded-2xl bg-muted/55 p-1 xl:flex"
           aria-label="منوی اصلی"
         >
           <Link
@@ -100,18 +82,7 @@ export function StoreHeader({ store }: { store: StoreChrome }) {
             <Home className="size-3.5" aria-hidden="true" />
             خانه
           </Link>
-          {store.navigation.map((item) => {
-            const current = !item.external && isCurrentPath(pathname, item.href);
-
-            return (
-              <StoreLink
-                key={`${item.href}-${item.label}`}
-                item={item}
-                current={current}
-                className={cn(navLinkClassName, current && "bg-card text-primary shadow-sm")}
-              />
-            );
-          })}
+          <DesktopNavigation items={store.navigation} pathname={pathname} />
         </nav>
 
         <div className="mr-auto flex shrink-0 items-center gap-1.5 sm:gap-2 xl:mr-0">
@@ -130,50 +101,30 @@ export function StoreHeader({ store }: { store: StoreChrome }) {
               <Menu />
             </Button>
           </SheetTrigger>
-          <SheetContent side="right" className="p-0">
+          <SheetContent side="right" className="overflow-y-auto p-0">
             <SheetHeader className="border-b bg-secondary/45 p-6 pl-12">
               <SheetTitle className="text-xl">{store.name}</SheetTitle>
               <SheetDescription>{store.description}</SheetDescription>
             </SheetHeader>
-            <nav className="grid gap-1.5 p-4" aria-label="منوی موبایل">
-              <SheetClose asChild>
-                <Link
-                  href="/"
-                  aria-current={pathname === "/" ? "page" : undefined}
-                  className={cn(
-                    "flex items-center gap-2 rounded-2xl px-4 py-3.5 font-bold transition-colors hover:bg-accent",
-                    pathname === "/" && "bg-accent text-accent-foreground",
-                  )}
-                >
-                  <Home className="size-4" aria-hidden="true" />
-                  خانه
-                </Link>
-              </SheetClose>
-              {store.navigation.map((item) => {
-                const current = !item.external && isCurrentPath(pathname, item.href);
-                const className = cn(
-                  "rounded-2xl px-4 py-3.5 font-semibold transition-colors hover:bg-accent",
-                  current && "bg-accent text-accent-foreground",
-                );
-
-                return (
-                  <SheetClose asChild key={`${item.href}-${item.label}`}>
-                    {item.external ? (
-                      <a href={item.href} className={className}>
-                        {item.label}
-                      </a>
-                    ) : (
-                      <Link
-                        href={item.href}
-                        className={className}
-                        aria-current={current ? "page" : undefined}
-                      >
-                        {item.label}
-                      </Link>
-                    )}
+            <nav className="p-4" aria-label="منوی موبایل">
+              <ul className="grid gap-1.5">
+                <li>
+                  <SheetClose asChild>
+                    <Link
+                      href="/"
+                      aria-current={pathname === "/" ? "page" : undefined}
+                      className={cn(
+                        "flex items-center gap-2 rounded-2xl px-4 py-3.5 font-bold outline-none transition-colors hover:bg-accent focus-visible:ring-2 focus-visible:ring-ring",
+                        pathname === "/" && "bg-accent text-accent-foreground",
+                      )}
+                    >
+                      <Home className="size-4" aria-hidden="true" />
+                      خانه
+                    </Link>
                   </SheetClose>
-                );
-              })}
+                </li>
+                <MobileNavigation items={store.navigation} pathname={pathname} />
+              </ul>
             </nav>
           </SheetContent>
         </Sheet>
