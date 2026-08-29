@@ -17,6 +17,8 @@ import { getCatalogCategories, getSearchPageData } from "@/lib/sazito/data";
 export const metadata: Metadata = {
   title: "جست‌وجوی محصولات",
   description: "جست‌وجو در محصولات فروشگاه",
+  alternates: { canonical: "/search" },
+  robots: { index: false, follow: true },
 };
 
 export default async function SearchPage({

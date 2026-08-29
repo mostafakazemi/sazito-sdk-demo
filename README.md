@@ -1,36 +1,47 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Sazito SDK Storefront
 
-## Getting Started
+A Persian, RTL storefront built with Next.js 16 and the Sazito Client SDK for
+`testmosi.sazito.com`.
 
-First, run the development server:
+## Local development
+
+Copy the environment example, then install and start the app:
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
+cp .env.example .env.local
+pnpm install
 pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+The storefront is available at [http://localhost:3000](http://localhost:3000).
+To test from another device on the same network, start Next.js with a network
+host, for example `pnpm dev --hostname 0.0.0.0`.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Environment
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```dotenv
+SAZITO_STORE_DOMAIN=testmosi.sazito.com
+STOREFRONT_URL=https://testmosi.sazito.com
+```
 
-## Learn More
+- `SAZITO_STORE_DOMAIN` is the Sazito shop domain without a protocol.
+- `STOREFRONT_URL` is the public origin used for canonical links, JSON-LD,
+  `robots.txt`, and `sitemap.xml`. It falls back to the HTTPS Sazito shop domain.
 
-To learn more about Next.js, take a look at the following resources:
+## Included flows
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+- Live homepage, categories, search, and product detail pages
+- Guest cart, dynamic product forms, shipping, payment, and checkout return flow
+- Five-minute server data caching with overlapping Sazito SDK caches disabled
+- Persian metadata, safe product/store JSON-LD, image sitemap, and crawler rules
+- Responsive RTL UI using Estedad, Tailwind CSS 4, and shadcn/ui primitives
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Verification
 
-## Deploy on Vercel
+```bash
+pnpm test
+pnpm lint
+pnpm build
+```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+SEO discovery files are served at `/robots.txt` and `/sitemap.xml`.

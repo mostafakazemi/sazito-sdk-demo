@@ -2,10 +2,13 @@ import "server-only";
 
 import { unstable_cache } from "next/cache";
 import type {
+  Product,
   ProductEntityRoute,
   ProductCategoryEntityRoute,
   ProductSort,
 } from "@sazito/client-sdk";
+
+import { localStorefrontPath } from "@/lib/seo";
 
 import { sazitoClient, sazitoStoreDomain, sazitoStoreOrigin } from "./client";
 import {
@@ -22,6 +25,7 @@ import type {
   HomePageData,
   ProductDetailView,
   SearchPageData,
+  SitemapCatalogData,
   StoreChrome,
 } from "./types";
 import type { CatalogQuery } from "./catalog";
@@ -55,7 +59,7 @@ const getCategories = unstable_cache(
   async () =>
     unwrapSazitoResponse(
       await sazitoClient.categories.list(
-        { page: 1, pageSize: 30 },
+        { page: 1, pageSize: 100 },
         { cache: false },
       ),
       "دریافت دسته‌بندی‌ها ناموفق بود.",
@@ -87,6 +91,48 @@ const getNewest = unstable_cache(
       "دریافت محصولات تازه ناموفق بود.",
     ),
   ["sazito-products-newest", sazitoStoreDomain],
+  cacheConfig,
+);
+
+const getSitemapProducts = unstable_cache(
+  async () => {
+    const requestedPageSize = 100;
+    const maximumProducts = 49_000;
+    const firstPage = unwrapSazitoResponse(
+      await sazitoClient.products.list(
+        { page: 1, pageSize: requestedPageSize, sort: "newest" },
+        { cache: false },
+      ),
+      "دریافت محصولات نقشه سایت ناموفق بود.",
+    );
+    const pageSize = Math.max(1, firstPage.pageSize || requestedPageSize);
+    const totalPages = Math.ceil(
+      Math.min(firstPage.total, maximumProducts) / pageSize,
+    );
+    const products: Product[] = [...firstPage.items];
+    const remainingPages = Array.from(
+      { length: Math.max(0, totalPages - 1) },
+      (_, index) => index + 2,
+    );
+
+    for (let index = 0; index < remainingPages.length; index += 8) {
+      const batch = await Promise.all(
+        remainingPages.slice(index, index + 8).map(async (page) =>
+          unwrapSazitoResponse(
+            await sazitoClient.products.list(
+              { page, pageSize, sort: "newest" },
+              { cache: false },
+            ),
+            "دریافت محصولات نقشه سایت ناموفق بود.",
+          ),
+        ),
+      );
+      products.push(...batch.flatMap((result) => result.items));
+    }
+
+    return products.slice(0, maximumProducts);
+  },
+  ["sazito-sitemap-products", sazitoStoreDomain],
   cacheConfig,
 );
 
@@ -357,4 +403,44 @@ export async function getProductPageData(
     valueOf(statistics),
     valueOf(reviews),
   );
+}
+
+export async function getSitemapCatalogData(): Promise<SitemapCatalogData> {
+  const [categoryResult, productResult] = await Promise.allSettled([
+    getCategories(),
+    getSitemapProducts(),
+  ]);
+  if (categoryResult.status === "rejected" && productResult.status === "rejected") {
+    throw categoryResult.reason;
+  }
+
+  const categoryItems =
+    categoryResult.status === "fulfilled" ? categoryResult.value.categories : [];
+  const productItems =
+    productResult.status === "fulfilled" ? productResult.value : [];
+  const categories = categoryItems.flatMap((category) => {
+    if (category.enabled === false) return [];
+    const href = localStorefrontPath(category.url, sazitoStoreOrigin);
+    if (!href?.startsWith("/category/")) return [];
+
+    return [{ href, updatedAt: category.updatedAt ?? null }];
+  });
+  const products = productItems.flatMap((product) => {
+    if (!product.enabled) return [];
+    const href = localStorefrontPath(product.url, sazitoStoreOrigin);
+    if (!href?.startsWith("/product/")) return [];
+
+    return [
+      {
+        href,
+        updatedAt: product.updatedAt || null,
+        imageUrl: product.images[0]?.url,
+      },
+    ];
+  });
+
+  return {
+    categories: [...new Map(categories.map((entry) => [entry.href, entry])).values()],
+    products: [...new Map(products.map((entry) => [entry.href, entry])).values()],
+  };
 }

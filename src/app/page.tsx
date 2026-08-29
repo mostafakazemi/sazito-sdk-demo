@@ -1,15 +1,46 @@
+import type { Metadata } from "next";
 import { AlertTriangle } from "lucide-react";
 
+import { JsonLd } from "@/components/seo/json-ld";
 import { CategoryStrip } from "@/components/store/category-strip";
 import { ProductSection } from "@/components/store/product-section";
 import { StoreHero } from "@/components/store/store-hero";
-import { getHomePageData } from "@/lib/sazito/data";
+import { buildStoreJsonLd } from "@/lib/seo";
+import { getHomePageData, getStoreChrome } from "@/lib/sazito/data";
+
+export async function generateMetadata(): Promise<Metadata> {
+  const store = await getStoreChrome();
+
+  return {
+    title: { absolute: store.name },
+    description: store.description,
+    alternates: { canonical: "/" },
+    openGraph: {
+      type: "website",
+      locale: "fa_IR",
+      siteName: store.name,
+      title: store.name,
+      description: store.description,
+      url: "/",
+      images: store.logoUrl
+        ? [{ url: store.logoUrl, alt: `لوگوی ${store.name}` }]
+        : undefined,
+    },
+    twitter: {
+      card: store.logoUrl ? "summary_large_image" : "summary",
+      title: store.name,
+      description: store.description,
+      images: store.logoUrl ? [store.logoUrl] : undefined,
+    },
+  };
+}
 
 export default async function Home() {
   const data = await getHomePageData();
 
   return (
     <div className="pb-16 sm:pb-24">
+      <JsonLd data={buildStoreJsonLd(data.store)} />
       <StoreHero store={data.store} product={data.heroProduct} />
 
       <div className="site-container space-y-16 pt-12 sm:space-y-24 sm:pt-18">

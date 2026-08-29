@@ -3,6 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Box, ChevronLeft, Layers3 } from "lucide-react";
 
+import { JsonLd } from "@/components/seo/json-ld";
 import { ProductGallery } from "@/components/store/product-gallery";
 import { ProductReviews } from "@/components/store/product-reviews";
 import { ProductSection } from "@/components/store/product-section";
@@ -18,7 +19,18 @@ import {
 } from "@/components/ui/breadcrumb";
 import { Card, CardContent } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
-import { getProductPageData, getResolvedProduct } from "@/lib/sazito/data";
+import {
+  buildBreadcrumbJsonLd,
+  buildProductJsonLd,
+  localStorefrontPath,
+} from "@/lib/seo";
+import { sazitoStoreOrigin } from "@/lib/sazito/client";
+import {
+  getProductPageData,
+  getResolvedProduct,
+  getStoreChrome,
+} from "@/lib/sazito/data";
+import { toProductSeo } from "@/lib/sazito/presenters";
 
 type ProductPageProps = {
   params: Promise<{ slug: string }>;
@@ -31,37 +43,61 @@ export async function generateMetadata({ params }: ProductPageProps): Promise<Me
   if (!route) return { title: "محصول پیدا نشد" };
 
   const product = route.entity;
-  const attribute = (name: string) => {
-    const item = product.attributes?.find(
-      (entry) => entry.name.toLocaleLowerCase("en-US") === name,
-    );
-    if (!item) return "";
-    return typeof item.value === "string" ? item.value : item.value.value;
-  };
-  const description = attribute("metadescription") || attribute("description").replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim().slice(0, 180);
-  const noIndex = ["1", "true", "yes"].includes(attribute("noindex").toLocaleLowerCase("en-US"));
+  const seo = toProductSeo(product, sazitoStoreOrigin);
+  const canonical =
+    localStorefrontPath(seo.canonicalHref, sazitoStoreOrigin) ??
+    seo.canonicalHref;
+  const image = product.images[0]?.url
+    ? [{ url: product.images[0].url, alt: product.images[0].alt || product.name }]
+    : undefined;
 
   return {
-    title: attribute("metatitle") || product.name,
-    description: description || `مشاهده جزئیات ${product.name}`,
-    robots: { index: !noIndex, follow: !noIndex },
+    title: seo.title,
+    description: seo.description,
+    alternates: { canonical },
+    robots: { index: !seo.noIndex, follow: !seo.noIndex },
     openGraph: {
       type: "website",
-      title: product.name,
-      description: description || undefined,
-      images: product.images[0]?.url ? [{ url: product.images[0].url, alt: product.images[0].alt || product.name }] : undefined,
+      locale: "fa_IR",
+      title: seo.title,
+      description: seo.description,
+      url: canonical,
+      images: image,
+    },
+    twitter: {
+      card: image ? "summary_large_image" : "summary",
+      title: seo.title,
+      description: seo.description,
+      images: image?.map((item) => item.url),
     },
   };
 }
 
 export default async function ProductPage({ params }: ProductPageProps) {
   const { slug } = await params;
-  const product = await getProductPageData(slug);
+  const [product, store] = await Promise.all([
+    getProductPageData(slug),
+    getStoreChrome(),
+  ]);
 
   if (!product) notFound();
 
+  const breadcrumbItems = [
+    { name: "خانه", href: "/" },
+    ...(product.categories[0]
+      ? [{ name: product.categories[0].name, href: product.categories[0].href }]
+      : []),
+    { name: product.name, href: product.href },
+  ];
+
   return (
     <div className="site-container space-y-14 py-7 sm:space-y-20 sm:py-10">
+      <JsonLd
+        data={[
+          buildProductJsonLd(product, store),
+          buildBreadcrumbJsonLd(breadcrumbItems),
+        ]}
+      />
       <Breadcrumb>
         <BreadcrumbList>
           <BreadcrumbItem><BreadcrumbLink href="/">خانه</BreadcrumbLink></BreadcrumbItem>

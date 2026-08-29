@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge";
 export const metadata: Metadata = {
   title: "سبد خرید و تسویه حساب",
   description: "بررسی سبد خرید، انتخاب روش ارسال و پرداخت امن سفارش",
+  alternates: { canonical: "/checkout" },
   robots: { index: false, follow: false },
 };
 

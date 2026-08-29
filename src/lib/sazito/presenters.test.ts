@@ -9,6 +9,7 @@ import {
   sanitizeProductDescription,
   selectDefaultVariant,
   toProductDetail,
+  toProductSeo,
   toStoreChrome,
   toProductCard,
 } from "./presenters";
@@ -202,6 +203,29 @@ describe("content safety", () => {
     expect(sanitized).not.toContain("onclick");
     expect(sanitized).not.toContain("script");
     expect(sanitized).not.toContain("javascript:");
+  });
+});
+
+describe("product SEO presentation", () => {
+  it("uses explicit metadata and canonical attributes when present", () => {
+    const seo = toProductSeo(
+      product({
+        attributes: [
+          { name: "metatitle", value: "عنوان سئو" },
+          { name: "metadescription", value: "توضیح سئو" },
+          { name: "canonical", value: "/product/canonical" },
+          { name: "noindex", value: "true" },
+        ],
+      }),
+      "https://testmosi.sazito.com",
+    );
+
+    expect(seo).toEqual({
+      title: "عنوان سئو",
+      description: "توضیح سئو",
+      canonicalHref: "/product/canonical",
+      noIndex: true,
+    });
   });
 });
 

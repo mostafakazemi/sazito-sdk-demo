@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { FolderOpen } from "lucide-react";
 
+import { JsonLd } from "@/components/seo/json-ld";
 import { CatalogFilters } from "@/components/store/catalog-filters";
 import { CatalogGrid } from "@/components/store/catalog-grid";
 import { CatalogPagination } from "@/components/store/catalog-pagination";
@@ -11,6 +12,13 @@ import {
   parseCatalogQuery,
   type CatalogSearchParams,
 } from "@/lib/sazito/catalog";
+import {
+  buildBreadcrumbJsonLd,
+  buildProductListJsonLd,
+  localStorefrontPath,
+  plainText,
+} from "@/lib/seo";
+import { sazitoStoreOrigin } from "@/lib/sazito/client";
 import { getCategoryPageData, getResolvedCategory } from "@/lib/sazito/data";
 
 type CategoryPageProps = {
@@ -22,13 +30,34 @@ export async function generateMetadata({ params }: CategoryPageProps): Promise<M
   const { slug } = await params;
   const route = await getResolvedCategory(slug);
 
-  return route
-    ? {
-        title: route.entity.name,
-        description:
-          route.entity.description || `خرید محصولات دسته ${route.entity.name}`,
-      }
-    : { title: "دسته‌بندی پیدا نشد" };
+  if (!route) return { title: "دسته‌بندی پیدا نشد" };
+
+  const categoryDescription = route.entity.description
+    ? plainText(route.entity.description, 180)
+    : "";
+  const description =
+    categoryDescription || `خرید محصولات دسته ${route.entity.name}`;
+  const canonical =
+    localStorefrontPath(route.entity.url, sazitoStoreOrigin) ??
+    `/category/${slug}`;
+
+  return {
+    title: route.entity.name,
+    description,
+    alternates: { canonical },
+    openGraph: {
+      type: "website",
+      locale: "fa_IR",
+      title: route.entity.name,
+      description,
+      url: canonical,
+    },
+    twitter: {
+      card: "summary",
+      title: route.entity.name,
+      description,
+    },
+  };
 }
 
 export default async function CategoryPage({ params, searchParams }: CategoryPageProps) {
@@ -42,6 +71,15 @@ export default async function CategoryPage({ params, searchParams }: CategoryPag
 
   return (
     <div className="site-container py-8 sm:py-12">
+      <JsonLd
+        data={[
+          buildBreadcrumbJsonLd([
+            { name: "خانه", href: "/" },
+            { name: data.category.name, href: data.category.href },
+          ]),
+          buildProductListJsonLd(data.category.name, data.products.items),
+        ]}
+      />
       <header className="rounded-4xl border bg-card p-6 sm:p-8">
         <div className="flex flex-wrap items-center gap-3">
           <Badge variant="secondary"><FolderOpen />دسته‌بندی</Badge>

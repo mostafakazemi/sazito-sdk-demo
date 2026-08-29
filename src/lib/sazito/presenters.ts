@@ -376,6 +376,33 @@ function findAttribute(product: Product, name: string) {
   );
 }
 
+export function toProductSeo(product: Product, storeOrigin: string) {
+  const description = findAttribute(product, "description");
+  const metaTitle = findAttribute(product, "metatitle");
+  const metaDescription = findAttribute(product, "metadescription");
+  const noIndex = findAttribute(product, "noindex");
+  const canonical = findAttribute(product, "canonical");
+  const summary = description
+    ? stripMarkup(attributeValue(description)).slice(0, 190)
+    : "";
+  const canonicalValue = nonEmpty(
+    canonical ? attributeValue(canonical) : null,
+  );
+
+  return {
+    title: nonEmpty(metaTitle ? attributeValue(metaTitle) : null) ?? product.name,
+    description:
+      nonEmpty(metaDescription ? attributeValue(metaDescription) : null) ??
+      (summary || `مشاهده جزئیات ${product.name}`),
+    noIndex: ["true", "1", "yes"].includes(
+      (noIndex ? attributeValue(noIndex) : "").toLocaleLowerCase("en-US"),
+    ),
+    canonicalHref: canonicalValue
+      ? normalizeStoreHref(canonicalValue, storeOrigin).href
+      : normalizeStoreHref(product.url, storeOrigin).href,
+  };
+}
+
 function toReviews(
   statistics: ReviewStatisticsInput | undefined,
   reviews: ReviewCollectionInput | undefined,
@@ -424,9 +451,7 @@ export function toProductDetail(
   const descriptionHtml = descriptionValue
     ? sanitizeProductDescription(attributeValue(descriptionValue))
     : "";
-  const metaTitle = findAttribute(product, "metatitle");
-  const metaDescription = findAttribute(product, "metadescription");
-  const noIndex = findAttribute(product, "noindex");
+  const seo = toProductSeo(product, storeOrigin);
   const specifications = (product.attributes ?? [])
     .filter(
       (attribute) =>
@@ -464,13 +489,10 @@ export function toProductDetail(
       .filter((item) => item.url !== product.url)
       .slice(0, 4)
       .map(toProductCard),
-    metaTitle: nonEmpty(metaTitle ? attributeValue(metaTitle) : null) ?? product.name,
-    metaDescription:
-      nonEmpty(metaDescription ? attributeValue(metaDescription) : null) ??
-      (summary || `مشاهده جزئیات ${product.name}`),
-    noIndex: ["true", "1", "yes"].includes(
-      (noIndex ? attributeValue(noIndex) : "").toLocaleLowerCase("en-US"),
-    ),
+    metaTitle: seo.title,
+    metaDescription: seo.description,
+    noIndex: seo.noIndex,
+    canonicalHref: seo.canonicalHref,
   };
 }
 

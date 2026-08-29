@@ -121,6 +121,7 @@ export interface ProductDetailView {
   metaTitle: string;
   metaDescription: string;
   noIndex: boolean;
+  canonicalHref: string;
 }
 
 export interface HomePageData {
@@ -131,4 +132,15 @@ export interface HomePageData {
   newest: ProductCardView[];
   discounted: ProductCardView[];
   hasCatalogError: boolean;
+}
+
+export interface SitemapEntryView {
+  href: string;
+  updatedAt: string | null;
+  imageUrl?: string;
+}
+
+export interface SitemapCatalogData {
+  categories: SitemapEntryView[];
+  products: SitemapEntryView[];
 }
