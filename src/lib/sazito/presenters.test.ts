@@ -191,6 +191,21 @@ describe("product presentation", () => {
 
     expect(detail.variants[0].dynamicFormId).toBe(5);
   });
+
+  it("accepts the live SDK statistics total field", () => {
+    const detail = toProductDetail(
+      17,
+      product(),
+      "https://testmosi.sazito.com",
+      [],
+      { productStatistics: { averageRate: 4.5, total: 2 } },
+    );
+
+    expect(detail.reviews).toMatchObject({
+      average: 4.5,
+      count: 2,
+    });
+  });
 });
 
 describe("content safety", () => {

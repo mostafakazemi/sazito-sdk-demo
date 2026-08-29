@@ -70,7 +70,8 @@ interface ReviewCollectionInput {
 interface ReviewStatisticsInput {
   productStatistics: {
     averageRate: number;
-    totalCount: number;
+    totalCount?: number;
+    total?: number;
     recommendations?: { recommendedPercentage: number };
   };
 }
@@ -408,7 +409,7 @@ function toReviews(
   reviews: ReviewCollectionInput | undefined,
 ): ProductReviewSummary | null {
   const stats = statistics?.productStatistics;
-  const count = reviews?.totalCount ?? stats?.totalCount ?? 0;
+  const count = reviews?.totalCount ?? stats?.totalCount ?? stats?.total ?? 0;
 
   if (!count && !reviews?.entities.length) return null;
 

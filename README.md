@@ -73,6 +73,19 @@ contains the shared secret.
 - Persian metadata, safe product/store JSON-LD, image sitemap, and crawler rules
 - Responsive RTL UI using Estedad, Tailwind CSS 4, and shadcn/ui primitives
 
+### Live SDK validation
+
+Run the opt-in, read-only contract suite against `SAZITO_STORE_DOMAIN` with:
+
+```bash
+pnpm test:sdk:live
+```
+
+This checks the live store identity, recursive header menu, category hierarchy,
+product listing, entity-route resolution, and search response. It does not
+create carts, invoices, payments, or orders. The regular `pnpm test` command
+excludes this suite and does not require network access.
+
 ## Verification
 
 ```bash
