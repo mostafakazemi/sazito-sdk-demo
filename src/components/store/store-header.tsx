@@ -5,6 +5,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Home, Menu, PackageOpen } from "lucide-react";
 
+import { AccountButton } from "@/components/account/account-button";
 import { CartButton } from "@/components/commerce/cart-button";
 import { StoreSearch } from "@/components/store/store-search";
 import { DesktopNavigation, MobileNavigation } from "@/components/store/header-navigation";
@@ -87,6 +88,7 @@ export function StoreHeader({ store }: { store: StoreChrome }) {
 
         <div className="mr-auto flex shrink-0 items-center gap-1.5 sm:gap-2 xl:mr-0">
           <StoreSearch />
+          <AccountButton />
           <CartButton />
         </div>
 

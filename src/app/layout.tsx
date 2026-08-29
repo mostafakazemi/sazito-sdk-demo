@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 
+import { AccountProvider } from "@/components/account/account-provider";
 import { CommerceProvider } from "@/components/commerce/commerce-provider";
 import { StoreFooter } from "@/components/store/store-footer";
 import { StoreHeader } from "@/components/store/store-header";
@@ -55,9 +56,11 @@ export default async function RootLayout({
     <html lang="fa" dir="rtl" data-scroll-behavior="smooth">
       <body className="flex min-h-screen flex-col antialiased">
         <CommerceProvider domain={sazitoStoreDomain}>
-          <StoreHeader store={store} />
-          <main className="flex-1">{children}</main>
-          <StoreFooter store={store} />
+          <AccountProvider>
+            <StoreHeader store={store} />
+            <main className="flex-1">{children}</main>
+            <StoreFooter store={store} />
+          </AccountProvider>
         </CommerceProvider>
       </body>
     </html>

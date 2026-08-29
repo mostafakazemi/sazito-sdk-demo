@@ -138,6 +138,8 @@ export function normalizeStoreHref(
     path.startsWith("/search?") ||
     path.startsWith("/product/") ||
     path.startsWith("/category/") ||
+    path === "/account" ||
+    path.startsWith("/account/") ||
     path === "/checkout";
 
   return local

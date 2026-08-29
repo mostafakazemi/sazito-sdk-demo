@@ -144,4 +144,20 @@ describe(`Sazito Client SDK live contract (${storeDomain})`, () => {
     expect(result.cmsPages.items).toBeInstanceOf(Array);
     expect(result.productCategories.items).toBeInstanceOf(Array);
   });
+
+  it("does not expose customer or order data to anonymous requests", async () => {
+    const [currentUser, orders, orderDetail] = await Promise.all([
+      client.users.getCurrentUser({ cache: false }),
+      client.orders.list({ pageNumber: 1, pageSize: 1 }, { cache: false }),
+      client.orders.get(1, { cache: false }),
+    ]);
+
+    expect(currentUser.data).toBeUndefined();
+    expect(currentUser.error?.status).toBeOneOf([401, 403]);
+    expect(orders.error).toBeUndefined();
+    expect(orders.data?.orders).toEqual([]);
+    expect(orders.data?.totalCount).toBe(0);
+    expect(orderDetail.data).toBeUndefined();
+    expect(orderDetail.error?.status).toBeOneOf([400, 401, 403, 404]);
+  });
 });

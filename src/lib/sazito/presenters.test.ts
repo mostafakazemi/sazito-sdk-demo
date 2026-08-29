@@ -65,6 +65,10 @@ describe("store URL routing", () => {
       href: "/search?q=test",
       external: false,
     });
+    expect(normalizeStoreHref("/account/orders")).toEqual({
+      href: "/account/orders",
+      external: false,
+    });
   });
 
   it("falls unsupported relative URLs back to the current Sazito theme", () => {
