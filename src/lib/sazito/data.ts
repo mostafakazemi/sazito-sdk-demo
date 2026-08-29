@@ -10,6 +10,7 @@ import type {
 
 import { localStorefrontPath } from "@/lib/seo";
 
+import { sazitoCacheConfig } from "./cache";
 import { sazitoClient, sazitoStoreDomain, sazitoStoreOrigin } from "./client";
 import {
   toCategory,
@@ -30,11 +31,6 @@ import type {
 } from "./types";
 import type { CatalogQuery } from "./catalog";
 
-const cacheConfig: { revalidate: number; tags: string[] } = {
-  revalidate: 300,
-  tags: [`sazito:${sazitoStoreDomain}`],
-};
-
 const getGeneralInfo = unstable_cache(
   async () =>
     unwrapSazitoResponse(
@@ -42,7 +38,7 @@ const getGeneralInfo = unstable_cache(
       "دریافت اطلاعات فروشگاه ناموفق بود.",
     ),
   ["sazito-general-info", sazitoStoreDomain],
-  cacheConfig,
+  sazitoCacheConfig,
 );
 
 const getHeaderMenu = unstable_cache(
@@ -52,7 +48,7 @@ const getHeaderMenu = unstable_cache(
       "دریافت منوی فروشگاه ناموفق بود.",
     ),
   ["sazito-header-menu", sazitoStoreDomain],
-  cacheConfig,
+  sazitoCacheConfig,
 );
 
 const getCategories = unstable_cache(
@@ -65,7 +61,7 @@ const getCategories = unstable_cache(
       "دریافت دسته‌بندی‌ها ناموفق بود.",
     ),
   ["sazito-categories", sazitoStoreDomain],
-  cacheConfig,
+  sazitoCacheConfig,
 );
 
 const getBestSellers = unstable_cache(
@@ -78,7 +74,7 @@ const getBestSellers = unstable_cache(
       "دریافت محصولات پرفروش ناموفق بود.",
     ),
   ["sazito-products-best-selling", sazitoStoreDomain],
-  cacheConfig,
+  sazitoCacheConfig,
 );
 
 const getNewest = unstable_cache(
@@ -91,7 +87,7 @@ const getNewest = unstable_cache(
       "دریافت محصولات تازه ناموفق بود.",
     ),
   ["sazito-products-newest", sazitoStoreDomain],
-  cacheConfig,
+  sazitoCacheConfig,
 );
 
 const getSitemapProducts = unstable_cache(
@@ -133,7 +129,7 @@ const getSitemapProducts = unstable_cache(
     return products.slice(0, maximumProducts);
   },
   ["sazito-sitemap-products", sazitoStoreDomain],
-  cacheConfig,
+  sazitoCacheConfig,
 );
 
 const getDiscounted = unstable_cache(
@@ -151,7 +147,7 @@ const getDiscounted = unstable_cache(
       "دریافت محصولات تخفیف‌دار ناموفق بود.",
     ),
   ["sazito-products-discounted", sazitoStoreDomain],
-  cacheConfig,
+  sazitoCacheConfig,
 );
 
 const resolveEntityRoute = unstable_cache(
@@ -161,7 +157,7 @@ const resolveEntityRoute = unstable_cache(
       "دریافت محصول ناموفق بود.",
     ),
   ["sazito-entity-route", sazitoStoreDomain],
-  cacheConfig,
+  sazitoCacheConfig,
 );
 
 const getCategoryProducts = unstable_cache(
@@ -192,7 +188,7 @@ const getCategoryProducts = unstable_cache(
       "دریافت محصولات این دسته ناموفق بود.",
     ),
   ["sazito-category-products", sazitoStoreDomain],
-  cacheConfig,
+  sazitoCacheConfig,
 );
 
 const searchStore = unstable_cache(
@@ -219,7 +215,7 @@ const searchStore = unstable_cache(
       "جست‌وجوی محصولات ناموفق بود.",
     ),
   ["sazito-search", sazitoStoreDomain],
-  cacheConfig,
+  sazitoCacheConfig,
 );
 
 const getRelatedProducts = unstable_cache(
@@ -232,7 +228,7 @@ const getRelatedProducts = unstable_cache(
       "دریافت محصولات مرتبط ناموفق بود.",
     ),
   ["sazito-related-products", sazitoStoreDomain],
-  cacheConfig,
+  sazitoCacheConfig,
 );
 
 const getReviewStatistics = unstable_cache(
@@ -244,7 +240,7 @@ const getReviewStatistics = unstable_cache(
       "دریافت امتیاز محصول ناموفق بود.",
     ),
   ["sazito-review-statistics", sazitoStoreDomain],
-  cacheConfig,
+  sazitoCacheConfig,
 );
 
 const getProductReviews = unstable_cache(
@@ -258,7 +254,7 @@ const getProductReviews = unstable_cache(
       "دریافت دیدگاه‌های محصول ناموفق بود.",
     ),
   ["sazito-product-reviews", sazitoStoreDomain],
-  cacheConfig,
+  sazitoCacheConfig,
 );
 
 function valueOf<T>(result: PromiseSettledResult<T>) {
