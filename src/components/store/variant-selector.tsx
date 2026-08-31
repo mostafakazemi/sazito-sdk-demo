@@ -31,6 +31,7 @@ import {
   type DynamicFormView,
 } from "@/lib/sazito/dynamic-form";
 import { formatPrice } from "@/lib/sazito/presenters";
+import { sazitoErrorMessage } from "@/lib/sazito/error";
 import type { ProductVariantView } from "@/lib/sazito/types";
 import { cn } from "@/lib/utils";
 
@@ -234,7 +235,11 @@ export function VariantSelector({
     void client.dynamicForms.getForm(formId, { cache: false }).then((response) => {
       if (!active) return;
       if (response.error || !response.data) {
-        setFormLoadError(response.error?.message || "فرم اطلاعات محصول دریافت نشد.");
+        setFormLoadError(
+          response.error
+            ? sazitoErrorMessage(response.error, "فرم اطلاعات محصول دریافت نشد.")
+            : "فرم اطلاعات محصول دریافت نشد.",
+        );
       } else {
         const nextForm = response.data as DynamicFormView;
         setForm(nextForm);
@@ -433,7 +438,15 @@ export function VariantSelector({
                     void client.dynamicForms.uploadProductFormFile(file, { cache: false })
                       .then((response) => {
                         if (response.error || !response.data?.serveKey) {
-                          setFormErrors((current) => ({ ...current, [field.name]: response.error?.message || "بارگذاری فایل ناموفق بود." }));
+                          setFormErrors((current) => ({
+                            ...current,
+                            [field.name]: response.error
+                              ? sazitoErrorMessage(
+                                  response.error,
+                                  "بارگذاری فایل ناموفق بود.",
+                                )
+                              : "بارگذاری فایل ناموفق بود.",
+                          }));
                           return;
                         }
                         setFormValues((current) => ({

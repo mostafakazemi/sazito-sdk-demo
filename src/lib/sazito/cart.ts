@@ -1,6 +1,6 @@
-import type { Cart, SazitoResponse } from "@sazito/client-sdk";
+import type { Cart } from "@sazito/client-sdk";
 
-type SazitoError = NonNullable<SazitoResponse<unknown>["error"]>;
+import { sazitoErrorMessage, type SazitoError } from "./error";
 
 export function cartItemCount(cart: Pick<Cart, "items"> | null) {
   return cart?.items.reduce((total, item) => total + item.quantity, 0) ?? 0;
@@ -21,13 +21,5 @@ export function clampCartQuantity(
 }
 
 export function cartErrorMessage(error: SazitoError) {
-  if (error.status === 429) {
-    return "درخواست‌های زیادی ارسال شده است. کمی صبر کنید و دوباره تلاش کنید.";
-  }
-
-  if (error.type === "network") {
-    return "ارتباط با فروشگاه برقرار نشد. اتصال اینترنت را بررسی و دوباره تلاش کنید.";
-  }
-
-  return error.message?.trim() || "به‌روزرسانی سبد خرید ناموفق بود.";
+  return sazitoErrorMessage(error, "به‌روزرسانی سبد خرید ناموفق بود.");
 }

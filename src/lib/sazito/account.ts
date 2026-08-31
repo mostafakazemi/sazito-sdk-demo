@@ -2,11 +2,10 @@ import { toEnglishDigits } from "@sazito/client-sdk";
 import type {
   InvoiceItem,
   Order,
-  SazitoResponse,
   User,
 } from "@sazito/client-sdk";
 
-type SazitoError = NonNullable<SazitoResponse<unknown>["error"]>;
+import { sazitoErrorMessage, type SazitoError } from "./error";
 
 export function accountDisplayName(user: User | null) {
   const fullName = [user?.firstName, user?.lastName]
@@ -38,19 +37,7 @@ export function accountErrorMessage(
   error: SazitoError,
   fallback = "انجام درخواست ناموفق بود. دوباره تلاش کنید.",
 ) {
-  if (error.status === 401 || error.status === 403) {
-    return "اطلاعات ورود صحیح نیست یا نشست شما منقضی شده است.";
-  }
-
-  if (error.status === 429) {
-    return "درخواست‌های زیادی ارسال شده است. کمی صبر کنید و دوباره تلاش کنید.";
-  }
-
-  if (error.type === "network") {
-    return "ارتباط با فروشگاه برقرار نشد. اتصال اینترنت را بررسی کنید.";
-  }
-
-  return error.message?.trim() || fallback;
+  return sazitoErrorMessage(error, fallback);
 }
 
 export function orderItems(order: Order): InvoiceItem[] {
