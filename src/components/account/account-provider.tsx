@@ -21,12 +21,22 @@ export interface AccountProfileInput {
   birthDate?: string;
 }
 
+export interface AccountRegistrationInput {
+  email: string;
+  password: string;
+  passwordConfirmation: string;
+  firstName?: string;
+  lastName?: string;
+}
+
 interface AccountContextValue {
   user: User | null;
   status: AccountStatus;
   loginWithPassword(email: string, password: string): Promise<AccountResult>;
   requestMobileOtp(mobilePhone: string): Promise<AccountResult>;
   verifyMobileOtp(mobilePhone: string, token: string): Promise<AccountResult>;
+  registerWithEmail(input: AccountRegistrationInput): Promise<AccountResult>;
+  requestPasswordReset(email: string): Promise<AccountResult>;
   updateProfile(input: AccountProfileInput): Promise<AccountResult>;
   refreshUser(): Promise<AccountResult>;
   logout(): void;
@@ -179,6 +189,73 @@ export function AccountProvider({ children }: { children: React.ReactNode }) {
     [client, finishLogin],
   );
 
+  const registerWithEmail = React.useCallback(
+    async (input: AccountRegistrationInput): Promise<AccountResult> => {
+      const email = input.email.trim();
+      if (!email || !input.password) {
+        return { ok: false, message: "ایمیل و رمز عبور را کامل کنید." };
+      }
+      if (input.password !== input.passwordConfirmation) {
+        return { ok: false, message: "تکرار رمز عبور یکسان نیست." };
+      }
+
+      const response = await client.users.register(
+        {
+          email,
+          password: input.password,
+          passwordConfirmation: input.passwordConfirmation,
+          firstName: input.firstName?.trim() || undefined,
+          lastName: input.lastName?.trim() || undefined,
+        },
+        { cache: false },
+      );
+
+      if (response.error || !response.data) {
+        return {
+          ok: false,
+          message: response.error
+            ? accountErrorMessage(response.error, "ثبت‌نام انجام نشد.")
+            : "اطلاعات حساب جدید از فروشگاه دریافت نشد.",
+        };
+      }
+
+      const loginResult = await loginWithPassword(email, input.password);
+      return loginResult.ok
+        ? loginResult
+        : {
+            ok: false,
+            message:
+              "ثبت‌نام انجام شد، اما ورود خودکار ممکن نشد. از بخش ورود استفاده کنید.",
+          };
+    },
+    [client, loginWithPassword],
+  );
+
+  const requestPasswordReset = React.useCallback(
+    async (email: string): Promise<AccountResult> => {
+      const normalizedEmail = email.trim();
+      if (!normalizedEmail) {
+        return { ok: false, message: "ایمیل حساب را وارد کنید." };
+      }
+
+      const response = await client.users.forgotPassword(
+        { email: normalizedEmail },
+        { cache: false },
+      );
+
+      return response.error
+        ? {
+            ok: false,
+            message: accountErrorMessage(
+              response.error,
+              "ارسال ایمیل بازیابی انجام نشد.",
+            ),
+          }
+        : { ok: true };
+    },
+    [client],
+  );
+
   const updateProfile = React.useCallback(
     async (input: AccountProfileInput): Promise<AccountResult> => {
       if (!user?.id) {
@@ -211,6 +288,8 @@ export function AccountProvider({ children }: { children: React.ReactNode }) {
       loginWithPassword,
       requestMobileOtp,
       verifyMobileOtp,
+      registerWithEmail,
+      requestPasswordReset,
       updateProfile,
       refreshUser,
       logout,
@@ -219,6 +298,8 @@ export function AccountProvider({ children }: { children: React.ReactNode }) {
       loginWithPassword,
       logout,
       refreshUser,
+      registerWithEmail,
+      requestPasswordReset,
       requestMobileOtp,
       status,
       updateProfile,
