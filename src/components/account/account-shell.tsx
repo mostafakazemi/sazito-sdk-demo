@@ -7,6 +7,7 @@ import {
   LayoutDashboard,
   LoaderCircle,
   LogOut,
+  MapPin,
   PackageSearch,
   UserRound,
 } from "lucide-react";
@@ -20,6 +21,7 @@ import { cn } from "@/lib/utils";
 const navigation = [
   { href: "/account", label: "نمای کلی", icon: LayoutDashboard },
   { href: "/account/orders", label: "سفارش‌ها", icon: PackageSearch },
+  { href: "/account/addresses", label: "نشانی‌ها", icon: MapPin },
   { href: "/account/profile", label: "پروفایل", icon: UserRound },
 ];
 

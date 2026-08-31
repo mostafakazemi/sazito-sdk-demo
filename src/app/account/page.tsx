@@ -4,7 +4,7 @@ import { AccountDashboard } from "@/components/account/account-dashboard";
 
 export const metadata: Metadata = {
   title: "حساب کاربری",
-  description: "مدیریت پروفایل و مشاهده سفارش‌های ثبت‌شده",
+  description: "مدیریت پروفایل، نشانی‌ها و مشاهده سفارش‌های ثبت‌شده",
   robots: { index: false, follow: false },
 };
 

@@ -4,6 +4,7 @@ import Link from "next/link";
 import {
   ArrowLeft,
   Mail,
+  MapPin,
   PackageSearch,
   Phone,
   ShoppingBag,
@@ -28,6 +29,12 @@ const actions = [
     icon: PackageSearch,
   },
   {
+    href: "/account/addresses",
+    title: "نشانی‌های من",
+    description: "مشاهده و ثبت نشانی‌های ارسال ذخیره‌شده",
+    icon: MapPin,
+  },
+  {
     href: "/account/profile",
     title: "اطلاعات حساب",
     description: "ویرایش نام، ایمیل و تاریخ تولد",
@@ -49,7 +56,7 @@ function DashboardContent() {
       title="حساب کاربری"
       description="اطلاعات این بخش مستقیماً از حساب سازیتوی شما دریافت می‌شود."
     >
-      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         {actions.map((action) => {
           const Icon = action.icon;
           return (
