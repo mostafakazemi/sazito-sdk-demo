@@ -19,7 +19,7 @@ function ProfileForm() {
   } | null>(null);
   const [isPending, startTransition] = React.useTransition();
 
-  const submit = (event: React.FormEvent<HTMLFormElement>) => {
+  const submit = (event: React.SubmitEvent<HTMLFormElement>) => {
     event.preventDefault();
     const form = new FormData(event.currentTarget);
     setMessage(null);

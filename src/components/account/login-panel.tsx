@@ -38,7 +38,7 @@ export function LoginPanel() {
     });
   };
 
-  const submitPassword = (event: React.FormEvent<HTMLFormElement>) => {
+  const submitPassword = (event: React.SubmitEvent<HTMLFormElement>) => {
     event.preventDefault();
     const form = new FormData(event.currentTarget);
     const email = String(form.get("email") ?? "");
@@ -52,7 +52,7 @@ export function LoginPanel() {
     run(() => loginWithPassword(email, password));
   };
 
-  const submitMobile = (event: React.FormEvent<HTMLFormElement>) => {
+  const submitMobile = (event: React.SubmitEvent<HTMLFormElement>) => {
     event.preventDefault();
     const form = new FormData(event.currentTarget);
     const phone = String(form.get("mobilePhone") ?? mobilePhone);
