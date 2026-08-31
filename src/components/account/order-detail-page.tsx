@@ -14,6 +14,7 @@ import type { Order } from "@sazito/client-sdk";
 
 import { useAccount } from "@/components/account/account-provider";
 import { AccountGate, AccountShell } from "@/components/account/account-shell";
+import { OrderReviewPanel } from "@/components/account/order-review-panel";
 import { useCommerce } from "@/components/commerce/commerce-provider";
 import { StoreLink } from "@/components/store/store-link";
 import { Badge } from "@/components/ui/badge";
@@ -197,6 +198,8 @@ function OrderDetail() {
           );
         })}
       </div>
+
+      <OrderReviewPanel order={order} />
 
       <Link
         href="/account/orders"
