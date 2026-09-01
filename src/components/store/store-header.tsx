@@ -68,22 +68,24 @@ export function StoreHeader({ store }: { store: StoreChrome }) {
         <Brand store={store} />
 
         <nav
-          className="relative mx-auto hidden min-w-0 flex-1 items-center justify-center gap-0.5 overflow-visible rounded-2xl bg-muted/55 p-1 xl:flex"
+          className="relative mx-auto hidden min-w-0 flex-1 rounded-2xl bg-muted/55 xl:block"
           aria-label="منوی اصلی"
         >
-          <Link
-            href="/"
-            aria-current={pathname === "/" ? "page" : undefined}
-            className={cn(
-              navLinkClassName,
-              "flex items-center gap-1.5",
-              pathname === "/" && "bg-card text-primary shadow-sm",
-            )}
-          >
-            <Home className="size-3.5" aria-hidden="true" />
-            خانه
-          </Link>
-          <DesktopNavigation items={store.navigation} pathname={pathname} />
+          <div className="header-nav-scroll flex items-center justify-start gap-0.5 overflow-x-auto p-1">
+            <Link
+              href="/"
+              aria-current={pathname === "/" ? "page" : undefined}
+              className={cn(
+                navLinkClassName,
+                "flex items-center gap-1.5",
+                pathname === "/" && "bg-card text-primary shadow-sm",
+              )}
+            >
+              <Home className="size-3.5" aria-hidden="true" />
+              خانه
+            </Link>
+            <DesktopNavigation items={store.navigation} pathname={pathname} />
+          </div>
         </nav>
 
         <div className="mr-auto flex shrink-0 items-center gap-1.5 sm:gap-2 xl:mr-0">

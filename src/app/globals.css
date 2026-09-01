@@ -96,6 +96,25 @@ button {
   -webkit-tap-highlight-color: transparent;
 }
 
+.header-nav-scroll {
+  scrollbar-width: thin;
+  scrollbar-color: color-mix(in srgb, var(--primary) 42%, transparent) transparent;
+  overscroll-behavior-inline: contain;
+}
+
+.header-nav-scroll::-webkit-scrollbar {
+  height: 0.3rem;
+}
+
+.header-nav-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.header-nav-scroll::-webkit-scrollbar-thumb {
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--primary) 42%, transparent);
+}
+
 .filter-option-scroll {
   scrollbar-width: thin;
   scrollbar-color: color-mix(in srgb, var(--primary) 45%, transparent) transparent;

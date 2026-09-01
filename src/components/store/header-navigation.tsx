@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useEffect, useId, useRef, useState } from "react";
 import { ChevronDown } from "lucide-react";
+import { createPortal } from "react-dom";
 
 import { StoreLink } from "@/components/store/store-link";
 import { SheetClose } from "@/components/ui/sheet";
@@ -50,22 +51,77 @@ function DesktopSubmenu({
 
 function DesktopNavigationItem({ item, pathname }: { item: StoreLinkType; pathname: string }) {
   const [open, setOpen] = useState(false);
+  const [panelPosition, setPanelPosition] = useState<{
+    top: number;
+    right: number;
+    width: number;
+  } | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
+  const panelRef = useRef<HTMLDivElement>(null);
   const triggerRef = useRef<HTMLButtonElement>(null);
-  const submenuId = `desktop-submenu-${useId().replaceAll(":", "")}`;
+  const closeTimerRef = useRef<number | null>(null);
+  const submenuId = "desktop-submenu-" + useId().replaceAll(":", "");
   const active = isNavigationItemCurrent(item, pathname);
   const current = !item.external && isCurrentPath(pathname, item.href);
 
   useEffect(() => {
     if (!open) return;
 
-    function closeOnOutsideClick(event: PointerEvent) {
-      if (!containerRef.current?.contains(event.target as Node)) setOpen(false);
+    function updatePanelPosition() {
+      const rect = containerRef.current?.getBoundingClientRect();
+      if (!rect) return;
+
+      const width = Math.min(352, window.innerWidth - 32);
+      const maximumRight = Math.max(16, window.innerWidth - width - 16);
+      const triggerRight = window.innerWidth - rect.right;
+
+      setPanelPosition({
+        top: rect.bottom + 8,
+        right: Math.min(Math.max(16, triggerRight), maximumRight),
+        width,
+      });
     }
 
+    function closeOnOutsideClick(event: PointerEvent) {
+      const target = event.target as Node;
+      if (
+        !containerRef.current?.contains(target) &&
+        !panelRef.current?.contains(target)
+      ) {
+        setOpen(false);
+      }
+    }
+
+    updatePanelPosition();
     document.addEventListener("pointerdown", closeOnOutsideClick);
-    return () => document.removeEventListener("pointerdown", closeOnOutsideClick);
+    document.addEventListener("scroll", updatePanelPosition, true);
+    window.addEventListener("resize", updatePanelPosition);
+
+    return () => {
+      document.removeEventListener("pointerdown", closeOnOutsideClick);
+      document.removeEventListener("scroll", updatePanelPosition, true);
+      window.removeEventListener("resize", updatePanelPosition);
+      if (closeTimerRef.current !== null) {
+        window.clearTimeout(closeTimerRef.current);
+      }
+    };
   }, [open]);
+
+  function cancelScheduledClose() {
+    if (closeTimerRef.current === null) return;
+    window.clearTimeout(closeTimerRef.current);
+    closeTimerRef.current = null;
+  }
+
+  function scheduleClose() {
+    cancelScheduledClose();
+    closeTimerRef.current = window.setTimeout(() => setOpen(false), 140);
+  }
+
+  function closeWithKeyboard() {
+    setOpen(false);
+    triggerRef.current?.focus();
+  }
 
   if (item.children.length === 0) {
     return (
@@ -80,17 +136,24 @@ function DesktopNavigationItem({ item, pathname }: { item: StoreLinkType; pathna
   return (
     <div
       ref={containerRef}
-      className="relative"
-      onMouseEnter={() => setOpen(true)}
-      onMouseLeave={() => setOpen(false)}
+      className="relative shrink-0"
+      onMouseEnter={() => {
+        cancelScheduledClose();
+        setOpen(true);
+      }}
+      onMouseLeave={scheduleClose}
       onFocusCapture={() => setOpen(true)}
       onBlurCapture={(event) => {
-        if (!event.currentTarget.contains(event.relatedTarget)) setOpen(false);
+        const relatedTarget = event.relatedTarget as Node | null;
+        if (
+          !event.currentTarget.contains(relatedTarget) &&
+          !panelRef.current?.contains(relatedTarget)
+        ) {
+          setOpen(false);
+        }
       }}
       onKeyDown={(event) => {
-        if (event.key !== "Escape") return;
-        setOpen(false);
-        triggerRef.current?.focus();
+        if (event.key === "Escape") closeWithKeyboard();
       }}
     >
       <div
@@ -108,41 +171,53 @@ function DesktopNavigationItem({ item, pathname }: { item: StoreLinkType; pathna
           ref={triggerRef}
           type="button"
           className="flex size-8 shrink-0 items-center justify-center rounded-l-xl outline-none focus-visible:ring-2 focus-visible:ring-ring"
-          aria-label={`نمایش زیرمجموعه‌های ${item.label}`}
+          aria-label={"نمایش زیرمجموعه‌های " + item.label}
           aria-expanded={open}
           aria-controls={submenuId}
           onClick={() => setOpen((value) => !value)}
         >
           <ChevronDown
-            className={cn("size-3.5 transition-transform duration-200", open && "rotate-180")}
+            className={cn(
+              "size-3.5 transition-transform duration-200",
+              open && "rotate-180",
+            )}
             aria-hidden="true"
           />
         </button>
       </div>
 
-      <span
-        aria-hidden="true"
-        className={cn("absolute top-full right-0 h-3 w-full", !open && "pointer-events-none")}
-      />
-
-      <div
-        id={submenuId}
-        aria-hidden={!open}
-        inert={!open}
-        className={cn(
-          "absolute top-[calc(100%+0.55rem)] right-0 z-50 w-[min(22rem,calc(100vw-2rem))] origin-top-right rounded-2xl border border-border/80 bg-card p-2.5 shadow-[0_24px_70px_-26px_rgba(31,42,36,0.45)] transition-[opacity,transform,visibility] duration-200",
-          open
-            ? "visible translate-y-0 scale-100 opacity-100"
-            : "invisible -translate-y-1 scale-[0.98] opacity-0",
-        )}
-      >
-        <div className="mb-2 border-b border-border/70 px-3 py-2 text-xs font-bold text-muted-foreground">
-          زیرمجموعه‌های {item.label}
-        </div>
-        <div className="max-h-[min(65vh,30rem)] overflow-y-auto overscroll-contain pl-1">
-          <DesktopSubmenu items={item.children} pathname={pathname} />
-        </div>
-      </div>
+      {open && panelPosition
+        ? createPortal(
+            <div
+              ref={panelRef}
+              id={submenuId}
+              style={panelPosition}
+              className="fixed z-[60] origin-top-right rounded-2xl border border-border/80 bg-card p-2.5 shadow-[0_24px_70px_-26px_rgba(31,42,36,0.45)]"
+              onMouseEnter={cancelScheduledClose}
+              onMouseLeave={scheduleClose}
+              onBlurCapture={(event) => {
+                const relatedTarget = event.relatedTarget as Node | null;
+                if (
+                  !containerRef.current?.contains(relatedTarget) &&
+                  !event.currentTarget.contains(relatedTarget)
+                ) {
+                  setOpen(false);
+                }
+              }}
+              onKeyDown={(event) => {
+                if (event.key === "Escape") closeWithKeyboard();
+              }}
+            >
+              <div className="mb-2 border-b border-border/70 px-3 py-2 text-xs font-bold text-muted-foreground">
+                زیرمجموعه‌های {item.label}
+              </div>
+              <div className="max-h-[min(65vh,30rem)] overflow-y-auto overscroll-contain pl-1">
+                <DesktopSubmenu items={item.children} pathname={pathname} />
+              </div>
+            </div>,
+            document.body,
+          )
+        : null}
     </div>
   );
 }
