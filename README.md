@@ -68,7 +68,7 @@ contains the shared secret.
 ## Included flows
 
 - Live homepage, categories, search, product detail, CMS, and blog pages
-- Guest cart, dynamic product forms, shipping, payment, and checkout return flow
+- Guest cart, post-login cart merging, dynamic product forms, shipping, payment, and checkout return flow
 - Customer login, password recovery, verified mobile changes, profile, addresses, orders, bookings, and wallet activity
 - Authenticated order ratings and optional product-review submission
 - Five-minute server caching with authenticated on-demand invalidation

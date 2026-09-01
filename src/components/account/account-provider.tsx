@@ -11,6 +11,11 @@ import {
   normalizeOtpInput,
 } from "@/lib/sazito/account";
 import {
+  GUEST_CART_MERGE_WARNING,
+  hasGuestCartCredentials,
+  mergeGuestCartAfterLogin,
+} from "@/lib/sazito/guest-cart-merge";
+import {
   passwordResetErrorMessage,
   validatePasswordResetInput,
 } from "@/lib/sazito/password-reset";
@@ -36,6 +41,8 @@ export interface AccountRegistrationInput {
 interface AccountContextValue {
   user: User | null;
   status: AccountStatus;
+  notice: string | null;
+  clearNotice(): void;
   loginWithPassword(email: string, password: string): Promise<AccountResult>;
   requestMobileOtp(mobilePhone: string): Promise<AccountResult>;
   verifyMobileOtp(mobilePhone: string, token: string): Promise<AccountResult>;
@@ -59,14 +66,18 @@ interface AccountContextValue {
 const AccountContext = React.createContext<AccountContextValue | null>(null);
 
 export function AccountProvider({ children }: { children: React.ReactNode }) {
-  const { client } = useCommerce();
+  const { client, refreshCart } = useCommerce();
   const [user, setUser] = React.useState<User | null>(null);
   const [status, setStatus] = React.useState<AccountStatus>("loading");
+  const [notice, setNotice] = React.useState<string | null>(null);
+
+  const clearNotice = React.useCallback(() => setNotice(null), []);
 
   const logout = React.useCallback(() => {
     client.clearAuth();
     setUser(null);
     setStatus("anonymous");
+    setNotice(null);
   }, [client]);
 
   const refreshUser = React.useCallback(async (): Promise<AccountResult> => {
@@ -117,7 +128,18 @@ export function AccountProvider({ children }: { children: React.ReactNode }) {
         return { ok: false, message: "توکن ورود از فروشگاه دریافت نشد." };
       }
 
+      const guestCartCredentials =
+        client.getCredentialsManager().getCartCredentials();
       client.setAuthToken(jwt);
+
+      const mergeStatus = await mergeGuestCartAfterLogin({
+        shouldMerge: hasGuestCartCredentials(guestCartCredentials),
+        mergeUser: () => client.users.mergeUser({ cache: false }),
+        refreshCart,
+      });
+      setNotice(
+        mergeStatus === "failed" ? GUEST_CART_MERGE_WARNING : null,
+      );
 
       if (responseUser) {
         setUser(responseUser);
@@ -127,7 +149,7 @@ export function AccountProvider({ children }: { children: React.ReactNode }) {
 
       return refreshUser();
     },
-    [client, refreshUser],
+    [client, refreshCart, refreshUser],
   );
 
   const loginWithPassword = React.useCallback(
@@ -414,6 +436,8 @@ export function AccountProvider({ children }: { children: React.ReactNode }) {
     () => ({
       user,
       status,
+      notice,
+      clearNotice,
       loginWithPassword,
       requestMobileOtp,
       verifyMobileOtp,
@@ -427,8 +451,10 @@ export function AccountProvider({ children }: { children: React.ReactNode }) {
       logout,
     }),
     [
+      clearNotice,
       loginWithPassword,
       logout,
+      notice,
       refreshUser,
       registerWithEmail,
       requestPasswordReset,

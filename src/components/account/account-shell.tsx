@@ -4,6 +4,7 @@ import * as React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
+  AlertTriangle,
   CalendarCheck2,
   LayoutDashboard,
   LoaderCircle,
@@ -12,6 +13,7 @@ import {
   PackageSearch,
   UserRound,
   WalletCards,
+  X,
 } from "lucide-react";
 
 import { LoginPanel } from "@/components/account/login-panel";
@@ -61,7 +63,7 @@ export function AccountShell({
   children: React.ReactNode;
 }) {
   const pathname = usePathname();
-  const { user, logout } = useAccount();
+  const { user, logout, notice, clearNotice } = useAccount();
 
   return (
     <div className="grid gap-6 lg:grid-cols-[16rem_minmax(0,1fr)]">
@@ -126,6 +128,25 @@ export function AccountShell({
             {description}
           </p>
         </header>
+        {notice ? (
+          <div
+            className="mb-5 flex items-start gap-3 rounded-3xl border border-highlight/30 bg-highlight/10 p-4 text-sm leading-7"
+            role="status"
+          >
+            <AlertTriangle className="mt-1 size-5 shrink-0 text-highlight-foreground" />
+            <p className="flex-1">{notice}</p>
+            <Button
+              type="button"
+              size="icon"
+              variant="ghost"
+              className="-m-1 shrink-0"
+              aria-label="بستن پیام"
+              onClick={clearNotice}
+            >
+              <X />
+            </Button>
+          </div>
+        ) : null}
         {children}
       </section>
     </div>

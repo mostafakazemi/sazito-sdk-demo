@@ -38,7 +38,7 @@ interface CommerceContextValue {
     cartProductId: number | string,
     variantId: number,
   ): Promise<CartOperationResult>;
-  refreshCart(): Promise<void>;
+  refreshCart(): Promise<CartOperationResult>;
   syncCart(cart: Cart | null): void;
 }
 
@@ -94,28 +94,51 @@ export function CommerceProvider({
     setCart(nextCart);
   }, []);
 
-  const refreshCart = React.useCallback(async () => {
-    const credentials = client.getCredentialsManager().getCartCredentials();
+  const refreshCart = React.useCallback(async (): Promise<CartOperationResult> => {
+    const credentialsManager = client.getCredentialsManager();
+    const credentials = credentialsManager.getCartCredentials();
 
     if (!credentials) {
       setCart(null);
       setIsLoading(false);
-      return;
+      return { ok: true };
     }
 
     setIsLoading(true);
-    const response = await client.cart.get({ cache: false });
 
-    if (response.error) {
-      if (response.error.status === 404) {
-        client.cart.clearCart();
-        setCart(null);
+    try {
+      const response = await client.cart.get({ cache: false });
+
+      if (response.error) {
+        if (response.error.status === 404) {
+          client.cart.clearCart();
+          setCart(null);
+        } else {
+          credentialsManager.setCartCredentials(credentials);
+        }
+
+        return { ok: false, message: cartErrorMessage(response.error) };
       }
-    } else {
-      setCart(response.data ?? null);
-    }
 
-    setIsLoading(false);
+      if (!response.data) {
+        credentialsManager.setCartCredentials(credentials);
+        return {
+          ok: false,
+          message: "سبد خرید از فروشگاه دریافت نشد.",
+        };
+      }
+
+      setCart(response.data);
+      return { ok: true };
+    } catch {
+      credentialsManager.setCartCredentials(credentials);
+      return {
+        ok: false,
+        message: "ارتباط با فروشگاه برقرار نشد. دوباره تلاش کنید.",
+      };
+    } finally {
+      setIsLoading(false);
+    }
   }, [client]);
 
   React.useEffect(() => {
