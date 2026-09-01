@@ -4,6 +4,7 @@ import { AccountProvider } from "@/components/account/account-provider";
 import { CommerceProvider } from "@/components/commerce/commerce-provider";
 import { StoreFooter } from "@/components/store/store-footer";
 import { StoreHeader } from "@/components/store/store-header";
+import { StoreVisitTracker } from "@/components/store/store-visit-tracker";
 import { storefrontOrigin } from "@/lib/seo";
 import { sazitoStoreDomain } from "@/lib/sazito/client";
 import { getStoreChrome } from "@/lib/sazito/data";
@@ -57,6 +58,7 @@ export default async function RootLayout({
       <body className="flex min-h-screen flex-col antialiased">
         <CommerceProvider domain={sazitoStoreDomain}>
           <AccountProvider>
+            <StoreVisitTracker />
             <StoreHeader store={store} />
             <main className="flex-1">{children}</main>
             <StoreFooter store={store} />

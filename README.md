@@ -71,6 +71,7 @@ contains the shared secret.
 - Guest cart, post-login cart merging, dynamic product forms, shipping, payment, and checkout return flow
 - Customer login, password recovery, verified mobile changes, profile, addresses, orders, bookings, and wallet activity
 - Authenticated order ratings and optional product reviews with image attachments
+- Session-deduplicated storefront visit registration through the Sazito SDK
 - Five-minute server caching with authenticated on-demand invalidation
 - Persian metadata, safe product/store JSON-LD, image sitemap, and crawler rules
 - Responsive RTL UI using Estedad, Tailwind CSS 4, and shadcn/ui primitives
