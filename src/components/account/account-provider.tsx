@@ -10,6 +10,10 @@ import {
   normalizeMobileInput,
   normalizeOtpInput,
 } from "@/lib/sazito/account";
+import {
+  passwordResetErrorMessage,
+  validatePasswordResetInput,
+} from "@/lib/sazito/password-reset";
 
 type AccountStatus = "loading" | "anonymous" | "authenticated";
 type AccountResult = { ok: true } | { ok: false; message: string };
@@ -37,6 +41,11 @@ interface AccountContextValue {
   verifyMobileOtp(mobilePhone: string, token: string): Promise<AccountResult>;
   registerWithEmail(input: AccountRegistrationInput): Promise<AccountResult>;
   requestPasswordReset(email: string): Promise<AccountResult>;
+  resetPassword(
+    forgotPasswordToken: string,
+    password: string,
+    passwordConfirmation: string,
+  ): Promise<AccountResult>;
   requestMobilePhoneUpdate(mobilePhone: string): Promise<AccountResult>;
   verifyMobilePhoneUpdate(
     mobilePhone: string,
@@ -261,6 +270,41 @@ export function AccountProvider({ children }: { children: React.ReactNode }) {
     [client],
   );
 
+  const resetPassword = React.useCallback(
+    async (
+      forgotPasswordToken: string,
+      password: string,
+      passwordConfirmation: string,
+    ): Promise<AccountResult> => {
+      const input = {
+        forgotPasswordToken: forgotPasswordToken.trim(),
+        password,
+        passwordConfirmation,
+      };
+      const validationMessage = validatePasswordResetInput(input);
+
+      if (validationMessage) {
+        return { ok: false, message: validationMessage };
+      }
+
+      const response = await client.users.revivePassword(input, {
+        cache: false,
+      });
+
+      if (response.error || !response.data?.jwt) {
+        return {
+          ok: false,
+          message: response.error
+            ? passwordResetErrorMessage(response.error)
+            : "پاسخ تکمیل بازیابی از فروشگاه دریافت نشد.",
+        };
+      }
+
+      return finishLogin(response.data.jwt, response.data.user);
+    },
+    [client, finishLogin],
+  );
+
   const requestMobilePhoneUpdate = React.useCallback(
     async (mobilePhone: string): Promise<AccountResult> => {
       const normalized = normalizeMobileInput(mobilePhone);
@@ -375,6 +419,7 @@ export function AccountProvider({ children }: { children: React.ReactNode }) {
       verifyMobileOtp,
       registerWithEmail,
       requestPasswordReset,
+      resetPassword,
       requestMobilePhoneUpdate,
       verifyMobilePhoneUpdate,
       updateProfile,
@@ -387,6 +432,7 @@ export function AccountProvider({ children }: { children: React.ReactNode }) {
       refreshUser,
       registerWithEmail,
       requestPasswordReset,
+      resetPassword,
       requestMobilePhoneUpdate,
       requestMobileOtp,
       status,

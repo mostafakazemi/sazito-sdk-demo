@@ -69,11 +69,19 @@ contains the shared secret.
 
 - Live homepage, categories, search, product detail, CMS, and blog pages
 - Guest cart, dynamic product forms, shipping, payment, and checkout return flow
-- Customer login, verified mobile changes, profile, addresses, orders, bookings, and wallet activity
+- Customer login, password recovery, verified mobile changes, profile, addresses, orders, bookings, and wallet activity
 - Authenticated order ratings and optional product-review submission
 - Five-minute server caching with authenticated on-demand invalidation
 - Persian metadata, safe product/store JSON-LD, image sitemap, and crawler rules
 - Responsive RTL UI using Estedad, Tailwind CSS 4, and shadcn/ui primitives
+
+### Password reset link
+
+The reset landing page accepts the SDK's documented camelCase token field:
+
+```text
+/account/reset-password?forgotPasswordToken=TOKEN_FROM_SAZITO
+```
 
 ### Live SDK validation
 
