@@ -69,7 +69,7 @@ contains the shared secret.
 
 - Live homepage, categories, search, product detail, CMS, and blog pages
 - Guest cart, dynamic product forms, shipping, payment, and checkout return flow
-- Customer login, registration, profile, saved addresses, and order history
+- Customer login, registration, profile, saved addresses, order history, and wallet activity
 - Authenticated order ratings and optional product-review submission
 - Five-minute server caching with authenticated on-demand invalidation
 - Persian metadata, safe product/store JSON-LD, image sitemap, and crawler rules
@@ -84,7 +84,8 @@ pnpm test:sdk:live
 ```
 
 This checks the live store identity, recursive header menu, category hierarchy,
-product listing, CMS/blog content, entity-route resolution, and search response. It
+product listing, CMS/blog content, entity-route resolution, search response, and
+anonymous protection for customer wallet data. It
 does not
 create carts, invoices, payments, or orders. The regular `pnpm test` command
 excludes this suite and does not require network access.

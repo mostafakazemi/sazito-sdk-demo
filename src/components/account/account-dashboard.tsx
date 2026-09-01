@@ -9,6 +9,7 @@ import {
   Phone,
   ShoppingBag,
   UserRound,
+  WalletCards,
 } from "lucide-react";
 
 import { AccountGate, AccountShell } from "@/components/account/account-shell";
@@ -27,6 +28,12 @@ const actions = [
     title: "سفارش‌های من",
     description: "مشاهده فهرست و جزئیات خریدهای ثبت‌شده",
     icon: PackageSearch,
+  },
+  {
+    href: "/account/wallet",
+    title: "کیف پول من",
+    description: "مشاهده موجودی و گردش اعتبار حساب",
+    icon: WalletCards,
   },
   {
     href: "/account/addresses",
@@ -56,7 +63,7 @@ function DashboardContent() {
       title="حساب کاربری"
       description="اطلاعات این بخش مستقیماً از حساب سازیتوی شما دریافت می‌شود."
     >
-      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
         {actions.map((action) => {
           const Icon = action.icon;
           return (
