@@ -3,6 +3,7 @@
 import Link from "next/link";
 import {
   ArrowLeft,
+  CalendarCheck2,
   Mail,
   MapPin,
   PackageSearch,
@@ -28,6 +29,12 @@ const actions = [
     title: "سفارش‌های من",
     description: "مشاهده فهرست و جزئیات خریدهای ثبت‌شده",
     icon: PackageSearch,
+  },
+  {
+    href: "/account/bookings",
+    title: "رزروهای من",
+    description: "مشاهده رویدادها و زمان‌های رزروشده",
+    icon: CalendarCheck2,
   },
   {
     href: "/account/wallet",

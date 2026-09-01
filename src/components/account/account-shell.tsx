@@ -4,6 +4,7 @@ import * as React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
+  CalendarCheck2,
   LayoutDashboard,
   LoaderCircle,
   LogOut,
@@ -22,6 +23,7 @@ import { cn } from "@/lib/utils";
 const navigation = [
   { href: "/account", label: "نمای کلی", icon: LayoutDashboard },
   { href: "/account/orders", label: "سفارش‌ها", icon: PackageSearch },
+  { href: "/account/bookings", label: "رزروها", icon: CalendarCheck2 },
   { href: "/account/wallet", label: "کیف پول", icon: WalletCards },
   { href: "/account/addresses", label: "نشانی‌ها", icon: MapPin },
   { href: "/account/profile", label: "پروفایل", icon: UserRound },

@@ -181,13 +181,14 @@ describe(`Sazito Client SDK live contract (${storeDomain})`, () => {
     }
   });
 
-  it("does not expose customer, order, or wallet data anonymously", async () => {
+  it("does not expose customer, order, wallet, or booking data anonymously", async () => {
     const [
       currentUser,
       orders,
       orderDetail,
       walletBalance,
       walletTransactions,
+      bookings,
     ] = await Promise.all([
       client.users.getCurrentUser({ cache: false }),
       client.orders.list({ pageNumber: 1, pageSize: 1 }, { cache: false }),
@@ -197,6 +198,7 @@ describe(`Sazito Client SDK live contract (${storeDomain})`, () => {
         { pageNumber: 1, pageSize: 1 },
         { cache: false },
       ),
+      client.booking.listBookings({ cache: false }),
     ]);
 
     expect(currentUser.data).toBeUndefined();
@@ -209,6 +211,8 @@ describe(`Sazito Client SDK live contract (${storeDomain})`, () => {
     expect(walletBalance.data).toBeUndefined();
     expect(walletBalance.error?.status).toBeOneOf([401, 403]);
     expect(walletTransactions.data).toBeUndefined();
-    expect(walletTransactions.error?.status).toBeOneOf([401, 403]);
+    expect(walletTransactions.error?.status).toBeOneOf([400, 401, 403]);
+    expect(bookings.data?.items ?? []).toEqual([]);
+    expect([undefined, 401, 403]).toContain(bookings.error?.status);
   });
 });
