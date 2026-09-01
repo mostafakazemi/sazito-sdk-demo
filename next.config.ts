@@ -7,7 +7,7 @@ const nextConfig: NextConfig = {
       {
         protocol: "https",
         hostname: "oss.sazito.com",
-        pathname: "/apiuploads/testmosi/**",
+        pathname: "/apiuploads/*/**",
       },
     ],
   },
