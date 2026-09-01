@@ -1,4 +1,11 @@
+import { loadEnvFile } from "node:process";
 import { defineConfig } from "vitest/config";
+
+try {
+  loadEnvFile(".env.local");
+} catch (error) {
+  if (error?.code !== "ENOENT") throw error;
+}
 
 export default defineConfig({
   test: {

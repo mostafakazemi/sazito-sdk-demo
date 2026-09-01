@@ -83,12 +83,33 @@ Run the opt-in, read-only contract suite against `SAZITO_STORE_DOMAIN` with:
 pnpm test:sdk:live
 ```
 
-This checks the live store identity, recursive header menu, category hierarchy,
-product listing, CMS/blog content, entity-route resolution, search response, and
-anonymous protection for customer wallet data. It
-does not
-create carts, invoices, payments, or orders. The regular `pnpm test` command
-excludes this suite and does not require network access.
+This always checks the live store identity, recursive header menu, category
+hierarchy, product listing, CMS/blog content, entity-route resolution, search
+response, and anonymous protection for customer data.
+
+To also validate authenticated read-only resources, add a dedicated test
+account to the uncommitted `.env.local` file:
+
+```dotenv
+SAZITO_LIVE_TEST_EMAIL=customer@example.com
+SAZITO_LIVE_TEST_PASSWORD=replace-with-test-account-password
+```
+
+Both variables are required together. When they are absent, the authenticated
+suite is reported as skipped instead of failing. It performs one login request,
+then GET-only checks for the current user, orders, saved addresses, wallet
+balance, and wallet transactions. It does not create or modify customer data,
+and booking lifecycle tests are excluded while that work is paused.
+
+The live suites do not create carts, invoices, payments, bookings, or orders.
+The regular `pnpm test` command excludes them and does not require network
+access.
+
+### Intentionally paused
+
+- Further booking development, including availability, creation, and cancellation
+- Replacing the temporary catalog attribute filters with SDK-backed values
+- Deployment and production-domain configuration
 
 ## Verification
 
