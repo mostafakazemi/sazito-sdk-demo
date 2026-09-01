@@ -23,11 +23,11 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import {
+  bookingListErrorMessage,
   bookingStatusClassName,
   bookingStatusLabel,
   formatBookingDateTime,
 } from "@/lib/sazito/booking";
-import { accountErrorMessage } from "@/lib/sazito/account";
 import { formatPrice } from "@/lib/sazito/presenters";
 import { cn } from "@/lib/utils";
 
@@ -142,17 +142,14 @@ function BookingsList() {
         if (signal?.aborted) return;
 
         if (response.error || !response.data) {
-          if (response.error?.status === 401 || response.error?.status === 403) {
+          if (response.error?.status === 401) {
             logout();
             return;
           }
 
           setError(
             response.error
-              ? accountErrorMessage(
-                  response.error,
-                  "رزروها از فروشگاه دریافت نشد.",
-                )
+              ? bookingListErrorMessage(response.error)
               : "رزروها از فروشگاه دریافت نشد.",
           );
           return;

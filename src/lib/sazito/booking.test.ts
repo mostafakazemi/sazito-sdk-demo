@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import {
+  bookingListErrorMessage,
   bookingStatusClassName,
   bookingStatusLabel,
   formatBookingDateTime,
@@ -24,5 +25,25 @@ describe("booking presentation", () => {
     expect(formatBookingDateTime("2026-08-31T10:30:00Z")).not.toBe("");
     expect(formatBookingDateTime("not-a-date")).toBe("");
     expect(formatBookingDateTime()).toBe("");
+  });
+
+  it("shows a booking-specific permission message for 403 errors", () => {
+    expect(
+      bookingListErrorMessage({
+        type: "api",
+        status: 403,
+        message: "Forbidden",
+      }),
+    ).toBe("اجازه مشاهده رزروها برای این حساب وجود ندارد.");
+  });
+
+  it("uses the shared error normalization for other booking errors", () => {
+    expect(
+      bookingListErrorMessage({
+        type: "api",
+        status: 500,
+        message: "خطای آزمایشی",
+      }),
+    ).toBe("خطای آزمایشی");
   });
 });

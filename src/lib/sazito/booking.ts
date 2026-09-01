@@ -1,4 +1,9 @@
+import { sazitoErrorMessage, type SazitoError } from "./error";
+
 export type BookingStatus = "pending" | "confirmed" | "cancelled";
+
+const BOOKING_LIST_FORBIDDEN_MESSAGE =
+  "اجازه مشاهده رزروها برای این حساب وجود ندارد.";
 
 const STATUS_LABELS: Record<BookingStatus, string> = {
   pending: "در انتظار تأیید",
@@ -29,4 +34,10 @@ export function bookingStatusClassName(status: string) {
   if (status === "confirmed") return "bg-primary/10 text-primary";
   if (status === "cancelled") return "bg-danger/10 text-danger";
   return "bg-highlight/15 text-highlight-foreground";
+}
+
+export function bookingListErrorMessage(error: SazitoError) {
+  if (error.status === 403) return BOOKING_LIST_FORBIDDEN_MESSAGE;
+
+  return sazitoErrorMessage(error, "رزروها از فروشگاه دریافت نشد.");
 }
