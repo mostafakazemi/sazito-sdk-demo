@@ -17,6 +17,8 @@ export interface StoreChrome {
   faviconUrl: string | null;
   navigation: StoreLink[];
   socials: StoreSocialLink[];
+  searchEnabled: boolean;
+  blogEnabled: boolean;
 }
 
 export interface ProductImageView {

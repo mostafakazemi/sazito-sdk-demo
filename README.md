@@ -72,6 +72,7 @@ contains the shared secret.
 - Customer login, password recovery, verified mobile changes, profile, addresses, orders, bookings, and wallet activity
 - Authenticated order ratings and optional product reviews with image attachments
 - Session-deduplicated storefront visit registration through the Sazito SDK
+- SDK feature-aware search and blog navigation visibility with safe fallbacks
 - Five-minute server caching with authenticated on-demand invalidation
 - Persian metadata, safe product/store JSON-LD, image sitemap, and crawler rules
 - Responsive RTL UI using Estedad, Tailwind CSS 4, and shadcn/ui primitives

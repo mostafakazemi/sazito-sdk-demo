@@ -89,7 +89,7 @@ export function StoreHeader({ store }: { store: StoreChrome }) {
         </nav>
 
         <div className="mr-auto flex shrink-0 items-center gap-1.5 sm:gap-2 xl:mr-0">
-          <StoreSearch />
+          {store.searchEnabled ? <StoreSearch /> : null}
           <AccountButton />
           <CartButton />
         </div>

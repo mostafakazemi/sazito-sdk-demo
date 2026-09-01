@@ -47,6 +47,11 @@ interface GeneralInfoInput {
       whatsapp: string;
     };
   };
+  settings?: {
+    features?: {
+      [featureName: string]: boolean | object | undefined;
+    };
+  };
 }
 
 interface ReviewCollectionInput {
@@ -221,6 +226,26 @@ function withBlogIndexLink(
   ];
 }
 
+function withoutBlogLinks(items: StoreLink[]): StoreLink[] {
+  return items.flatMap((item) => {
+    let pathname = item.href;
+    try {
+      pathname = new URL(item.href, "https://storefront.local").pathname;
+    } catch {
+      // Keep the original value for the path check below.
+    }
+
+    if (pathname === "/blog" || pathname.startsWith("/blog/")) return [];
+
+    return [
+      {
+        ...item,
+        children: withoutBlogLinks(item.children),
+      },
+    ];
+  });
+}
+
 export function toStoreChrome(
   info: GeneralInfoInput | undefined,
   menu: MenuItem[] | undefined,
@@ -229,6 +254,11 @@ export function toStoreChrome(
 ): StoreChrome {
   const localContentPaths = new Set(
     localContentUrls.map((url) => decodedPathname(url.split(/[?#]/, 1)[0])),
+  );
+  const searchEnabled = info?.settings?.features?.searchEnabled !== false;
+  const blogEnabled = info?.settings?.features?.blogEnabled !== false;
+  const menuLinks = (menu ?? []).map((item) =>
+    toStoreLink(item, storeOrigin, localContentPaths),
   );
   const socialLabels: Record<string, string> = {
     instagram: "اینستاگرام",
@@ -261,13 +291,12 @@ export function toStoreChrome(
       nonEmpty(info?.shop.description) ?? FALLBACK_STORE_DESCRIPTION,
     logoUrl: normalizeStoreAssetUrl(info?.shop.logo.main, storeOrigin),
     faviconUrl: normalizeStoreAssetUrl(info?.shop.logo.favicon, storeOrigin),
-    navigation: withBlogIndexLink(
-      (menu ?? []).map((item) =>
-        toStoreLink(item, storeOrigin, localContentPaths),
-      ),
-      localContentPaths,
-    ),
+    navigation: blogEnabled
+      ? withBlogIndexLink(menuLinks, localContentPaths)
+      : withoutBlogLinks(menuLinks),
     socials,
+    searchEnabled,
+    blogEnabled,
   };
 }
 

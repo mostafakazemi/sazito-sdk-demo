@@ -120,6 +120,54 @@ describe("store URL routing", () => {
     expect(chrome.navigation.filter((item) => item.href === "/blog")).toHaveLength(1);
   });
 
+  it("uses safe enabled defaults when store feature settings are unavailable", () => {
+    const chrome = toStoreChrome(
+      undefined,
+      [],
+      "https://testmosi.sazito.com",
+    );
+
+    expect(chrome.searchEnabled).toBe(true);
+    expect(chrome.blogEnabled).toBe(true);
+  });
+
+  it("removes nested blog navigation and disables search from live flags", () => {
+    const chrome = toStoreChrome(
+      {
+        shop: {
+          name: "فروشگاه تست",
+          description: "توضیحات",
+          logo: { main: "", favicon: "" },
+          social: {
+            facebook: "",
+            instagram: "",
+            phone1: "",
+            phone2: "",
+            telegram: "",
+            twitter: "",
+            whatsapp: "",
+          },
+        },
+        settings: {
+          features: { searchEnabled: false, blogEnabled: false },
+        },
+      },
+      [
+        {
+          name: "مطالب",
+          url: "/content",
+          children: [{ name: "وبلاگ", url: "/blog/post", children: [] }],
+        },
+      ],
+      "https://testmosi.sazito.com",
+      ["/blog/post"],
+    );
+
+    expect(chrome.searchEnabled).toBe(false);
+    expect(chrome.blogEnabled).toBe(false);
+    expect(chrome.navigation[0]?.children).toEqual([]);
+  });
+
   it("falls unsupported relative URLs back to the current Sazito theme", () => {
     expect(normalizeStoreHref("/blog/sample")).toEqual({
       href: "https://testmosi.sazito.com/blog/sample",

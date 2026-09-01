@@ -22,6 +22,8 @@ const store: StoreChrome = {
   faviconUrl: null,
   navigation: [],
   socials: [],
+  searchEnabled: true,
+  blogEnabled: true,
 };
 
 const product: ProductDetailView = {
