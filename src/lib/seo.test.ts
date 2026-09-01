@@ -1,8 +1,14 @@
 import { describe, expect, it } from "vitest";
 
-import type { ProductDetailView, StoreChrome } from "./sazito/types";
+import type {
+  CmsPageView,
+  ProductDetailView,
+  StoreChrome,
+} from "./sazito/types";
 import {
   absoluteStorefrontUrl,
+  buildCmsPageJsonLd,
+  buildContentListJsonLd,
   buildProductJsonLd,
   localStorefrontPath,
   resolveStorefrontOrigin,
@@ -51,6 +57,22 @@ const product: ProductDetailView = {
   canonicalHref: "/product/test",
 };
 
+const cmsPage: CmsPageView = {
+  id: 2,
+  title: "نوشته تست",
+  href: "/blog/test",
+  type: "blog",
+  summary: "خلاصه نوشته",
+  contentHtml: "<p>متن نوشته</p>",
+  image: null,
+  createdAt: "2026-08-01T00:00:00Z",
+  updatedAt: "2026-08-02T00:00:00Z",
+  metaTitle: "نوشته تست",
+  metaDescription: "خلاصه نوشته",
+  canonicalHref: "/blog/test",
+  noIndex: false,
+};
+
 describe("storefront SEO URLs", () => {
   it("normalizes deployment origins and relative URLs", () => {
     expect(resolveStorefrontOrigin("shop.example.com/path")).toBe(
@@ -94,5 +116,22 @@ describe("JSON-LD", () => {
       priceCurrency: "IRR",
       availability: "https://schema.org/InStock",
     });
+  });
+
+  it("publishes CMS pages and blog indexes with native URLs", () => {
+    const pageSchema = buildCmsPageJsonLd(cmsPage, store);
+    const listSchema = buildContentListJsonLd("وبلاگ", [cmsPage]);
+
+    expect(pageSchema).toMatchObject({
+      "@type": "BlogPosting",
+      name: "نوشته تست",
+      datePublished: "2026-08-01T00:00:00Z",
+    });
+    expect(listSchema.itemListElement).toEqual([
+      expect.objectContaining({
+        position: 1,
+        name: "نوشته تست",
+      }),
+    ]);
   });
 });

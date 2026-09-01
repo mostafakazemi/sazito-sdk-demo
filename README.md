@@ -67,7 +67,7 @@ contains the shared secret.
 
 ## Included flows
 
-- Live homepage, categories, search, and product detail pages
+- Live homepage, categories, search, product detail, CMS, and blog pages
 - Guest cart, dynamic product forms, shipping, payment, and checkout return flow
 - Customer login, registration, profile, saved addresses, and order history
 - Authenticated order ratings and optional product-review submission
@@ -84,7 +84,8 @@ pnpm test:sdk:live
 ```
 
 This checks the live store identity, recursive header menu, category hierarchy,
-product listing, entity-route resolution, and search response. It does not
+product listing, CMS/blog content, entity-route resolution, and search response. It
+does not
 create carts, invoices, payments, or orders. The regular `pnpm test` command
 excludes this suite and does not require network access.
 

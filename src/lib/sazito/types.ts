@@ -134,6 +134,27 @@ export interface HomePageData {
   hasCatalogError: boolean;
 }
 
+export interface CmsPageView {
+  id: number | null;
+  title: string;
+  href: string;
+  type: "normal" | "blog";
+  summary: string;
+  contentHtml: string;
+  image: ProductImageView | null;
+  createdAt: string;
+  updatedAt: string;
+  metaTitle: string;
+  metaDescription: string;
+  canonicalHref: string;
+  noIndex: boolean;
+}
+
+export interface BlogIndexData {
+  posts: CmsPageView[];
+  total: number;
+}
+
 export interface SitemapEntryView {
   href: string;
   updatedAt: string | null;
@@ -143,4 +164,5 @@ export interface SitemapEntryView {
 export interface SitemapCatalogData {
   categories: SitemapEntryView[];
   products: SitemapEntryView[];
+  content: SitemapEntryView[];
 }

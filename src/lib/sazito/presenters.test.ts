@@ -71,6 +71,55 @@ describe("store URL routing", () => {
     });
   });
 
+  it("keeps only known CMS destinations inside Next.js", () => {
+    const localContent = new Set(["/blog/sample", "/درباره-ما"]);
+
+    expect(
+      normalizeStoreHref(
+        "/blog/sample",
+        "https://testmosi.sazito.com",
+        localContent,
+      ),
+    ).toEqual({ href: "/blog/sample", external: false });
+    expect(
+      normalizeStoreHref(
+        "https://testmosi.sazito.com/درباره-ما",
+        "https://testmosi.sazito.com",
+        localContent,
+      ),
+    ).toEqual({ href: "/درباره-ما", external: false });
+  });
+
+  it("adds one native blog index link beside home when blog posts exist", () => {
+    const menu = [
+      { name: "خانه", url: "/", children: [] },
+      { name: "وبلاگ ۱", url: "/blog/وبلاگ-۱", children: [] },
+    ];
+    const chrome = toStoreChrome(
+      undefined,
+      menu,
+      "https://testmosi.sazito.com",
+      ["/blog/وبلاگ-۱"],
+    );
+
+    expect(chrome.navigation.map(({ label, href }) => ({ label, href }))).toEqual([
+      { label: "خانه", href: "/" },
+      { label: "وبلاگ", href: "/blog" },
+      { label: "وبلاگ ۱", href: "/blog/وبلاگ-۱" },
+    ]);
+  });
+
+  it("does not duplicate a blog index supplied by Sazito", () => {
+    const chrome = toStoreChrome(
+      undefined,
+      [{ name: "وبلاگ", url: "/blog", children: [] }],
+      "https://testmosi.sazito.com",
+      ["/blog/وبلاگ-۱"],
+    );
+
+    expect(chrome.navigation.filter((item) => item.href === "/blog")).toHaveLength(1);
+  });
+
   it("falls unsupported relative URLs back to the current Sazito theme", () => {
     expect(normalizeStoreHref("/blog/sample")).toEqual({
       href: "https://testmosi.sazito.com/blog/sample",

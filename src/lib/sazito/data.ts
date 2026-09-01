@@ -12,7 +12,9 @@ import { localStorefrontPath } from "@/lib/seo";
 
 import { sazitoCacheConfig } from "./cache";
 import { sazitoClient, sazitoStoreDomain, sazitoStoreOrigin } from "./client";
+import { toCmsPageView } from "./cms";
 import {
+  normalizeStoreAssetUrl,
   toCategory,
   toHomePageData,
   toProductCollection,
@@ -21,8 +23,10 @@ import {
 } from "./presenters";
 import { SazitoDataError, unwrapSazitoResponse } from "./response";
 import type {
+  BlogIndexData,
   CategoryPageData,
   CategoryView,
+  CmsPageView,
   HomePageData,
   ProductDetailView,
   SearchPageData,
@@ -50,6 +54,61 @@ const getHeaderMenu = unstable_cache(
   ["sazito-header-menu", sazitoStoreDomain],
   sazitoCacheConfig,
 );
+
+const getCmsContent = unstable_cache(
+  async () => {
+    const [pagesResponse, blogPostsResponse] = await Promise.all([
+      sazitoClient.cms.listPages(
+        { page: 1, pageSize: 100 },
+        { cache: false },
+      ),
+      sazitoClient.cms.listBlogPosts(
+        { page: 1, pageSize: 100 },
+        { cache: false },
+      ),
+    ]);
+    const pages = unwrapSazitoResponse(
+      pagesResponse,
+      "دریافت محتوای فروشگاه ناموفق بود.",
+    );
+    const blogPosts = unwrapSazitoResponse(
+      blogPostsResponse,
+      "دریافت نوشته‌های وبلاگ ناموفق بود.",
+    );
+
+    return { items: [...pages.items, ...blogPosts.items] };
+  },
+  ["sazito-cms-content-v2", sazitoStoreDomain],
+  sazitoCacheConfig,
+);
+
+const getCmsPageByPath = unstable_cache(
+  async (path: string) =>
+    unwrapSazitoResponse(
+      await sazitoClient.cms.getPage(path, { cache: false }),
+      "دریافت صفحه ناموفق بود.",
+    ),
+  ["sazito-cms-page", sazitoStoreDomain],
+  sazitoCacheConfig,
+);
+
+const getBlogPostByPath = unstable_cache(
+  async (path: string) =>
+    unwrapSazitoResponse(
+      await sazitoClient.cms.getBlogPost(path, { cache: false }),
+      "دریافت نوشته وبلاگ ناموفق بود.",
+    ),
+  ["sazito-blog-post", sazitoStoreDomain],
+  sazitoCacheConfig,
+);
+
+function isMissingCmsContent(error: unknown) {
+  return (
+    (error instanceof SazitoDataError && error.status === 404) ||
+    (error instanceof Error &&
+      /^Expected (CMS page|blog post)/.test(error.message))
+  );
+}
 
 const getCategories = unstable_cache(
   async () =>
@@ -262,15 +321,20 @@ function valueOf<T>(result: PromiseSettledResult<T>) {
 }
 
 export async function getStoreChrome(): Promise<StoreChrome> {
-  const [info, menu] = await Promise.allSettled([
+  const [info, menu, content] = await Promise.allSettled([
     getGeneralInfo(),
     getHeaderMenu(),
+    getCmsContent(),
   ]);
+  const localContentUrls = (valueOf(content)?.items ?? [])
+    .filter((page) => page.enabled !== false)
+    .map((page) => page.url);
 
   return toStoreChrome(
     valueOf(info),
     valueOf(menu),
     sazitoStoreOrigin,
+    localContentUrls,
   );
 }
 
@@ -401,12 +465,53 @@ export async function getProductPageData(
   );
 }
 
+export async function getCmsPageData(
+  path: string,
+): Promise<CmsPageView | null> {
+  try {
+    const page = await getCmsPageByPath(path);
+    if (page.enabled === false || page.cmsPageType === "blog") return null;
+    return toCmsPageView(page, sazitoStoreOrigin);
+  } catch (error) {
+    if (isMissingCmsContent(error)) return null;
+    throw error;
+  }
+}
+
+export async function getBlogPostData(
+  path: string,
+): Promise<CmsPageView | null> {
+  try {
+    const page = await getBlogPostByPath(path);
+    if (page.enabled === false || page.cmsPageType !== "blog") return null;
+    return toCmsPageView(page, sazitoStoreOrigin);
+  } catch (error) {
+    if (isMissingCmsContent(error)) return null;
+    throw error;
+  }
+}
+
+export async function getBlogIndexData(): Promise<BlogIndexData> {
+  const content = await getCmsContent();
+  const posts = content.items
+    .filter((page) => page.enabled !== false && page.cmsPageType === "blog")
+    .map((page) => toCmsPageView(page, sazitoStoreOrigin))
+    .sort((first, second) => second.createdAt.localeCompare(first.createdAt));
+
+  return { posts, total: posts.length };
+}
+
 export async function getSitemapCatalogData(): Promise<SitemapCatalogData> {
-  const [categoryResult, productResult] = await Promise.allSettled([
+  const [categoryResult, productResult, contentResult] = await Promise.allSettled([
     getCategories(),
     getSitemapProducts(),
+    getCmsContent(),
   ]);
-  if (categoryResult.status === "rejected" && productResult.status === "rejected") {
+  if (
+    categoryResult.status === "rejected" &&
+    productResult.status === "rejected" &&
+    contentResult.status === "rejected"
+  ) {
     throw categoryResult.reason;
   }
 
@@ -434,9 +539,27 @@ export async function getSitemapCatalogData(): Promise<SitemapCatalogData> {
       },
     ];
   });
+  const contentItems =
+    contentResult.status === "fulfilled" ? contentResult.value.items : [];
+  const content = contentItems.flatMap((page) => {
+    if (page.enabled === false) return [];
+    const href = localStorefrontPath(page.url, sazitoStoreOrigin);
+    if (!href) return [];
+
+    return [
+      {
+        href,
+        updatedAt: page.updatedAt || page.createdAt || null,
+        imageUrl:
+          normalizeStoreAssetUrl(page.image?.url, sazitoStoreOrigin) ??
+          undefined,
+      },
+    ];
+  });
 
   return {
     categories: [...new Map(categories.map((entry) => [entry.href, entry])).values()],
     products: [...new Map(products.map((entry) => [entry.href, entry])).values()],
+    content: [...new Map(content.map((entry) => [entry.href, entry])).values()],
   };
 }

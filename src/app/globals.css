@@ -168,6 +168,88 @@ button {
   text-underline-offset: 4px;
 }
 
+.cms-rich-text {
+  color: var(--foreground);
+  font-size: 0.95rem;
+  line-height: 2.15;
+}
+
+.cms-rich-text > * + * {
+  margin-top: 1.15rem;
+}
+
+.cms-rich-text h2,
+.cms-rich-text h3,
+.cms-rich-text h4 {
+  margin-top: 2rem;
+  color: var(--foreground);
+  font-weight: 900;
+  line-height: 1.7;
+}
+
+.cms-rich-text h2 { font-size: 1.55rem; }
+.cms-rich-text h3 { font-size: 1.3rem; }
+.cms-rich-text h4 { font-size: 1.1rem; }
+
+.cms-rich-text ul,
+.cms-rich-text ol {
+  padding-right: 1.5rem;
+}
+
+.cms-rich-text ul { list-style: disc; }
+.cms-rich-text ol { list-style: decimal; }
+
+.cms-rich-text a {
+  color: var(--primary);
+  font-weight: 700;
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+
+.cms-rich-text blockquote {
+  border-right: 0.25rem solid var(--highlight);
+  border-radius: 0.75rem;
+  background: color-mix(in srgb, var(--accent) 55%, transparent);
+  padding: 1rem 1.25rem;
+}
+
+.cms-rich-text pre {
+  direction: ltr;
+  overflow-x: auto;
+  border-radius: 1rem;
+  background: var(--foreground);
+  padding: 1rem;
+  color: var(--card);
+  text-align: left;
+}
+
+.cms-rich-text img {
+  max-width: 100%;
+  height: auto;
+  margin-inline: auto;
+  border-radius: 1.25rem;
+}
+
+.cms-rich-text table {
+  display: block;
+  max-width: 100%;
+  overflow-x: auto;
+  border-collapse: collapse;
+}
+
+.cms-rich-text th,
+.cms-rich-text td {
+  min-width: 8rem;
+  border: 1px solid var(--border);
+  padding: 0.75rem;
+  text-align: right;
+}
+
+.cms-rich-text th {
+  background: var(--secondary);
+  font-weight: 800;
+}
+
 @keyframes sheet-overlay-in {
   from { opacity: 0; }
   to { opacity: 1; }

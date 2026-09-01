@@ -145,6 +145,42 @@ describe(`Sazito Client SDK live contract (${storeDomain})`, () => {
     expect(result.productCategories.items).toBeInstanceOf(Array);
   });
 
+  it("lists and resolves CMS pages and blog posts", async () => {
+    const [pages, blogPosts] = await Promise.all([
+      client.cms.listPages({ page: 1, pageSize: 100 }, { cache: false }),
+      client.cms.listBlogPosts({ page: 1, pageSize: 100 }, { cache: false }),
+    ]);
+    const page = unwrapLiveResponse(pages, "cms.listPages").items.find(
+      (item) => item.enabled !== false,
+    );
+    const blogPost = unwrapLiveResponse(
+      blogPosts,
+      "cms.listBlogPosts",
+    ).items.find((item) => item.enabled !== false);
+
+    expect(page?.url).toMatch(/^\//);
+    expect(blogPost?.url).toMatch(/^\/blog\//);
+
+    if (!page || !blogPost) return;
+
+    const [pageDetail, blogPostDetail] = [
+      unwrapLiveResponse(
+        await client.cms.getPage(page.url, { cache: false }),
+        "cms.getPage",
+      ),
+      unwrapLiveResponse(
+        await client.cms.getBlogPost(blogPost.url, { cache: false }),
+        "cms.getBlogPost",
+      ),
+    ];
+
+    for (const detail of [pageDetail, blogPostDetail]) {
+      const liveTitle =
+        (detail as typeof detail & { title?: string }).title ?? detail.name;
+      expect(liveTitle?.trim()).toBeTruthy();
+    }
+  });
+
   it("does not expose customer or order data to anonymous requests", async () => {
     const [currentUser, orders, orderDetail] = await Promise.all([
       client.users.getCurrentUser({ cache: false }),

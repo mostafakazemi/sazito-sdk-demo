@@ -1,6 +1,7 @@
 import sanitizeHtml from "sanitize-html";
 
 import type {
+  CmsPageView,
   ProductCardView,
   ProductDetailView,
   StoreChrome,
@@ -84,6 +85,34 @@ export function buildStoreJsonLd(store: StoreChrome): JsonLdObject {
     url: absoluteStorefrontUrl("/"),
     ...(store.logoUrl ? { logo: store.logoUrl, image: store.logoUrl } : {}),
     ...(sameAs.length ? { sameAs } : {}),
+  };
+}
+
+export function buildCmsPageJsonLd(
+  page: CmsPageView,
+  store: StoreChrome,
+): JsonLdObject {
+  const url = absoluteStorefrontUrl(page.href);
+
+  return {
+    "@context": "https://schema.org",
+    "@type": page.type === "blog" ? "BlogPosting" : "WebPage",
+    "@id": `${url}#content`,
+    name: page.title,
+    headline: page.title,
+    description: page.metaDescription,
+    url,
+    datePublished: page.createdAt,
+    dateModified: page.updatedAt,
+    publisher: {
+      "@type": "Organization",
+      "@id": `${storefrontOrigin}/#store`,
+      name: store.name,
+      ...(store.logoUrl
+        ? { logo: { "@type": "ImageObject", url: store.logoUrl } }
+        : {}),
+    },
+    ...(page.image ? { image: page.image.src } : {}),
   };
 }
 
@@ -183,6 +212,25 @@ export function buildProductListJsonLd(
       name: product.name,
       url: absoluteStorefrontUrl(product.href),
       ...(product.image ? { image: product.image.src } : {}),
+    })),
+  };
+}
+
+export function buildContentListJsonLd(
+  name: string,
+  pages: CmsPageView[],
+): JsonLdObject {
+  return {
+    "@context": "https://schema.org",
+    "@type": "ItemList",
+    name,
+    numberOfItems: pages.length,
+    itemListElement: pages.map((page, index) => ({
+      "@type": "ListItem",
+      position: index + 1,
+      name: page.title,
+      url: absoluteStorefrontUrl(page.href),
+      ...(page.image ? { image: page.image.src } : {}),
     })),
   };
 }

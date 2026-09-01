@@ -115,8 +115,6 @@ export function OrderReviewPanel({ order }: { order: Order }) {
     setPhase("loading");
     setMessage(null);
 
-    console.log(order)
-
     try {
       const response = await client.feedbacks.getSeed(order.orderIdentifier, {
         cache: false,

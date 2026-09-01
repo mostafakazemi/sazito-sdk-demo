@@ -81,7 +81,15 @@ function nonEmpty(value: string | undefined | null) {
   return trimmed ? trimmed : null;
 }
 
-function normalizeStoreAssetUrl(
+function decodedPathname(value: string) {
+  try {
+    return decodeURIComponent(value);
+  } catch {
+    return value;
+  }
+}
+
+export function normalizeStoreAssetUrl(
   value: string | undefined | null,
   storeOrigin: string,
 ) {
@@ -124,14 +132,32 @@ function attributeExtra(attribute: ProductAttribute) {
 export function normalizeStoreHref(
   url: string,
   storeOrigin = "https://testmosi.sazito.com",
+  localContentPaths: ReadonlySet<string> = new Set(),
 ): Pick<StoreLink, "href" | "external"> {
   const trimmed = url.trim() || "/";
 
   if (/^https?:\/\//i.test(trimmed)) {
+    try {
+      const resolved = new URL(trimmed);
+      const store = new URL(storeOrigin);
+      const pathname = decodedPathname(resolved.pathname);
+      if (
+        resolved.origin === store.origin &&
+        localContentPaths.has(pathname)
+      ) {
+        return {
+          href: `${pathname}${resolved.search}${resolved.hash}`,
+          external: false,
+        };
+      }
+    } catch {
+      // The original URL remains an external fallback.
+    }
     return { href: trimmed, external: true };
   }
 
   const path = trimmed.startsWith("/") ? trimmed : `/${trimmed}`;
+  const pathname = path.split(/[?#]/, 1)[0];
   const local =
     path === "/" ||
     path === "/search" ||
@@ -140,26 +166,70 @@ export function normalizeStoreHref(
     path.startsWith("/category/") ||
     path === "/account" ||
     path.startsWith("/account/") ||
-    path === "/checkout";
+    path === "/checkout" ||
+    path === "/blog" ||
+    localContentPaths.has(pathname);
 
   return local
     ? { href: path, external: false }
     : { href: `${storeOrigin}${path}`, external: true };
 }
 
-function toStoreLink(item: MenuItem, storeOrigin: string): StoreLink {
+function toStoreLink(
+  item: MenuItem,
+  storeOrigin: string,
+  localContentPaths: ReadonlySet<string>,
+): StoreLink {
   return {
     label: item.name,
-    ...normalizeStoreHref(item.url, storeOrigin),
-    children: item.children.map((child) => toStoreLink(child, storeOrigin)),
+    ...normalizeStoreHref(item.url, storeOrigin, localContentPaths),
+    children: item.children.map((child) =>
+      toStoreLink(child, storeOrigin, localContentPaths),
+    ),
   };
+}
+
+function hasNavigationHref(items: StoreLink[], href: string): boolean {
+  return items.some(
+    (item) =>
+      item.href === href || hasNavigationHref(item.children, href),
+  );
+}
+
+function withBlogIndexLink(
+  items: StoreLink[],
+  localContentPaths: ReadonlySet<string>,
+) {
+  const hasBlogPosts = [...localContentPaths].some((path) =>
+    path.startsWith("/blog/"),
+  );
+  if (!hasBlogPosts || hasNavigationHref(items, "/blog")) return items;
+
+  const blogIndex: StoreLink = {
+    label: "وبلاگ",
+    href: "/blog",
+    external: false,
+    children: [],
+  };
+  const homeIndex = items.findIndex((item) => item.href === "/");
+  const insertionIndex = homeIndex >= 0 ? homeIndex + 1 : 0;
+
+  return [
+    ...items.slice(0, insertionIndex),
+    blogIndex,
+    ...items.slice(insertionIndex),
+  ];
 }
 
 export function toStoreChrome(
   info: GeneralInfoInput | undefined,
   menu: MenuItem[] | undefined,
   storeOrigin: string,
+  localContentUrls: string[] = [],
 ): StoreChrome {
+  const localContentPaths = new Set(
+    localContentUrls.map((url) => decodedPathname(url.split(/[?#]/, 1)[0])),
+  );
   const socialLabels: Record<string, string> = {
     instagram: "اینستاگرام",
     telegram: "تلگرام",
@@ -191,7 +261,12 @@ export function toStoreChrome(
       nonEmpty(info?.shop.description) ?? FALLBACK_STORE_DESCRIPTION,
     logoUrl: normalizeStoreAssetUrl(info?.shop.logo.main, storeOrigin),
     faviconUrl: normalizeStoreAssetUrl(info?.shop.logo.favicon, storeOrigin),
-    navigation: (menu ?? []).map((item) => toStoreLink(item, storeOrigin)),
+    navigation: withBlogIndexLink(
+      (menu ?? []).map((item) =>
+        toStoreLink(item, storeOrigin, localContentPaths),
+      ),
+      localContentPaths,
+    ),
     socials,
   };
 }
