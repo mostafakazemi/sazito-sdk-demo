@@ -69,7 +69,7 @@ contains the shared secret.
 
 - Live homepage, categories, search, product detail, CMS, and blog pages
 - Guest cart, dynamic product forms, shipping, payment, and checkout return flow
-- Customer login, registration, profile, saved addresses, order history, and wallet activity
+- Customer login, registration, verified mobile changes, profile, addresses, orders, and wallet activity
 - Authenticated order ratings and optional product-review submission
 - Five-minute server caching with authenticated on-demand invalidation
 - Persian metadata, safe product/store JSON-LD, image sitemap, and crawler rules

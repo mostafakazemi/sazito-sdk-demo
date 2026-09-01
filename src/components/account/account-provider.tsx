@@ -37,6 +37,11 @@ interface AccountContextValue {
   verifyMobileOtp(mobilePhone: string, token: string): Promise<AccountResult>;
   registerWithEmail(input: AccountRegistrationInput): Promise<AccountResult>;
   requestPasswordReset(email: string): Promise<AccountResult>;
+  requestMobilePhoneUpdate(mobilePhone: string): Promise<AccountResult>;
+  verifyMobilePhoneUpdate(
+    mobilePhone: string,
+    token: string,
+  ): Promise<AccountResult>;
   updateProfile(input: AccountProfileInput): Promise<AccountResult>;
   refreshUser(): Promise<AccountResult>;
   logout(): void;
@@ -256,6 +261,86 @@ export function AccountProvider({ children }: { children: React.ReactNode }) {
     [client],
   );
 
+  const requestMobilePhoneUpdate = React.useCallback(
+    async (mobilePhone: string): Promise<AccountResult> => {
+      const normalized = normalizeMobileInput(mobilePhone);
+      if (!isIranianMobile(normalized)) {
+        return { ok: false, message: "شماره موبایل جدید معتبر نیست." };
+      }
+
+      const currentMobile = user?.mobilePhone || user?.phoneNumber;
+      if (
+        currentMobile &&
+        normalized === normalizeMobileInput(currentMobile)
+      ) {
+        return {
+          ok: false,
+          message: "شماره جدید با شماره فعلی حساب یکسان است.",
+        };
+      }
+
+      const response = await client.users.requestMobilePhoneUpdate(
+        { mobilePhone: normalized },
+        { cache: false },
+      );
+
+      if (response.error) {
+        if (response.error.status === 401 || response.error.status === 403) {
+          logout();
+        }
+
+        return {
+          ok: false,
+          message: accountErrorMessage(
+            response.error,
+            "ارسال کد تغییر شماره انجام نشد.",
+          ),
+        };
+      }
+
+      return { ok: true };
+    },
+    [client, logout, user],
+  );
+
+  const verifyMobilePhoneUpdate = React.useCallback(
+    async (mobilePhone: string, token: string): Promise<AccountResult> => {
+      const normalized = normalizeMobileInput(mobilePhone);
+      const normalizedToken = normalizeOtpInput(token);
+      if (!isIranianMobile(normalized) || !normalizedToken) {
+        return {
+          ok: false,
+          message: "شماره موبایل و کد تأیید را کامل کنید.",
+        };
+      }
+
+      const response = await client.users.verifyMobilePhoneUpdate(
+        { mobilePhone: normalized, token: normalizedToken },
+        { cache: false },
+      );
+
+      if (response.error || !response.data) {
+        if (response.error?.status === 401 || response.error?.status === 403) {
+          logout();
+        }
+
+        return {
+          ok: false,
+          message: response.error
+            ? accountErrorMessage(
+                response.error,
+                "تأیید شماره جدید انجام نشد.",
+              )
+            : "اطلاعات به‌روزشده حساب از فروشگاه دریافت نشد.",
+        };
+      }
+
+      setUser(response.data);
+      return { ok: true };
+    },
+    [client, logout],
+  );
+
   const updateProfile = React.useCallback(
     async (input: AccountProfileInput): Promise<AccountResult> => {
       if (!user?.id) {
@@ -290,6 +375,8 @@ export function AccountProvider({ children }: { children: React.ReactNode }) {
       verifyMobileOtp,
       registerWithEmail,
       requestPasswordReset,
+      requestMobilePhoneUpdate,
+      verifyMobilePhoneUpdate,
       updateProfile,
       refreshUser,
       logout,
@@ -300,10 +387,12 @@ export function AccountProvider({ children }: { children: React.ReactNode }) {
       refreshUser,
       registerWithEmail,
       requestPasswordReset,
+      requestMobilePhoneUpdate,
       requestMobileOtp,
       status,
       updateProfile,
       user,
+      verifyMobilePhoneUpdate,
       verifyMobileOtp,
     ],
   );

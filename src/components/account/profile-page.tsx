@@ -5,6 +5,7 @@ import { CheckCircle2, LoaderCircle, Save } from "lucide-react";
 
 import { useAccount } from "@/components/account/account-provider";
 import { AccountGate, AccountShell } from "@/components/account/account-shell";
+import { MobilePhoneUpdateCard } from "@/components/account/mobile-phone-update-card";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 
@@ -150,9 +151,12 @@ export function ProfilePage() {
     <AccountGate>
       <AccountShell
         title="اطلاعات حساب"
-        description="نام، ایمیل و تاریخ تولد حساب سازیتوی خود را ویرایش کنید."
+        description="اطلاعات فردی و شماره موبایل حساب سازیتوی خود را مدیریت کنید."
       >
-        <ProfileForm />
+        <div className="space-y-5">
+          <ProfileForm />
+          <MobilePhoneUpdateCard />
+        </div>
       </AccountShell>
     </AccountGate>
   );
