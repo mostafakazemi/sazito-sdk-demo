@@ -17,11 +17,32 @@ export interface ProductReviewDraft {
   cons: string;
   recommendationStatus: RecommendationStatus;
   isAnonymous: boolean;
+  attachments: ReviewAttachmentDraft[];
 }
+
+export interface ReviewAttachmentDraft {
+  id: string;
+  file: File;
+}
+
+interface ReviewImageFile {
+  name: string;
+  size: number;
+  type: string;
+}
+
+export const MAX_REVIEW_IMAGES = 5;
+export const MAX_REVIEW_IMAGE_BYTES = 5 * 1024 * 1024;
+export const REVIEW_IMAGE_TYPES = [
+  "image/jpeg",
+  "image/png",
+  "image/webp",
+] as const;
 
 export interface PendingOrderReview {
   commentId: string;
   submittedItemKeys: string[];
+  uploadedAttachmentServeKeys: Record<string, string[]>;
 }
 
 export function emptyProductReviewDraft(): ProductReviewDraft {
@@ -32,7 +53,43 @@ export function emptyProductReviewDraft(): ProductReviewDraft {
     cons: "",
     recommendationStatus: "NONE",
     isAnonymous: false,
+    attachments: [],
   };
+}
+
+export function validateReviewImageSelection<T extends ReviewImageFile>(
+  currentCount: number,
+  files: readonly T[],
+): { files: T[]; error?: string } {
+  if (currentCount + files.length > MAX_REVIEW_IMAGES) {
+    return {
+      files: [],
+      error: `برای هر محصول حداکثر ${MAX_REVIEW_IMAGES.toLocaleString("fa-IR")} تصویر انتخاب کنید.`,
+    };
+  }
+
+  const unsupported = files.find(
+    (file) =>
+      !REVIEW_IMAGE_TYPES.includes(
+        file.type as (typeof REVIEW_IMAGE_TYPES)[number],
+      ),
+  );
+  if (unsupported) {
+    return {
+      files: [],
+      error: "فقط تصویرهای JPG، PNG و WebP قابل ارسال هستند.",
+    };
+  }
+
+  const oversized = files.find((file) => file.size > MAX_REVIEW_IMAGE_BYTES);
+  if (oversized) {
+    return {
+      files: [],
+      error: "حجم هر تصویر باید حداکثر ۵ مگابایت باشد.",
+    };
+  }
+
+  return { files: [...files] };
 }
 
 export function feedbackItemKey(item: FeedbackSeedItem, index: number) {
@@ -52,7 +109,8 @@ export function hasProductReviewContent(draft: ProductReviewDraft) {
       draft.text.trim() ||
       draft.pros.trim() ||
       draft.cons.trim() ||
-      draft.recommendationStatus !== "NONE",
+      draft.recommendationStatus !== "NONE" ||
+      draft.attachments.length,
   );
 }
 
@@ -90,6 +148,7 @@ export function buildProductReviewInput(
   item: FeedbackSeedItem,
   commentId: string,
   draft: ProductReviewDraft,
+  attachmentsServeKeys: string[] = [],
 ): ProductReviewInput {
   return {
     commentId,
@@ -103,7 +162,7 @@ export function buildProductReviewInput(
     pros: parseReviewLines(draft.pros),
     cons: parseReviewLines(draft.cons),
     recommendationStatus: draft.recommendationStatus,
-    attachmentsServeKeys: [],
+    attachmentsServeKeys,
     owner: true,
     isAnonymous: draft.isAnonymous,
   };
@@ -123,6 +182,27 @@ export function readPendingOrderReview(value: string | null) {
             (key): key is string => typeof key === "string",
           )
         : [],
+      uploadedAttachmentServeKeys:
+        parsed.uploadedAttachmentServeKeys &&
+        typeof parsed.uploadedAttachmentServeKeys === "object"
+          ? Object.fromEntries(
+              Object.entries(parsed.uploadedAttachmentServeKeys).flatMap(
+                ([key, serveKeys]) =>
+                  Array.isArray(serveKeys)
+                    ? [
+                        [
+                          key,
+                          serveKeys.filter(
+                            (serveKey): serveKey is string =>
+                              typeof serveKey === "string" &&
+                              Boolean(serveKey.trim()),
+                          ),
+                        ],
+                      ]
+                    : [],
+              ),
+            )
+          : {},
     } satisfies PendingOrderReview;
   } catch {
     return null;

@@ -70,7 +70,7 @@ contains the shared secret.
 - Live homepage, categories, search, product detail, CMS, and blog pages
 - Guest cart, post-login cart merging, dynamic product forms, shipping, payment, and checkout return flow
 - Customer login, password recovery, verified mobile changes, profile, addresses, orders, bookings, and wallet activity
-- Authenticated order ratings and optional product-review submission
+- Authenticated order ratings and optional product reviews with image attachments
 - Five-minute server caching with authenticated on-demand invalidation
 - Persian metadata, safe product/store JSON-LD, image sitemap, and crawler rules
 - Responsive RTL UI using Estedad, Tailwind CSS 4, and shadcn/ui primitives

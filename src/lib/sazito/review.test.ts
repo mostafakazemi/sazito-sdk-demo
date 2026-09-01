@@ -6,6 +6,7 @@ import {
   hasProductReviewContent,
   parseReviewLines,
   readPendingOrderReview,
+  validateReviewImageSelection,
   validateOrderReview,
   type FeedbackSeedItem,
 } from "./review";
@@ -56,7 +57,8 @@ describe("order review helpers", () => {
         cons: "\nقیمت بالا",
         recommendationStatus: "RECOMMENDED",
         isAnonymous: true,
-      }),
+        attachments: [],
+      }, ["serve-key-1"]),
     ).toEqual({
       commentId: "comment-1",
       productId: "12",
@@ -69,7 +71,7 @@ describe("order review helpers", () => {
       pros: ["بسته‌بندی خوب", "ارسال سریع"],
       cons: ["قیمت بالا"],
       recommendationStatus: "RECOMMENDED",
-      attachmentsServeKeys: [],
+      attachmentsServeKeys: ["serve-key-1"],
       owner: true,
       isAnonymous: true,
     });
@@ -88,6 +90,43 @@ describe("order review helpers", () => {
     ).toEqual({
       commentId: "comment-1",
       submittedItemKeys: ["a", "b"],
+      uploadedAttachmentServeKeys: {},
+    });
+  });
+
+  it("validates review image count, type, and size", () => {
+    const image = { name: "review.webp", type: "image/webp", size: 1024 };
+
+    expect(validateReviewImageSelection(0, [image])).toEqual({ files: [image] });
+    expect(validateReviewImageSelection(5, [image]).error).toContain("حداکثر");
+    expect(
+      validateReviewImageSelection(0, [
+        { name: "review.gif", type: "image/gif", size: 1024 },
+      ]).error,
+    ).toContain("JPG");
+    expect(
+      validateReviewImageSelection(0, [
+        { name: "large.jpg", type: "image/jpeg", size: 5 * 1024 * 1024 + 1 },
+      ]).error,
+    ).toContain("۵ مگابایت");
+  });
+
+  it("restores uploaded attachment keys for a retry", () => {
+    expect(
+      readPendingOrderReview(
+        JSON.stringify({
+          commentId: "comment-1",
+          submittedItemKeys: [],
+          uploadedAttachmentServeKeys: {
+            product: ["serve-1", "", 3],
+            invalid: "serve-2",
+          },
+        }),
+      ),
+    ).toEqual({
+      commentId: "comment-1",
+      submittedItemKeys: [],
+      uploadedAttachmentServeKeys: { product: ["serve-1"] },
     });
   });
 });

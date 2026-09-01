@@ -4,11 +4,14 @@ import * as React from "react";
 import type { Order } from "@sazito/client-sdk";
 import {
   CheckCircle2,
+  ImagePlus,
   LoaderCircle,
   MessageSquareText,
+  Paperclip,
   RefreshCcw,
   Send,
   Star,
+  Trash2,
 } from "lucide-react";
 
 import { useAccount } from "@/components/account/account-provider";
@@ -32,7 +35,9 @@ import {
   emptyProductReviewDraft,
   feedbackItemKey,
   hasProductReviewContent,
+  MAX_REVIEW_IMAGES,
   readPendingOrderReview,
+  validateReviewImageSelection,
   validateOrderReview,
   type FeedbackSeed,
   type PendingOrderReview,
@@ -234,6 +239,7 @@ export function OrderReviewPanel({ order }: { order: Order }) {
           currentPending = {
             commentId: ratingResponse.data.id,
             submittedItemKeys: [],
+            uploadedAttachmentServeKeys: {},
           };
           setPending(currentPending);
           savePendingReview(storageKey, currentPending);
@@ -246,8 +252,64 @@ export function OrderReviewPanel({ order }: { order: Order }) {
         );
 
         for (const { key, item, draft } of activeEntries) {
+          let attachmentServeKeys: string[] =
+            currentPending.uploadedAttachmentServeKeys[key] ?? [];
+
+          if (draft.attachments.length && !attachmentServeKeys.length) {
+            const uploadResponse = await client.feedbacks.uploadReviewImages(
+              draft.attachments.map(({ file }) => ({
+                file,
+                name: file.name,
+                alt: item.productName,
+              })),
+              { cache: false },
+            );
+
+            if (uploadResponse.error || !uploadResponse.data) {
+              if (isSazitoAuthenticationError(uploadResponse.error)) {
+                logout();
+                return;
+              }
+
+              setMessage(
+                uploadResponse.error
+                  ? sazitoErrorMessage(
+                      uploadResponse.error,
+                      `تصویرهای دیدگاه «${item.productName}» بارگذاری نشدند.`,
+                    )
+                  : `پاسخ بارگذاری تصویرهای «${item.productName}» کامل نبود.`,
+              );
+              return;
+            }
+
+            attachmentServeKeys = uploadResponse.data.images
+              .map((image) => image.serveKey.trim())
+              .filter(Boolean);
+            if (attachmentServeKeys.length !== draft.attachments.length) {
+              setMessage(
+                `بارگذاری همه تصویرهای دیدگاه «${item.productName}» کامل نشد. دوباره تلاش کنید.`,
+              );
+              return;
+            }
+
+            currentPending = {
+              ...currentPending,
+              uploadedAttachmentServeKeys: {
+                ...currentPending.uploadedAttachmentServeKeys,
+                [key]: attachmentServeKeys,
+              },
+            };
+            setPending(currentPending);
+            savePendingReview(storageKey, currentPending);
+          }
+
           const response = await client.feedbacks.submitProductReview(
-            buildProductReviewInput(item, currentPending.commentId, draft),
+            buildProductReviewInput(
+              item,
+              currentPending.commentId,
+              draft,
+              attachmentServeKeys,
+            ),
             { cache: false },
           );
 
@@ -403,6 +465,9 @@ export function OrderReviewPanel({ order }: { order: Order }) {
                     const draft = drafts[key] ?? emptyProductReviewDraft();
                     const alreadySubmitted =
                       pending?.submittedItemKeys.includes(key) ?? false;
+                    const attachmentsUploaded = Boolean(
+                      pending?.uploadedAttachmentServeKeys[key]?.length,
+                    );
 
                     return (
                       <details
@@ -518,6 +583,105 @@ export function OrderReviewPanel({ order }: { order: Order }) {
                                   }
                                 />
                               </label>
+                            </div>
+
+                            <div className="grid gap-3 rounded-2xl border border-dashed bg-muted/35 p-4">
+                              <div className="flex flex-wrap items-center justify-between gap-3">
+                                <div>
+                                  <p className="flex items-center gap-2 text-sm font-bold">
+                                    <Paperclip className="size-4 text-primary" />
+                                    تصویرهای دیدگاه
+                                  </p>
+                                  <p className="mt-1 text-xs leading-6 text-muted-foreground">
+                                    حداکثر {MAX_REVIEW_IMAGES.toLocaleString("fa-IR")} تصویر JPG، PNG یا WebP؛ هر فایل تا ۵ مگابایت
+                                  </p>
+                                </div>
+                                <label
+                                  className={cn(
+                                    "inline-flex h-10 cursor-pointer items-center gap-2 rounded-xl border bg-card px-3 text-xs font-bold outline-none transition-colors hover:bg-accent focus-within:ring-2 focus-within:ring-ring",
+                                    attachmentsUploaded &&
+                                      "pointer-events-none opacity-60",
+                                  )}
+                                >
+                                  <ImagePlus className="size-4" />
+                                  انتخاب تصویر
+                                  <input
+                                    type="file"
+                                    multiple
+                                    accept="image/jpeg,image/png,image/webp"
+                                    className="sr-only"
+                                    disabled={attachmentsUploaded}
+                                    onChange={(event) => {
+                                      const selection = validateReviewImageSelection(
+                                        draft.attachments.length,
+                                        Array.from(event.currentTarget.files ?? []),
+                                      );
+                                      event.currentTarget.value = "";
+
+                                      if (selection.error) {
+                                        setProductErrors((current) => ({
+                                          ...current,
+                                          [key]: selection.error!,
+                                        }));
+                                        return;
+                                      }
+
+                                      updateDraft(key, {
+                                        attachments: [
+                                          ...draft.attachments,
+                                          ...selection.files.map((file, fileIndex) => ({
+                                            id: `${file.name}:${file.size}:${file.lastModified}:${fileIndex}`,
+                                            file,
+                                          })),
+                                        ],
+                                      });
+                                    }}
+                                  />
+                                </label>
+                              </div>
+
+                              {attachmentsUploaded ? (
+                                <p className="flex items-center gap-2 text-xs text-primary">
+                                  <CheckCircle2 className="size-4" />
+                                  تصویرها بارگذاری شده‌اند و در تلاش دوباره استفاده می‌شوند.
+                                </p>
+                              ) : null}
+
+                              {draft.attachments.length ? (
+                                <ul className="grid gap-2" aria-label="تصویرهای انتخاب‌شده">
+                                  {draft.attachments.map((attachment) => (
+                                    <li
+                                      key={attachment.id}
+                                      className="flex items-center gap-3 rounded-xl bg-card px-3 py-2 text-xs"
+                                    >
+                                      <ImagePlus className="size-4 shrink-0 text-primary" />
+                                      <span className="min-w-0 flex-1 truncate" dir="ltr">
+                                        {attachment.file.name}
+                                      </span>
+                                      <span className="shrink-0 text-muted-foreground">
+                                        {(attachment.file.size / 1024 / 1024).toLocaleString("fa-IR", {
+                                          maximumFractionDigits: 1,
+                                        })} MB
+                                      </span>
+                                      <button
+                                        type="button"
+                                        className="flex size-8 shrink-0 items-center justify-center rounded-lg text-danger outline-none hover:bg-danger/10 focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-50"
+                                        aria-label={`حذف ${attachment.file.name}`}
+                                        disabled={attachmentsUploaded}
+                                        onClick={() =>
+                                          updateDraft(key, {
+                                            attachments: draft.attachments.filter(
+                                              (current) => current.id !== attachment.id,
+                                            ),
+                                          })
+                                        }
+                                      >
+                                        <Trash2 className="size-4" />
+                                      </button>
+                                    </li>
+                                  ))}
+                                </ul>
+                              ) : null}
                             </div>
 
                             {productErrors[key] ? (
