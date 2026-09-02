@@ -24,6 +24,7 @@ export const sazitoStoreOrigin = `https://${sazitoStoreDomain}`;
 export const sazitoClient = createSazitoClient({
   domain: sazitoStoreDomain,
   timeout: 15_000,
+  debug: true,
   retry: {
     enabled: true,
     retries: 2,

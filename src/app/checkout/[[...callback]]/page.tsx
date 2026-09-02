@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import {
   extractPaymentReturnParams,
   isPaymentCallbackRoute,
+  summarizePaymentReturnRequest,
 } from "@/lib/sazito/payment-return";
 import type { CheckoutSearchParams } from "@/lib/sazito/payment-return";
 
@@ -29,9 +30,26 @@ export default async function CheckoutPage({
     params,
     searchParams,
   ]);
-  const paymentReturnParams = isPaymentCallbackRoute(callback)
+  const isCallbackRoute = isPaymentCallbackRoute(callback);
+  const paymentReturnParams = isCallbackRoute
     ? extractPaymentReturnParams(resolvedSearchParams)
     : undefined;
+
+  if (isCallbackRoute) {
+    const summary = summarizePaymentReturnRequest(
+      callback,
+      resolvedSearchParams,
+    );
+
+    console.info("[Sazito SDK][checkout callback] Request received.", summary);
+
+    if (!paymentReturnParams) {
+      console.warn(
+        "[Sazito SDK][checkout callback] No supported payment-return parameters were found.",
+        summary,
+      );
+    }
+  }
 
   return (
     <div className="site-container py-8 sm:py-12">

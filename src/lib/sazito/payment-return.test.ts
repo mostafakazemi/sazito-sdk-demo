@@ -4,6 +4,7 @@ import {
   extractPaymentReturnParams,
   isPaymentCallbackRoute,
   removePaymentReturnParams,
+  summarizePaymentReturnRequest,
 } from "./payment-return";
 
 describe("payment return parameters", () => {
@@ -54,6 +55,28 @@ describe("payment return parameters", () => {
     expect(isPaymentCallbackRoute([""])).toBe(false);
     expect(isPaymentCallbackRoute(["payment-return"])).toBe(true);
     expect(isPaymentCallbackRoute(["gateway", "return"])).toBe(true);
+  });
+
+  it("builds useful callback diagnostics without exposing parameter values", () => {
+    const summary = summarizePaymentReturnRequest(
+      ["gateway", "return"],
+      {
+        tatoken: "super-secret-token",
+        code: "100",
+        payload: '{"secret":"private"}',
+        utm_source: "gateway",
+      },
+    );
+
+    expect(summary).toEqual({
+      callbackSegmentCount: 2,
+      receivedParameterCount: 4,
+      recognizedParameterKeys: ["code", "payload", "tatoken"],
+      ignoredParameterCount: 1,
+    });
+    expect(JSON.stringify(summary)).not.toContain("super-secret-token");
+    expect(JSON.stringify(summary)).not.toContain("private");
+    expect(JSON.stringify(summary)).not.toContain("utm_source");
   });
 
   it("removes callback data after a terminal result and keeps unrelated query state", () => {

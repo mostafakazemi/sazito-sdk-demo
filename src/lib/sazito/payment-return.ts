@@ -35,6 +35,24 @@ export function extractPaymentReturnParams(
   return entries.length > 0 ? Object.fromEntries(entries) : undefined;
 }
 
+export function summarizePaymentReturnRequest(
+  callback: string[] | undefined,
+  searchParams: CheckoutSearchParams,
+) {
+  const receivedParameterCount = Object.keys(searchParams).length;
+  const recognizedParameterKeys = Object.keys(
+    extractPaymentReturnParams(searchParams) ?? {},
+  ).sort();
+
+  return {
+    callbackSegmentCount: callback?.length ?? 0,
+    receivedParameterCount,
+    recognizedParameterKeys,
+    ignoredParameterCount:
+      receivedParameterCount - recognizedParameterKeys.length,
+  };
+}
+
 export function removePaymentReturnParams(href: string): string {
   const url = new URL(href, "http://localhost");
 

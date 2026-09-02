@@ -75,6 +75,7 @@ export function CommerceProvider({
       createSazitoClient({
         domain,
         timeout: 15_000,
+        debug: true,
         retry: { enabled: false, retries: 0, retryDelay: 0 },
         cache: {
           cart: { enabled: false },

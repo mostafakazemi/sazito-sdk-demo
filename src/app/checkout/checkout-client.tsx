@@ -51,18 +51,52 @@ function CheckoutStateBridge({
   const { state, actions } = useCheckout();
   const { syncCart } = useCommerce();
   const returnHandled = React.useRef(false);
+  const previousDebugState = React.useRef("");
   const [isRetrying, setIsRetrying] = React.useState(Boolean(paymentReturnParams));
 
   const resolvePaymentReturn = React.useCallback(async () => {
     if (!paymentReturnParams) return;
 
+    console.info("[Sazito SDK][checkout callback] Verification started.", {
+      recognizedParameterKeys: Object.keys(paymentReturnParams).sort(),
+    });
     setIsRetrying(true);
     try {
       await actions.resolvePaymentReturn(paymentReturnParams);
     } finally {
+      console.info("[Sazito SDK][checkout callback] Verification settled.");
       setIsRetrying(false);
     }
   }, [actions, paymentReturnParams]);
+
+  React.useEffect(() => {
+    if (!paymentReturnParams) return;
+
+    const snapshot = {
+      checkoutStatus: state.status,
+      checkoutStep: state.step,
+      resultStatus: state.result?.status ?? null,
+      errorCode: state.error?.code ?? null,
+      errorStatus: state.error?.status ?? null,
+      errorStep: state.error?.step ?? null,
+    };
+    const signature = JSON.stringify(snapshot);
+
+    if (signature === previousDebugState.current) return;
+    previousDebugState.current = signature;
+    console.info(
+      "[Sazito SDK][checkout callback] Checkout state changed.",
+      snapshot,
+    );
+  }, [
+    paymentReturnParams,
+    state.error?.code,
+    state.error?.status,
+    state.error?.step,
+    state.result?.status,
+    state.status,
+    state.step,
+  ]);
 
   React.useEffect(() => {
     if (!paymentReturnParams || returnHandled.current) return;
@@ -92,6 +126,9 @@ function CheckoutStateBridge({
 
     const cleanUrl = removePaymentReturnParams(window.location.href);
     window.history.replaceState(window.history.state, "", cleanUrl);
+    console.info(
+      "[Sazito SDK][checkout callback] Sensitive return parameters removed from the URL.",
+    );
   }, [paymentReturnParams, state.result?.status]);
 
   if (paymentReturnParams && isRetrying && !state.result) {
@@ -173,9 +210,15 @@ export function CheckoutClient({
     ? undefined
     : returnSessionParams;
   const retryPaymentReturn = React.useCallback(() => {
+    console.info(
+      "[Sazito SDK][checkout callback] Verification retry requested.",
+    );
     setReturnAttempt((attempt) => attempt + 1);
   }, []);
   const abandonPaymentReturn = React.useCallback(() => {
+    console.info(
+      "[Sazito SDK][checkout callback] Callback flow abandoned by the shopper.",
+    );
     setReturnAbandoned(true);
     router.replace("/checkout");
   }, [router]);
