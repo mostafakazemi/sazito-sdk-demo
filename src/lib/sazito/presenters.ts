@@ -18,6 +18,7 @@ import type {
   ProductVariantView,
   StoreChrome,
   StoreLink,
+  StoreSocialType,
 } from "./types";
 
 const FALLBACK_STORE_NAME = "فروشگاه سازیتو";
@@ -38,13 +39,20 @@ interface GeneralInfoInput {
     description: string;
     logo: { main: string; favicon: string };
     social: {
-      facebook: string;
-      instagram: string;
-      phone1: string;
-      phone2: string;
-      telegram: string;
-      twitter: string;
-      whatsapp: string;
+      bale?: string;
+      eitaa?: string;
+      facebook?: string;
+      instagram?: string;
+      phone1?: string;
+      phone2?: string;
+      phone_1?: string;
+      phone_2?: string;
+      rubika?: string;
+      soroushPlus?: string;
+      soroush_plus?: string;
+      telegram?: string;
+      twitter?: string;
+      whatsapp?: string;
     };
   };
   settings?: {
@@ -270,17 +278,50 @@ export function toStoreChrome(
     eitaa: "ایتا",
     rubika: "روبیکا",
     soroushPlus: "سروش‌پلاس",
+    soroush_plus: "سروش‌پلاس",
     phone1: "تلفن فروشگاه",
     phone2: "تلفن دوم",
+    phone_1: "تلفن فروشگاه",
+    phone_2: "تلفن دوم",
   };
 
-  const socials = Object.entries(info?.shop.social ?? {})
-    .filter(([, value]) => Boolean(nonEmpty(value)))
+  const socialTypes: Record<string, StoreSocialType> = {
+    instagram: "instagram",
+    telegram: "telegram",
+    whatsapp: "whatsapp",
+    twitter: "x",
+    facebook: "facebook",
+    bale: "bale",
+    eitaa: "eitaa",
+    rubika: "rubika",
+    soroushPlus: "soroush_plus",
+    soroush_plus: "soroush_plus",
+  };
+
+  const socialEntries = Object.entries(info?.shop.social ?? {}).flatMap(
+    ([key, value]) => {
+      const normalizedValue = nonEmpty(value);
+      return normalizedValue ? [[key, normalizedValue] as const] : [];
+    },
+  );
+  const phones = socialEntries
+    .filter(
+      ([key]) =>
+        key === "phone1" ||
+        key === "phone2" ||
+        key === "phone_1" ||
+        key === "phone_2",
+    )
+    .map(([, value]) => ({
+      value,
+      href: `tel:${value}`,
+    }));
+  const socials = socialEntries
+    .filter(([key]) => !key.startsWith("phone"))
     .map(([key, value]) => ({
       label: socialLabels[key] ?? key,
-      href: key.startsWith("phone")
-        ? `tel:${value}`
-        : key === "whatsapp" && !/^https?:\/\//i.test(value)
+      type: socialTypes[key] ?? "unknown",
+      href: key === "whatsapp" && !/^https?:\/\//i.test(value)
           ? `https://wa.me/${value.replace(/^\+/, "")}`
           : value,
     }));
@@ -295,6 +336,7 @@ export function toStoreChrome(
       ? withBlogIndexLink(menuLinks, localContentPaths)
       : withoutBlogLinks(menuLinks),
     socials,
+    phones,
     searchEnabled,
     blogEnabled,
   };

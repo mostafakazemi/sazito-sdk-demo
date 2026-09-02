@@ -5,8 +5,26 @@ export interface StoreLink {
   children: StoreLink[];
 }
 
+export type StoreSocialType =
+  | "bale"
+  | "eitaa"
+  | "facebook"
+  | "instagram"
+  | "rubika"
+  | "soroush_plus"
+  | "telegram"
+  | "whatsapp"
+  | "x"
+  | "unknown";
+
 export interface StoreSocialLink {
   label: string;
+  href: string;
+  type: StoreSocialType;
+}
+
+export interface StorePhoneLink {
+  value: string;
   href: string;
 }
 
@@ -17,6 +35,7 @@ export interface StoreChrome {
   faviconUrl: string | null;
   navigation: StoreLink[];
   socials: StoreSocialLink[];
+  phones: StorePhoneLink[];
   searchEnabled: boolean;
   blogEnabled: boolean;
 }

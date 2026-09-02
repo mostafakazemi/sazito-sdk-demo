@@ -131,6 +131,41 @@ describe("store URL routing", () => {
     expect(chrome.blogEnabled).toBe(true);
   });
 
+  it("preserves social platform identity for footer brand icons", () => {
+    const chrome = toStoreChrome(
+      {
+        shop: {
+          name: "فروشگاه تست",
+          description: "توضیحات",
+          logo: { main: "", favicon: "" },
+          social: {
+            facebook: "https://facebook.com/store",
+            instagram: "https://instagram.com/store",
+            phone_1: "02112345678",
+            phone_2: "02187654321",
+            telegram: "https://t.me/store",
+            twitter: "https://x.com/store",
+            whatsapp: "+989121234567",
+          },
+        },
+      },
+      [],
+      "https://testmosi.sazito.com",
+    );
+
+    expect(chrome.socials.map(({ type, href }) => ({ type, href }))).toEqual([
+      { type: "facebook", href: "https://facebook.com/store" },
+      { type: "instagram", href: "https://instagram.com/store" },
+      { type: "telegram", href: "https://t.me/store" },
+      { type: "x", href: "https://x.com/store" },
+      { type: "whatsapp", href: "https://wa.me/989121234567" },
+    ]);
+    expect(chrome.phones).toEqual([
+      { value: "02112345678", href: "tel:02112345678" },
+      { value: "02187654321", href: "tel:02187654321" },
+    ]);
+  });
+
   it("removes nested blog navigation and disables search from live flags", () => {
     const chrome = toStoreChrome(
       {

@@ -1,14 +1,9 @@
 import Link from "next/link";
-import { ExternalLink, Leaf, MessageCircle, Phone, Send } from "lucide-react";
+import { ExternalLink, Leaf, PhoneCall } from "lucide-react";
 
+import { SocialIcon } from "@/components/store/social-icon";
 import { Separator } from "@/components/ui/separator";
 import type { StoreChrome } from "@/lib/sazito/types";
-
-function SocialIcon({ href }: { href: string }) {
-  if (href.startsWith("tel:")) return <Phone />;
-  if (href.includes("t.me") || href.includes("telegram")) return <Send />;
-  return <MessageCircle />;
-}
 
 export function StoreFooter({ store }: { store: StoreChrome }) {
   return (
@@ -24,20 +19,45 @@ export function StoreFooter({ store }: { store: StoreChrome }) {
               {store.description}
             </p>
           </div>
-          {store.socials.length ? (
-            <div className="flex flex-wrap gap-2 md:justify-end">
-              {store.socials.map((social) => (
-                <a
-                  key={`${social.label}-${social.href}`}
-                  href={social.href}
-                  target={social.href.startsWith("http") ? "_blank" : undefined}
-                  rel={social.href.startsWith("http") ? "noreferrer noopener" : undefined}
-                  className="inline-flex items-center gap-2 rounded-xl border bg-background px-3 py-2 text-xs font-semibold transition-colors hover:border-primary/40 hover:text-primary"
-                >
-                  <SocialIcon href={social.href} />
-                  {social.label}
-                </a>
-              ))}
+          {store.phones.length || store.socials.length ? (
+            <div className="flex flex-col gap-5 md:items-end">
+              {store.phones.length ? (
+                <div className="md:text-left">
+                  <p className="mb-2 inline-flex items-center gap-2 text-sm font-bold text-foreground">
+                    <PhoneCall className="size-4 text-primary" aria-hidden="true" />
+                    تماس با فروشگاه
+                  </p>
+                  <div className="flex flex-wrap gap-x-5 gap-y-2 md:justify-end">
+                    {store.phones.map((phone) => (
+                      <a
+                        key={phone.href}
+                        href={phone.href}
+                        dir="ltr"
+                        className="text-sm font-semibold text-muted-foreground transition-colors hover:text-primary"
+                        aria-label={`تماس با شماره ${phone.value}`}
+                      >
+                        {phone.value}
+                      </a>
+                    ))}
+                  </div>
+                </div>
+              ) : null}
+              {store.socials.length ? (
+                <div className="flex flex-wrap gap-2 md:justify-end">
+                  {store.socials.map((social) => (
+                    <a
+                      key={`${social.label}-${social.href}`}
+                      href={social.href}
+                      target="_blank"
+                      rel="noreferrer noopener"
+                      className="inline-flex items-center gap-2 rounded-xl border bg-background px-3 py-2 text-xs font-semibold transition-colors hover:border-primary/40 hover:text-primary"
+                    >
+                      <SocialIcon type={social.type} />
+                      {social.label}
+                    </a>
+                  ))}
+                </div>
+              ) : null}
             </div>
           ) : null}
         </div>

@@ -22,6 +22,7 @@ const store: StoreChrome = {
   faviconUrl: null,
   navigation: [],
   socials: [],
+  phones: [],
   searchEnabled: true,
   blogEnabled: true,
 };
