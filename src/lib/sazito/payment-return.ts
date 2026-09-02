@@ -14,42 +14,23 @@ export const PAYMENT_RETURN_KEYS = [
   "payload",
 ] as const;
 
-const paymentReturnKeySet = new Set<string>(PAYMENT_RETURN_KEYS);
-
-export function isPaymentCallbackRoute(callback?: string[]) {
-  return Boolean(
-    callback?.length && callback.every((segment) => Boolean(segment.trim())),
-  );
-}
-
-export function extractPaymentReturnParams(
-  searchParams: CheckoutSearchParams,
-): Record<string, string> | undefined {
-  const entries = Object.entries(searchParams).flatMap(([key, value]) => {
-    if (!paymentReturnKeySet.has(key)) return [];
-
-    const normalized = Array.isArray(value) ? value[0] : value;
-    return normalized === undefined ? [] : [[key, normalized] as const];
-  });
-
-  return entries.length > 0 ? Object.fromEntries(entries) : undefined;
-}
-
 export function summarizePaymentReturnRequest(
   callback: string[] | undefined,
   searchParams: CheckoutSearchParams,
+  paymentReturnParams?: Record<string, string>,
 ) {
-  const receivedParameterCount = Object.keys(searchParams).length;
-  const recognizedParameterKeys = Object.keys(
-    extractPaymentReturnParams(searchParams) ?? {},
-  ).sort();
+  const forwardedParameterKeys = Object.keys(paymentReturnParams ?? {});
+  const recognizedKeySet = new Set<string>(PAYMENT_RETURN_KEYS);
+  const recognizedParameterKeys = forwardedParameterKeys
+    .filter((key) => recognizedKeySet.has(key))
+    .sort();
 
   return {
     callbackSegmentCount: callback?.length ?? 0,
-    receivedParameterCount,
+    callbackParsed: Boolean(paymentReturnParams),
+    receivedQueryParameterCount: Object.keys(searchParams).length,
+    forwardedParameterCount: forwardedParameterKeys.length,
     recognizedParameterKeys,
-    ignoredParameterCount:
-      receivedParameterCount - recognizedParameterKeys.length,
   };
 }
 

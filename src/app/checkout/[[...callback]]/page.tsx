@@ -1,13 +1,11 @@
 import type { Metadata } from "next";
 import { CreditCard, ShieldCheck } from "lucide-react";
+import { parsePaymentReturn } from "@sazito/checkout/next/payment-return";
+import { notFound } from "next/navigation";
 
 import { CheckoutClient } from "@/app/checkout/checkout-client";
 import { Badge } from "@/components/ui/badge";
-import {
-  extractPaymentReturnParams,
-  isPaymentCallbackRoute,
-  summarizePaymentReturnRequest,
-} from "@/lib/sazito/payment-return";
+import { summarizePaymentReturnRequest } from "@/lib/sazito/payment-return";
 import type { CheckoutSearchParams } from "@/lib/sazito/payment-return";
 
 export const metadata: Metadata = {
@@ -30,24 +28,23 @@ export default async function CheckoutPage({
     params,
     searchParams,
   ]);
-  const isCallbackRoute = isPaymentCallbackRoute(callback);
-  const paymentReturnParams = isCallbackRoute
-    ? extractPaymentReturnParams(resolvedSearchParams)
-    : undefined;
+  const paymentReturn = parsePaymentReturn(callback, resolvedSearchParams);
 
-  if (isCallbackRoute) {
+  if (callback) {
     const summary = summarizePaymentReturnRequest(
       callback,
       resolvedSearchParams,
+      paymentReturn?.params,
     );
 
     console.info("[Sazito SDK][checkout callback] Request received.", summary);
 
-    if (!paymentReturnParams) {
+    if (!paymentReturn) {
       console.warn(
-        "[Sazito SDK][checkout callback] No supported payment-return parameters were found.",
+        "[Sazito SDK][checkout callback] Callback path is malformed or unsupported.",
         summary,
       );
+      notFound();
     }
   }
 
@@ -67,7 +64,7 @@ export default async function CheckoutPage({
         </p>
       </div>
 
-      <CheckoutClient paymentReturnParams={paymentReturnParams} />
+      <CheckoutClient paymentReturnParams={paymentReturn?.params} />
     </div>
   );
 }

@@ -1,78 +1,96 @@
 import { describe, expect, it } from "vitest";
+import { parsePaymentReturn } from "@sazito/checkout/next/payment-return";
 
 import {
-  extractPaymentReturnParams,
-  isPaymentCallbackRoute,
   removePaymentReturnParams,
   summarizePaymentReturnRequest,
 } from "./payment-return";
 
 describe("payment return parameters", () => {
-  it("forwards every callback field supported by the checkout package", () => {
-    expect(
-      extractPaymentReturnParams({
+  it("uses the checkout package parser to restore path credentials", () => {
+    const paymentReturn = parsePaymentReturn(
+      ["gateway-result", "payment", "42", "identifier", "payment-id"],
+      {
         tatoken: "token",
         isFailed: "false",
         code: "100",
         imageUrl: "https://example.com/receipt.jpg",
-        id: "42",
-        paymentIdentifier: "payment-id",
         trackingData: '{"reference":"abc"}',
         payload: '{"gateway":"sample"}',
-      }),
-    ).toEqual({
-      tatoken: "token",
-      isFailed: "false",
-      code: "100",
-      imageUrl: "https://example.com/receipt.jpg",
-      id: "42",
-      paymentIdentifier: "payment-id",
-      trackingData: '{"reference":"abc"}',
-      payload: '{"gateway":"sample"}',
+      },
+    );
+
+    expect(paymentReturn).toEqual({
+      payment: { id: 42, identifier: "payment-id" },
+      params: {
+        tatoken: "token",
+        isFailed: "false",
+        code: "100",
+        imageUrl: "https://example.com/receipt.jpg",
+        trackingData: '{"reference":"abc"}',
+        payload: '{"gateway":"sample"}',
+        id: "42",
+        paymentIdentifier: "payment-id",
+      },
     });
   });
 
-  it("does not imply support for undocumented aliases or unrelated parameters", () => {
+  it("preserves arbitrary gateway query parameters exactly as the package documents", () => {
     expect(
-      extractPaymentReturnParams({
-        tracking_data: "legacy",
-        is_failed: "true",
-        payment_identifier: "legacy-id",
-        utm_source: "gateway",
-      }),
+      parsePaymentReturn(
+        ["result", "payment", "7", "identifier", "abc"],
+        { gatewayStatus: "verified", repeated: ["first", "second"] },
+      )?.params,
+    ).toEqual({
+      gatewayStatus: "verified",
+      repeated: "first",
+      id: "7",
+      paymentIdentifier: "abc",
+    });
+  });
+
+  it("rejects ordinary and malformed nested checkout routes", () => {
+    expect(parsePaymentReturn(undefined, {})).toBeUndefined();
+    expect(parsePaymentReturn(["payment-return"], {})).toBeUndefined();
+    expect(
+      parsePaymentReturn(
+        ["result", "payment", "invalid", "identifier", "abc"],
+        {},
+      ),
     ).toBeUndefined();
-  });
-
-  it("uses the first value for repeated callback parameters", () => {
-    expect(
-      extractPaymentReturnParams({ tatoken: ["first", "second"] }),
-    ).toEqual({ tatoken: "first" });
-  });
-
-  it("recognizes only a non-empty nested checkout callback route", () => {
-    expect(isPaymentCallbackRoute()).toBe(false);
-    expect(isPaymentCallbackRoute([])).toBe(false);
-    expect(isPaymentCallbackRoute([""])).toBe(false);
-    expect(isPaymentCallbackRoute(["payment-return"])).toBe(true);
-    expect(isPaymentCallbackRoute(["gateway", "return"])).toBe(true);
   });
 
   it("builds useful callback diagnostics without exposing parameter values", () => {
     const summary = summarizePaymentReturnRequest(
-      ["gateway", "return"],
+      ["gateway-result", "payment", "42", "identifier", "payment-id"],
       {
         tatoken: "super-secret-token",
         code: "100",
         payload: '{"secret":"private"}',
         utm_source: "gateway",
       },
+      {
+        tatoken: "super-secret-token",
+        code: "100",
+        payload: "private",
+        id: "42",
+        paymentIdentifier: "payment-id",
+        utm_source: "gateway",
+      },
     );
 
     expect(summary).toEqual({
-      callbackSegmentCount: 2,
-      receivedParameterCount: 4,
-      recognizedParameterKeys: ["code", "payload", "tatoken"],
-      ignoredParameterCount: 1,
+      callbackSegmentCount: 5,
+      callbackParsed: true,
+      receivedQueryParameterCount: 4,
+      forwardedParameterCount: 6,
+      recognizedParameterKeys: [
+        "code",
+        "id",
+        "payload",
+        "paymentIdentifier",
+        "tatoken",
+      ],
     });
     expect(JSON.stringify(summary)).not.toContain("super-secret-token");
     expect(JSON.stringify(summary)).not.toContain("private");
