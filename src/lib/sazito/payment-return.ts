@@ -16,6 +16,12 @@ export const PAYMENT_RETURN_KEYS = [
 
 const paymentReturnKeySet = new Set<string>(PAYMENT_RETURN_KEYS);
 
+export function isPaymentCallbackRoute(callback?: string[]) {
+  return Boolean(
+    callback?.length && callback.every((segment) => Boolean(segment.trim())),
+  );
+}
+
 export function extractPaymentReturnParams(
   searchParams: CheckoutSearchParams,
 ): Record<string, string> | undefined {
@@ -33,6 +39,9 @@ export function removePaymentReturnParams(href: string): string {
   const url = new URL(href, "http://localhost");
 
   PAYMENT_RETURN_KEYS.forEach((key) => url.searchParams.delete(key));
+  const pathname = url.pathname.startsWith("/checkout/")
+    ? "/checkout"
+    : url.pathname;
 
-  return `${url.pathname}${url.search}${url.hash}`;
+  return `${pathname}${url.search}${url.hash}`;
 }

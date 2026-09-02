@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import {
   extractPaymentReturnParams,
+  isPaymentCallbackRoute,
   removePaymentReturnParams,
 } from "./payment-return";
 
@@ -47,10 +48,26 @@ describe("payment return parameters", () => {
     ).toEqual({ tatoken: "first" });
   });
 
+  it("recognizes only a non-empty nested checkout callback route", () => {
+    expect(isPaymentCallbackRoute()).toBe(false);
+    expect(isPaymentCallbackRoute([])).toBe(false);
+    expect(isPaymentCallbackRoute([""])).toBe(false);
+    expect(isPaymentCallbackRoute(["payment-return"])).toBe(true);
+    expect(isPaymentCallbackRoute(["gateway", "return"])).toBe(true);
+  });
+
   it("removes callback data after a terminal result and keeps unrelated query state", () => {
     expect(
       removePaymentReturnParams(
         "/checkout?tatoken=secret&code=100&utm_source=gateway#result",
+      ),
+    ).toBe("/checkout?utm_source=gateway#result");
+  });
+
+  it("returns a nested callback URL to the canonical checkout route", () => {
+    expect(
+      removePaymentReturnParams(
+        "/checkout/gateway/return?tatoken=secret&utm_source=gateway#result",
       ),
     ).toBe("/checkout?utm_source=gateway#result");
   });

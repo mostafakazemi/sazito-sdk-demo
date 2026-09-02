@@ -20,6 +20,12 @@ describe("navigation route matching", () => {
     expect(isCurrentPath("/category/parenting", "/category/parent")).toBe(false);
   });
 
+  it("highlights the blog index only on its exact route", () => {
+    expect(isCurrentPath("/blog", "/blog")).toBe(true);
+    expect(isCurrentPath("/blog/my-post", "/blog")).toBe(false);
+    expect(isCurrentPath("/blogger", "/blog")).toBe(false);
+  });
+
   it("matches URI-encoded Persian menu destinations", () => {
     expect(isCurrentPath("/category/لباس", "/category/%D9%84%D8%A8%D8%A7%D8%B3")).toBe(true);
   });

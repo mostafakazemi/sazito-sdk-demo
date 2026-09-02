@@ -3,7 +3,10 @@ import { CreditCard, ShieldCheck } from "lucide-react";
 
 import { CheckoutClient } from "@/app/checkout/checkout-client";
 import { Badge } from "@/components/ui/badge";
-import { extractPaymentReturnParams } from "@/lib/sazito/payment-return";
+import {
+  extractPaymentReturnParams,
+  isPaymentCallbackRoute,
+} from "@/lib/sazito/payment-return";
 import type { CheckoutSearchParams } from "@/lib/sazito/payment-return";
 
 export const metadata: Metadata = {
@@ -14,13 +17,21 @@ export const metadata: Metadata = {
 };
 
 type CheckoutPageProps = {
+  params: Promise<{ callback?: string[] }>;
   searchParams: Promise<CheckoutSearchParams>;
 };
 
-export default async function CheckoutPage({ searchParams }: CheckoutPageProps) {
-  const paymentReturnParams = extractPaymentReturnParams(
-    await searchParams,
-  );
+export default async function CheckoutPage({
+  params,
+  searchParams,
+}: CheckoutPageProps) {
+  const [{ callback }, resolvedSearchParams] = await Promise.all([
+    params,
+    searchParams,
+  ]);
+  const paymentReturnParams = isPaymentCallbackRoute(callback)
+    ? extractPaymentReturnParams(resolvedSearchParams)
+    : undefined;
 
   return (
     <div className="site-container py-8 sm:py-12">
