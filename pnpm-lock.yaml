@@ -18,11 +18,11 @@ importers:
         specifier: ^1.3.3
         version: 1.3.3(@types/react@19.2.18)(react@19.2.8)
       '@sazito/checkout':
-        specifier: 0.4.12
-        version: 0.4.12(@sazito/client-sdk@1.2.19)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
+        specifier: 0.4.13
+        version: 0.4.13(@sazito/client-sdk@1.2.20)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
       '@sazito/client-sdk':
-        specifier: 1.2.19
-        version: 1.2.19
+        specifier: 1.2.20
+        version: 1.2.20
       class-variance-authority:
         specifier: ^0.7.1
         version: 0.7.1
@@ -763,16 +763,16 @@ packages:
   '@rtsao/scc@1.1.0':
     resolution: {integrity: sha512-zt6OdqaDoOnJ1ZYsCYGt9YmWzDXl4vQdKTyJev62gFhRGKdx7mcT54V9KIjg+d2wi9EXsPvAPKe7i7WjfVWB8g==}
 
-  '@sazito/checkout@0.4.12':
-    resolution: {integrity: sha512-6vntgxbSLiAGWX50bmViAb66ttwCl5g9Rounzk7O/ZDVuaT/+yb9Nwg2PisiZL+UB54i9VwtD+IMSkWr/zLRNQ==}
+  '@sazito/checkout@0.4.13':
+    resolution: {integrity: sha512-iPJUGRUEZbfPA91h/TZRRwBx82Ip7YdLkBZ4N4uNRkyPRCXTL1dqUAAoWhuGJdsi3yykZecSBMgg79orm88eNA==}
     engines: {node: '>=18'}
     peerDependencies:
       '@sazito/client-sdk': ^1.2.3
       react: ^18.0.0 || ^19.0.0
       react-dom: ^18.0.0 || ^19.0.0
 
-  '@sazito/client-sdk@1.2.19':
-    resolution: {integrity: sha512-xv9KXmzLetSljavDnyWy4iOErn/NyFbS9VX1vjljaYpgxrTzFOpSFZnt9M1u9LBlxzbmENLoKXjUylB/bRiEog==}
+  '@sazito/client-sdk@1.2.20':
+    resolution: {integrity: sha512-ux81IISHL0rtQkniYlugjiTTr9Rdf9XhuJ5/04BtqHovfwm/TUhupEkeBT6hLeXJwfeVkIu1o/N65wja86571Q==}
     engines: {node: '>=18'}
 
   '@standard-schema/spec@1.1.0':
@@ -3256,13 +3256,13 @@ snapshots:
 
   '@rtsao/scc@1.1.0': {}
 
-  '@sazito/checkout@0.4.12(@sazito/client-sdk@1.2.19)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)':
+  '@sazito/checkout@0.4.13(@sazito/client-sdk@1.2.20)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)':
     dependencies:
-      '@sazito/client-sdk': 1.2.19
+      '@sazito/client-sdk': 1.2.20
       react: 19.2.8
       react-dom: 19.2.8(react@19.2.8)
 
-  '@sazito/client-sdk@1.2.19': {}
+  '@sazito/client-sdk@1.2.20': {}
 
   '@standard-schema/spec@1.1.0': {}
 
