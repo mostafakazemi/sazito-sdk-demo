@@ -8,6 +8,7 @@ export function ProductSection({
   eyebrow,
   description,
   products,
+  eagerImageSrc,
   tone = "plain",
 }: {
   id?: string;
@@ -15,6 +16,7 @@ export function ProductSection({
   eyebrow: string;
   description: string;
   products: ProductCardView[];
+  eagerImageSrc?: string;
   tone?: "plain" | "accent";
 }) {
   if (!products.length) return null;
@@ -37,7 +39,11 @@ export function ProductSection({
       </div>
       <div className="grid grid-cols-2 gap-3 sm:gap-5 md:grid-cols-3 lg:grid-cols-4">
         {products.map((product, index) => (
-          <ProductCard key={`${product.href}-${index}`} product={product} />
+          <ProductCard
+            key={`${product.href}-${index}`}
+            product={product}
+            eagerImageSrc={eagerImageSrc}
+          />
         ))}
       </div>
     </section>

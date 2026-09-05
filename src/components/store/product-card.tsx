@@ -8,7 +8,13 @@ import { Card, CardContent } from "@/components/ui/card";
 import { formatPrice } from "@/lib/sazito/presenters";
 import type { ProductCardView } from "@/lib/sazito/types";
 
-export function ProductCard({ product }: { product: ProductCardView }) {
+export function ProductCard({
+  product,
+  eagerImageSrc,
+}: {
+  product: ProductCardView;
+  eagerImageSrc?: string;
+}) {
   return (
     <Card className="group h-full overflow-hidden transition-all duration-300 hover:-translate-y-1 hover:border-primary/30 hover:shadow-[0_24px_70px_-40px_rgba(31,42,36,0.7)]">
       <div className="flex h-full flex-col">
@@ -21,6 +27,7 @@ export function ProductCard({ product }: { product: ProductCardView }) {
               fill
               sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
               className="object-contain p-5 transition-transform duration-500 group-hover:scale-105"
+              loading={product.image.src === eagerImageSrc ? "eager" : "lazy"}
             />
           ) : (
             <div className="flex h-full flex-col items-center justify-center gap-3 text-muted-foreground">

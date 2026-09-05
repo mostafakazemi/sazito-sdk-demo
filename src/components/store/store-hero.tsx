@@ -61,6 +61,7 @@ export function StoreHero({
                 fill
                 sizes="(max-width: 1024px) 80vw, 40vw"
                 className="object-contain p-8 transition-transform duration-500 group-hover:scale-[1.03]"
+                loading="eager"
                 priority
               />
               <div className="absolute inset-x-4 bottom-4 rounded-2xl bg-foreground/88 p-4 text-white backdrop-blur">

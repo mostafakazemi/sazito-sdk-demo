@@ -65,6 +65,7 @@ export default async function Home() {
           eyebrow="پرفروش‌ها"
           description="محصولاتی که بیشتر از همه مورد توجه مشتریان بوده‌اند."
           products={data.bestSellers}
+          eagerImageSrc={data.heroProduct?.image?.src}
         />
         <ProductSection
           id="newest"
@@ -72,12 +73,14 @@ export default async function Home() {
           eyebrow="همین حالا رسیده"
           description="جدیدترین محصولاتی که به ویترین فروشگاه اضافه شده‌اند."
           products={data.newest}
+          eagerImageSrc={data.heroProduct?.image?.src}
         />
         <ProductSection
           title="فرصت‌های ویژه"
           eyebrow="با قیمت بهتر"
           description="محصولات تخفیف‌دار برای یک انتخاب به‌صرفه‌تر."
           products={data.discounted}
+          eagerImageSrc={data.heroProduct?.image?.src}
           tone="accent"
         />
       </div>
