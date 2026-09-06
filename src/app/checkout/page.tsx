@@ -1,12 +1,8 @@
 import type { Metadata } from "next";
 import { CreditCard, ShieldCheck } from "lucide-react";
-import { parsePaymentReturn } from "@sazito/checkout/next/payment-return";
-import { notFound } from "next/navigation";
 
 import { CheckoutClient } from "@/app/checkout/checkout-client";
 import { Badge } from "@/components/ui/badge";
-import { summarizePaymentReturnRequest } from "@/lib/sazito/payment-return";
-import type { CheckoutSearchParams } from "@/lib/sazito/payment-return";
 
 export const metadata: Metadata = {
   title: "سبد خرید و تسویه حساب",
@@ -15,39 +11,7 @@ export const metadata: Metadata = {
   robots: { index: false, follow: false },
 };
 
-type CheckoutPageProps = {
-  params: Promise<{ callback?: string[] }>;
-  searchParams: Promise<CheckoutSearchParams>;
-};
-
-export default async function CheckoutPage({
-  params,
-  searchParams,
-}: CheckoutPageProps) {
-  const [{ callback }, resolvedSearchParams] = await Promise.all([
-    params,
-    searchParams,
-  ]);
-  const paymentReturn = parsePaymentReturn(callback, resolvedSearchParams);
-
-  if (callback) {
-    const summary = summarizePaymentReturnRequest(
-      callback,
-      resolvedSearchParams,
-      paymentReturn?.params,
-    );
-
-    console.info("[Sazito SDK][checkout callback] Request received.", summary);
-
-    if (!paymentReturn) {
-      console.warn(
-        "[Sazito SDK][checkout callback] Callback path is malformed or unsupported.",
-        summary,
-      );
-      notFound();
-    }
-  }
-
+export default function CheckoutPage() {
   return (
     <div className="site-container py-8 sm:py-12">
       <div className="mb-8 max-w-2xl">
@@ -64,7 +28,7 @@ export default async function CheckoutPage({
         </p>
       </div>
 
-      <CheckoutClient paymentReturnParams={paymentReturn?.params} />
+      <CheckoutClient />
     </div>
   );
 }
