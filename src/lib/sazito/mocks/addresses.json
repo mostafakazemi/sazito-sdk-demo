@@ -1,0 +1,1 @@
+{"addresses":[{"id":1,"identifier":"نشانی-نمونه-۱","firstName":"کاربر","lastName":"نمونه","mobilePhone":"09120000000","email":"sample@example.com","region":{"id":1,"name":"تهران"},"city":{"id":11,"name":"تهران","regionId":1,"latitude":35.6892,"longitude":51.389},"address":"خیابان نمونه، کوچه سازیتو، پلاک ۱","postalCode":"1111111111","description":"نشانی پیش‌فرض نمونه"}]}

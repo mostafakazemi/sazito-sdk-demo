@@ -1,0 +1,1 @@
+{"items":[{"id":1,"entityId":1,"title":"مشاوره نمونه","description":"رزرو زمان برای مشاوره نمونه","durationsMinute":[30,60],"startTime":"09:00","endTime":"17:00","capacity":10,"bookedCount":2,"availableSlots":8,"price":0,"location":"آنلاین"}],"page":1,"pageSize":20,"total":1}

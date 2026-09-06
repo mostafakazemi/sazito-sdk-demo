@@ -1,0 +1,1 @@
+[{"id":1,"name":"پرداخت آنلاین","title":"درگاه پرداخت آنلاین","code":"online","type":"gateway","enabled":true},{"id":2,"name":"پرداخت در محل","title":"پرداخت هنگام تحویل","code":"cash","type":"cash","enabled":true}]

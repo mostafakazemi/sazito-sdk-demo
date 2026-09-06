@@ -53,6 +53,17 @@ SAZITO_USE_MOCKS=false
 NEXT_PUBLIC_SAZITO_USE_MOCKS=false
 ```
 
+### Mock fixture layout
+
+Mock payloads live in `src/lib/sazito/mocks/`, with one JSON file per endpoint
+family. The resolver in `src/lib/sazito/mock.ts` only adds request-specific
+behavior such as pagination, URL entity resolution, and path parameters.
+
+To add a static endpoint, add its JSON response to the fixture directory and
+register the endpoint in `staticFixtures` in `mock.ts`. For a parameterized
+endpoint, reuse the fixture in the matching path resolver and change only the
+request-specific fields there.
+
 ## Cache invalidation webhook
 
 Configure the Sazito webhook URL as:

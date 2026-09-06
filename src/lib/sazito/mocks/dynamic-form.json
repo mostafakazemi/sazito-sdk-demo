@@ -1,0 +1,1 @@
+{"form":{"id":1,"title":"اطلاعات تکمیلی محصول","description":"لطفاً اطلاعات مورد نیاز را وارد کنید.","fields":[{"key":"description","name":"description","type":"TextArea","label":"توضیحات","value":"","placeholder":"توضیحات خود را وارد کنید","required":false,"inputOptions":[],"allowedExtensions":[]}]}}

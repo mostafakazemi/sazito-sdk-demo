@@ -1,0 +1,1 @@
+{"shippingMethods":[{"id":1,"name":"پست پیشتاز","type":"post"},{"id":2,"name":"ارسال با پیک","type":"courier"}],"groupedShippingRates":{"post":[{"id":1,"name":"پست پیشتاز","price":65000,"type":"post"}],"courier":[{"id":2,"name":"ارسال با پیک","price":85000,"type":"courier"}]},"itemsShippingRate":[]}
