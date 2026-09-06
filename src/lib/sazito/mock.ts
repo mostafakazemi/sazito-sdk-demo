@@ -19,6 +19,8 @@ import bookings from "./mocks/bookings.json";
 import events from "./mocks/events.json";
 import availabilities from "./mocks/availabilities.json";
 import dynamicForm from "./mocks/dynamic-form.json";
+import walletBalance from "./mocks/wallet-balance.json";
+import walletTransactions from "./mocks/wallet-transactions.json";
 import shippingRates from "./mocks/shipping-rates.json";
 import paymentCreate from "./mocks/payment-create.json";
 import paymentAction from "./mocks/payment-action.json";
@@ -46,13 +48,8 @@ const staticFixtures: Record<string, Fixture> = {
   "/api/v2/carts": cart,
   "/api/v1/orders": orders,
   "/api/v1/users": user,
-  "/api/v1/users/wallet/balance": { balance: 250000, enabled: true },
-  "/api/v1/wallet/transactions": {
-    transactions: [],
-    pageNumber: 1,
-    pageSize: 20,
-    totalCount: 0,
-  },
+  "/api/v1/users/wallet/balance": walletBalance,
+  "/api/v1/wallet/transactions": walletTransactions,
   "/api/v1/scheduler/bookings": bookings,
   "/api/v1/scheduler/events": events,
   "/api/v1/scheduler/availabilities": availabilities,
@@ -231,7 +228,7 @@ export function mockSazitoResponse(request: MockRequest): MockResult | null {
     return jsonResult(clone(uploadResponse));
   }
 
-  if (pathname === "/api/v1/users/wallet/balance") return jsonResult({ balance: 250000, enabled: true });
+  if (pathname === "/api/v1/users/wallet/balance") return jsonResult(clone(walletBalance));
   if (pathname === "/api/v1/wallet/transactions") return jsonResult(staticFixtures[pathname]);
   if (pathname.startsWith("/api/v1/users/") || pathname.startsWith("/api/v1/sessions/")) {
     if (pathname.endsWith("/current")) return jsonResult(clone(user));
