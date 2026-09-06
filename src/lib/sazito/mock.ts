@@ -23,11 +23,17 @@ function jsonResult(body: unknown, status = 200): MockResult {
   return { body, status };
 }
 
-function mockImage(id: number, seed: string) {
+function mockImage(id: number) {
+  const source = [
+    "photo-1542291026-7eec264c27ff",
+    "photo-1495474472287-4d71bcdd2085",
+    "photo-1523275335684-37898b6baf30",
+  ][id % 3];
+
   return {
     id,
-    src: `https://images.unsplash.com/${seed}?auto=format&fit=crop&w=1200&q=80`,
-    alt: seed.replace(/[-_]/g, " "),
+    src: `https://images.unsplash.com/${source}?auto=format&fit=crop&w=1200&q=80`,
+    alt: "تصویر نمونه",
     width: 1200,
     height: 900,
   };
@@ -46,10 +52,10 @@ function mockProduct(id: number, overrides: Record<string, unknown> = {}) {
   const slug = `product-${id}`;
   return {
     id,
-    name: `Mock Product ${id}`,
+    name: `محصول نمونه ${id}`,
     url: `/product/${slug}`,
-    image: mockImage(id, `mock-product-${id}`),
-    category: "Mock Category",
+    image: mockImage(id),
+    category: "دسته‌بندی نمونه",
     price: mockPrice(120000 + id * 2500, 140000 + id * 2500),
     available: true,
     variantId: id * 10,
@@ -58,19 +64,19 @@ function mockProduct(id: number, overrides: Record<string, unknown> = {}) {
     variants: [
       {
         id: id * 10,
-        label: "Default",
+        label: "پیش‌فرض",
         sku: `SKU-${id}`,
         available: true,
         price: mockPrice(120000 + id * 2500, 140000 + id * 2500),
-        attributes: [{ name: "Color", value: "Natural" }],
+        attributes: [{ name: "رنگ", value: "طبیعی" }],
         imageId: id,
         minQuantity: 1,
         maxQuantity: 10,
         dynamicFormId: null,
       },
     ],
-    summary: `Mock summary for product ${id}.`,
-    description: `Mock description for product ${id}.`,
+    summary: `خلاصه محصول نمونه شماره ${id}.`,
+    description: `توضیحات محصول نمونه شماره ${id}.`,
     ...overrides,
   };
 }
@@ -78,29 +84,29 @@ function mockProduct(id: number, overrides: Record<string, unknown> = {}) {
 function mockCategory(id: number) {
   return {
     id,
-    name: `Mock Category ${id}`,
-    url: `/category/mock-category-${id}`,
+    name: `دسته‌بندی نمونه ${id}`,
+    url: `/category/sample-category-${id}`,
     count: 12 + id,
-    description: `Mock category description ${id}.`,
+    description: `توضیحات دسته‌بندی نمونه شماره ${id}.`,
   };
 }
 
 function mockCmsPage(id: number, type: "normal" | "blog") {
-  const slug = type === "blog" ? `blog/mock-post-${id}` : `mock-page-${id}`;
+    const slug = type === "blog" ? `blog/sample-post-${id}` : `sample-page-${id}`;
   return {
     id,
-    title: type === "blog" ? `Mock Blog Post ${id}` : `Mock Page ${id}`,
+    title: type === "blog" ? `یادداشت نمونه ${id}` : `صفحه نمونه ${id}`,
     url: type === "blog" ? `/blog/${slug}` : `/${slug}`,
     entityType: "cms_page",
     cmsPageType: type,
     enabled: true,
-    summary: `Summary for ${slug}.`,
-    content: `<p>Mock content for ${slug}.</p>`,
-    image: mockImage(id, `mock-content-${id}`),
+    summary: `خلاصه ${slug}.`,
+    content: `<p>محتوای نمونه برای ${slug}.</p>`,
+    image: mockImage(id),
     createdAt: "2026-01-01T00:00:00.000Z",
     updatedAt: "2026-01-01T00:00:00.000Z",
-    metaTitle: `Meta ${slug}`,
-    metaDescription: `Meta description for ${slug}.`,
+    metaTitle: `عنوان متای ${slug}`,
+    metaDescription: `توضیحات متای ${slug}.`,
     canonicalUrl: type === "blog" ? `/blog/${slug}` : `/${slug}`,
     noIndex: false,
   };
@@ -120,12 +126,12 @@ function mockGeneralInfo() {
   return {
     result: {
         general: {
-          name: "Mock Sazito Store",
-          description: "A complete mock storefront for local development.",
+          name: "فروشگاه نمونه سازیتو",
+          description: "فروشگاه نمونه برای توسعه محلی.",
           domain: { url: "mock-store.sazito.com" },
           logo: {
-            main: "https://placehold.co/256x256/png?text=Mock+Logo",
-            favicon: "https://placehold.co/64x64/png?text=M",
+            main: "https://placehold.co/256x256/png?text=لوگو+نمونه",
+            favicon: "https://placehold.co/64x64/png?text=ن",
           },
           social: {
             instagram: "https://instagram.com/mock-store",
@@ -133,8 +139,8 @@ function mockGeneralInfo() {
           },
         },
         shop: {
-          name: "Mock Sazito Store",
-          description: "A complete mock storefront for local development.",
+          name: "فروشگاه نمونه سازیتو",
+          description: "فروشگاه نمونه برای توسعه محلی.",
           domain: { url: "mock-store.sazito.com" },
         },
         checkout: {
@@ -156,8 +162,8 @@ function mockGeneralInfo() {
         tajrobe: { enabled: true },
         domain: { url: "mock-store.sazito.com" },
         logo: {
-          main: "https://placehold.co/256x256/png?text=Mock+Logo",
-          favicon: "https://placehold.co/64x64/png?text=M",
+          main: "https://placehold.co/256x256/png?text=لوگو+نمونه",
+          favicon: "https://placehold.co/64x64/png?text=ن",
         },
         social: {
           instagram: "https://instagram.com/mock-store",
@@ -173,18 +179,18 @@ function mockMenu() {
       treeStructure: {
         nodes: [
           {
-            details: { title: "Home", url: "/" },
+            details: { title: "خانه", url: "/" },
             entityType: "url",
             children: [],
           },
           {
-            details: { title: "Products" },
+            details: { title: "محصولات" },
             entityType: "url",
             children: [
               {
                 entityType: "product_category",
                 entity: { enabled: true, url: "/category/mock-category-1" },
-                details: { title: "Mock Category 1" },
+                details: { title: "دسته‌بندی نمونه ۱" },
                 children: [],
               },
             ],
@@ -192,7 +198,7 @@ function mockMenu() {
           {
             entityType: "cms_page",
             entity: { enabled: true, url: "/about" },
-            details: { title: "About" },
+            details: { title: "درباره ما" },
             children: [],
           },
         ],
@@ -224,8 +230,8 @@ function mockProducts(page = 1, pageSize = 8, sort?: ProductSort | string) {
     mockProduct((page - 1) * pageSize + index + 1, {
       name:
         sort === "discount"
-          ? `Discount Product ${(page - 1) * pageSize + index + 1}`
-          : `Mock Product ${(page - 1) * pageSize + index + 1}`,
+          ? `محصول تخفیف‌دار ${(page - 1) * pageSize + index + 1}`
+          : `محصول نمونه ${(page - 1) * pageSize + index + 1}`,
     }),
   );
   return {
@@ -315,12 +321,12 @@ function mockFeedbackStatistics(entityId: string) {
 function mockFeedbackReviews(entityId: string, pageNumber = 1, pageSize = 6) {
   const entities = Array.from({ length: pageSize }, (_, index) => ({
     id: `${entityId}-${pageNumber}-${index + 1}`,
-    author: `User ${index + 1}`,
+    author: `کاربر نمونه ${index + 1}`,
     rate: 5,
-    content: `Mock review ${index + 1} for product ${entityId}.`,
+    content: `نظر نمونه ${index + 1} برای محصول ${entityId}.`,
     createdAt: "2026-01-01T00:00:00.000Z",
     metadata: {
-      productName: `Mock Product ${entityId}`,
+      productName: `محصول نمونه ${entityId}`,
       variantId: String(Number(entityId) * 10),
       variantOptions: [],
     },
@@ -344,6 +350,7 @@ function mockCart() {
   return {
     result: {
       id: 1,
+      identifier: "سبد-نمونه-۱",
       items: [],
       netTotal: 0,
       grossTotal: 0,
@@ -354,7 +361,15 @@ function mockCart() {
 }
 
 function mockOrders() {
-  return { orders: [], totalCount: 0, pageNumber: 1, pageSize: 20 };
+  return {
+    orders: [],
+    totalCount: 0,
+    totalCountRaw: 0,
+    totalNotSeen: 0,
+    totalSeen: 0,
+    pageNumber: 1,
+    pageSize: 20,
+  };
 }
 
 function mockWalletBalance() {
@@ -362,21 +377,133 @@ function mockWalletBalance() {
 }
 
 function mockWalletTransactions() {
-  return { items: [], pageNumber: 1, pageSize: 20, totalCount: 0 };
+  return { transactions: [], pageNumber: 1, pageSize: 20, totalCount: 0 };
 }
 
 function mockBookings() {
-  return { items: [] };
+  return { items: [], page: 1, pageSize: 20, total: 0 };
+}
+
+function mockInvoice() {
+  return {
+    id: 1,
+    identifier: "فاکتور-نمونه-۱",
+    invoiceItems: [],
+    shippingItems: [],
+    needsShipping: false,
+    netTotal: 0,
+    finalTotal: 0,
+    vat: 0,
+    vatPercent: 0,
+    itemsDiscount: 0,
+    discountTotal: 0,
+    customerProfit: 0,
+    customerProfitPercentage: 0,
+    itemsTotalRawPrice: 0,
+    couponTotal: 0,
+    shippingTotal: 0,
+    creditTotal: 0,
+    discountUsages: [],
+  };
+}
+
+function mockAddress(id = 1) {
+  return {
+    id,
+    identifier: `نشانی-نمونه-${id}`,
+    firstName: "کاربر",
+    lastName: "نمونه",
+    mobilePhone: "09120000000",
+    email: "sample@example.com",
+    region: { id: 1, name: "تهران" },
+    city: { id: 11, name: "تهران", regionId: 1, latitude: 35.6892, longitude: 51.389 },
+    address: "خیابان نمونه، کوچه سازیتو، پلاک ۱",
+    postalCode: "1111111111",
+    description: "نشانی پیش‌فرض نمونه",
+  };
+}
+
+function mockPaymentMethods() {
+  return [
+    {
+      id: 1,
+      name: "پرداخت آنلاین",
+      title: "درگاه پرداخت آنلاین",
+      code: "online",
+      type: "gateway",
+      enabled: true,
+    },
+    {
+      id: 2,
+      name: "پرداخت در محل",
+      title: "پرداخت هنگام تحویل",
+      code: "cash",
+      type: "cash",
+      enabled: true,
+    },
+  ];
+}
+
+function mockShippingMethods() {
+  return [
+    { id: 1, name: "پست پیشتاز", type: "post" },
+    { id: 2, name: "ارسال با پیک", type: "courier" },
+  ];
+}
+
+function mockUser() {
+  return {
+    id: 1,
+    email: "sample@example.com",
+    mobilePhone: "09120000000",
+    firstName: "کاربر",
+    lastName: "نمونه",
+    birthDate: "1370/01/01",
+  };
+}
+
+function mockEvent(id = 1) {
+  return {
+    id,
+    entityId: id,
+    title: "مشاوره نمونه",
+    description: "رزرو زمان برای مشاوره نمونه",
+    startTime: "09:00",
+    endTime: "17:00",
+    durationsMinute: [30, 60],
+    capacity: 10,
+    bookedCount: 2,
+    availableSlots: 8,
+    price: 0,
+    location: "آنلاین",
+  };
+}
+
+function mockFeedbackSeed(orderIdentifier: string) {
+  return {
+    orderId: "1",
+    orderIdentifier,
+    hasCommentAlready: false,
+    items: [
+      {
+        productId: "1",
+        productVariantId: "10",
+        productName: "محصول نمونه ۱",
+        productAttributes: [{ name: "رنگ", value: "طبیعی" }],
+        productImage: { url: mockImage(1).src, alt: "محصول نمونه ۱" },
+      },
+    ],
+  };
 }
 
 function mockRegions() {
   return [
     {
       id: 1,
-      name: "Tehran",
+      name: "تهران",
       cities: [
-        { id: 11, name: "Tehran", latitude: 35.6892, longitude: 51.389 },
-        { id: 12, name: "Shemiran", latitude: 35.8, longitude: 51.43 },
+        { id: 11, name: "تهران", latitude: 35.6892, longitude: 51.389 },
+        { id: 12, name: "شمیران", latitude: 35.8, longitude: 51.43 },
       ],
     },
   ];
@@ -388,6 +515,198 @@ export function mockSazitoResponse(request: MockRequest): MockResult | null {
   const page = Number(request.searchParams.get("page") ?? 1);
   const pageSize = Number(request.searchParams.get("pageSize") ?? request.searchParams.get("page_size") ?? 10);
   const query = request.searchParams.get("query") ?? "";
+  const entityId = Number(request.pathname.split("/").pop()) || 1;
+
+  if (request.pathname.startsWith("/api/v1/product_categories/")) {
+    return jsonResult({ productCategory: mockCategory(entityId) });
+  }
+
+  if (request.pathname.startsWith("/api/v1/dynamic_form/")) {
+    return jsonResult({
+      form: {
+        id: entityId,
+        title: "اطلاعات تکمیلی محصول",
+        description: "لطفاً اطلاعات مورد نیاز را وارد کنید.",
+        fields: [
+          {
+            key: "description",
+            name: "description",
+            type: "TextArea",
+            label: "توضیحات",
+            value: "",
+            placeholder: "توضیحات خود را وارد کنید",
+            required: false,
+            inputOptions: [],
+            allowedExtensions: [],
+          },
+        ],
+      },
+    });
+  }
+
+  if (request.pathname.startsWith("/api/v1/feedbacks/seed/")) {
+    return jsonResult(mockFeedbackSeed(request.pathname.split("/").pop() ?? "نمونه"));
+  }
+
+  if (request.pathname === "/api/v1/feedbacks/comments") {
+    return jsonResult({ id: "نظر-نمونه-۱" });
+  }
+
+  if (request.pathname === "/api/v1/feedbacks/comments/details") {
+    return jsonResult(mockFeedbackReviews(request.searchParams.get("productId") ?? "1", page, pageSize));
+  }
+
+  if (request.pathname.startsWith("/api/v1/feedbacks/")) {
+    return jsonResult({ id: 1, comment: "نظر نمونه", status: "approved" });
+  }
+
+  if (request.pathname.startsWith("/api/v2/carts")) {
+    return jsonResult(mockCart());
+  }
+
+  if (request.pathname.startsWith("/api/v2/invoices")) {
+    if (request.pathname.endsWith("applicable_shipping_methods")) {
+      return jsonResult({
+        shippingMethods: mockShippingMethods(),
+        groupedShippingRates: {
+          post: [{ id: 1, name: "پست پیشتاز", price: 65000, type: "post" }],
+          courier: [{ id: 2, name: "ارسال با پیک", price: 85000, type: "courier" }],
+        },
+        itemsShippingRate: [],
+      });
+    }
+    return jsonResult({ data: mockInvoice() });
+  }
+
+  if (request.pathname === "/api/v2/shipping_addresses") {
+    return request.method === "GET"
+      ? jsonResult({ addresses: [mockAddress()] })
+      : jsonResult({ shippingAddress: mockAddress() });
+  }
+
+  if (request.pathname.startsWith("/api/v2/shipping_addresses/")) {
+    return jsonResult({ shippingAddress: mockAddress(entityId) });
+  }
+
+  if (request.pathname === "/api/v2/shipping_methods") {
+    return jsonResult(mockShippingMethods());
+  }
+
+  if (request.pathname.startsWith("/api/v2/payments")) {
+    if (request.pathname.endsWith("/list")) return jsonResult(mockPaymentMethods());
+    if (request.pathname.endsWith("/process_payment_step")) {
+      return jsonResult({
+        result: {
+          action: "show_order",
+          order: {
+            id: 1,
+            orderNumber: "۱۰۰۱",
+            orderIdentifier: "سفارش-نمونه-۱",
+            invoice: mockInvoice(),
+          },
+        },
+      });
+    }
+    return jsonResult({
+      result: {
+        id: 1,
+        payment_identifier: "پرداخت-نمونه-۱",
+        payment_amount: 0,
+        payment_type: { id: 1, reference_code: "online" },
+      },
+    });
+  }
+
+  if (request.pathname === "/api/v1/visits/add") {
+    return jsonResult({ id: 1, createdAt: "2026-01-01T00:00:00.000Z" });
+  }
+
+  if (request.pathname === "/api/v1/pinch") {
+    return jsonResult({ ok: true });
+  }
+
+  if (
+    request.pathname === "/api/v1/images" ||
+    request.pathname.startsWith("/api/v1/images/") ||
+    request.pathname.startsWith("/api/v1/service/filemanager/uploads/")
+  ) {
+    return jsonResult({
+      id: 1,
+      url: "https://placehold.co/1200x900/png?text=تصویر+نمونه",
+      filename: "sample-image.png",
+      size: 1024,
+      mime_type: "image/png",
+      serveKey: "کلید-فایل-نمونه",
+      images: [
+        {
+          id: "تصویر-نمونه-۱",
+          url: "https://placehold.co/1200x900/png?text=تصویر+نمونه",
+          alt: "تصویر نمونه",
+          serveUrl: "https://placehold.co/1200x900/png?text=تصویر+نمونه",
+          serveKey: "کلید-فایل-نمونه",
+        },
+      ],
+    });
+  }
+
+  if (request.pathname === "/api/v1/users/wallet/balance") {
+    return jsonResult({ balance: 250000, enabled: true });
+  }
+
+  if (request.pathname === "/api/v1/wallet/transactions") {
+    return jsonResult(mockWalletTransactions());
+  }
+
+  if (request.pathname.startsWith("/api/v1/users/") || request.pathname.startsWith("/api/v1/sessions/")) {
+    if (request.pathname.endsWith("/current")) return jsonResult({ user: mockUser() });
+    if (request.pathname.endsWith("/login") || request.pathname.endsWith("/login_request_verification")) {
+      return jsonResult({ jwt: "توکن-نمونه", user: mockUser() });
+    }
+    if (request.pathname.endsWith("/register") || request.pathname.endsWith("/update_mobile_phone_verification")) {
+      return jsonResult({ user: mockUser() });
+    }
+    return jsonResult({ ok: true, message: "درخواست با موفقیت انجام شد." });
+  }
+
+  if (request.pathname.startsWith("/api/v1/scheduler/events/")) {
+    return jsonResult({ event: mockEvent(entityId) });
+  }
+
+  if (request.pathname === "/api/v1/scheduler/events") {
+    return jsonResult({ items: [mockEvent()], page: 1, pageSize, total: 1 });
+  }
+
+  if (request.pathname.endsWith("/cancel") && request.pathname.startsWith("/api/v1/scheduler/bookings/")) {
+    return jsonResult({ ...mockEvent(entityId), status: "cancelled", bookingTime: "2026-01-10T10:00:00+03:30" });
+  }
+
+  if (request.pathname === "/api/v1/scheduler/availabilities") {
+    return jsonResult({
+      availableDays: [
+        {
+          date: "2026-01-10",
+          timeSlots: [
+            { startTimeLocal: "10:00", endTimeLocal: "10:30", isAvailable: true, remainingCapacity: 8 },
+            { startTimeLocal: "11:00", endTimeLocal: "11:30", isAvailable: true, remainingCapacity: 6 },
+          ],
+        },
+      ],
+    });
+  }
+
+  if (request.pathname === "/api/v1/scheduler/bookings" && request.method !== "GET") {
+    return jsonResult({
+      id: 1,
+      eventId: 1,
+      event: mockEvent(),
+      attendeeName: "کاربر نمونه",
+      attendeeEmail: "sample@example.com",
+      attendeePhone: "09120000000",
+      status: "confirmed",
+      bookingTime: "2026-01-10T10:00:00+03:30",
+      createdAt: "2026-01-01T00:00:00.000Z",
+    });
+  }
 
   switch (request.pathname) {
     case "/api/v2/general/info":
