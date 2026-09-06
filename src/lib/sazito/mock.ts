@@ -235,7 +235,9 @@ export function mockSazitoResponse(request: MockRequest): MockResult | null {
 
   if (pathname.startsWith("/api/v1/scheduler/events/")) return jsonResult({ event: eventFixture(entityId) });
   if (pathname === "/api/v1/scheduler/events") return jsonResult(clone(events));
-  if (pathname.endsWith("/cancel") && pathname.startsWith("/api/v1/scheduler/bookings/")) return jsonResult({ ...eventFixture(entityId), status: "cancelled" });
+  if (pathname.endsWith("/cancel") && pathname.startsWith("/api/v1/scheduler/bookings/")) {
+    return jsonResult({ ...clone(bookings.items[0]), status: "cancelled" });
+  }
   if (pathname === "/api/v1/scheduler/bookings" && request.method !== "GET") return jsonResult(clone(booking));
 
   if (pathname === "/api/v1/products") return jsonResult(productFixture(request));
