@@ -8,6 +8,7 @@ import blogPages from "./mocks/blog-pages.json";
 import search from "./mocks/search.json";
 import feedbackStatistics from "./mocks/feedback-statistics.json";
 import feedbackReviews from "./mocks/feedback-reviews.json";
+import feedbackSeedFixture from "./mocks/feedback-seed.json";
 import cart from "./mocks/cart.json";
 import orders from "./mocks/orders.json";
 import invoice from "./mocks/invoice.json";
@@ -164,18 +165,9 @@ function eventFixture(id = 1) {
 }
 
 function feedbackSeed(orderIdentifier: string) {
-  return {
-    orderId: "1",
-    orderIdentifier,
-    hasCommentAlready: false,
-    items: [{
-      productId: "1",
-      productVariantId: "10",
-      productName: "کفش نمونه",
-      productAttributes: [{ name: "رنگ", value: "طبیعی" }],
-      productImage: { url: products.items[0].images[0].url, alt: "کفش نمونه" },
-    }],
-  };
+  const seed = clone(feedbackSeedFixture);
+  seed.orderIdentifier = orderIdentifier;
+  return seed;
 }
 
 export function mockSazitoResponse(request: MockRequest): MockResult | null {
@@ -230,6 +222,10 @@ export function mockSazitoResponse(request: MockRequest): MockResult | null {
 
   if (pathname === "/api/v1/users/wallet/balance") return jsonResult(clone(walletBalance));
   if (pathname === "/api/v1/wallet/transactions") return jsonResult(staticFixtures[pathname]);
+  if (pathname.startsWith("/api/v1/orders/")) {
+    const order = orders.orders.find((item) => item.id === entityId) ?? orders.orders[0];
+    return jsonResult(clone(order));
+  }
   if (pathname.startsWith("/api/v1/users/") || pathname.startsWith("/api/v1/sessions/")) {
     if (pathname.endsWith("/current")) return jsonResult(clone(user));
     if (pathname.endsWith("/login") || pathname.endsWith("/login_request_verification")) return jsonResult({ jwt: "توکن-نمونه", user: clone(user.user) });
