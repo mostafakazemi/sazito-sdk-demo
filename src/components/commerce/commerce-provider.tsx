@@ -10,6 +10,7 @@ import {
 } from "@sazito/client-sdk";
 
 import { cartErrorMessage, cartItemCount } from "@/lib/sazito/cart";
+import { createMockSazitoFetch } from "@/lib/sazito/mock";
 
 type CartOperationResult =
   | { ok: true }
@@ -82,7 +83,10 @@ export function CommerceProvider({
           orders: { enabled: false },
           search: { enabled: false },
         },
-        customFetchApi: createSazitoProxyFetch(domain),
+        customFetchApi:
+          process.env.NEXT_PUBLIC_SAZITO_USE_MOCKS?.trim() === "true"
+            ? createMockSazitoFetch()
+            : createSazitoProxyFetch(domain),
       }),
     [domain],
   );

@@ -23,6 +23,8 @@ host, for example `pnpm dev --hostname 0.0.0.0`.
 SAZITO_STORE_DOMAIN=testmosi.sazito.com
 STOREFRONT_URL=https://testmosi.sazito.com
 SAZITO_REVALIDATE_SECRET=replace-with-at-least-32-random-characters
+SAZITO_USE_MOCKS=true
+NEXT_PUBLIC_SAZITO_USE_MOCKS=true
 ```
 
 - `SAZITO_STORE_DOMAIN` is the Sazito shop domain without a protocol.
@@ -30,6 +32,26 @@ SAZITO_REVALIDATE_SECRET=replace-with-at-least-32-random-characters
   `robots.txt`, and `sitemap.xml`. It falls back to the HTTPS Sazito shop domain.
 - `SAZITO_REVALIDATE_SECRET` protects the cache-invalidation webhook and must be
   a random value containing at least 32 characters.
+- `SAZITO_USE_MOCKS` enables mock responses for server-rendered SDK calls.
+- `NEXT_PUBLIC_SAZITO_USE_MOCKS` enables mock responses for browser-side cart
+  and commerce SDK calls. Keep both flags set to `true` for a fully mocked
+  local storefront.
+
+### Run with mock data
+
+The local environment is already configured for mocks. Start the app with:
+
+```bash
+pnpm dev
+```
+
+To switch back to the live Sazito API, set both mock flags to `false` in
+`.env.local` and restart the dev server:
+
+```dotenv
+SAZITO_USE_MOCKS=false
+NEXT_PUBLIC_SAZITO_USE_MOCKS=false
+```
 
 ## Cache invalidation webhook
 

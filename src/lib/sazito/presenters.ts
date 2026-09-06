@@ -298,7 +298,7 @@ export function toStoreChrome(
     soroush_plus: "soroush_plus",
   };
 
-  const socialEntries = Object.entries(info?.shop.social ?? {}).flatMap(
+  const socialEntries = Object.entries(info?.shop?.social ?? {}).flatMap(
     ([key, value]) => {
       const normalizedValue = nonEmpty(value);
       return normalizedValue ? [[key, normalizedValue] as const] : [];
@@ -327,11 +327,11 @@ export function toStoreChrome(
     }));
 
   return {
-    name: nonEmpty(info?.shop.name) ?? FALLBACK_STORE_NAME,
+    name: nonEmpty(info?.shop?.name) ?? FALLBACK_STORE_NAME,
     description:
-      nonEmpty(info?.shop.description) ?? FALLBACK_STORE_DESCRIPTION,
-    logoUrl: normalizeStoreAssetUrl(info?.shop.logo.main, storeOrigin),
-    faviconUrl: normalizeStoreAssetUrl(info?.shop.logo.favicon, storeOrigin),
+      nonEmpty(info?.shop?.description) ?? FALLBACK_STORE_DESCRIPTION,
+    logoUrl: normalizeStoreAssetUrl(info?.shop?.logo?.main, storeOrigin),
+    faviconUrl: normalizeStoreAssetUrl(info?.shop?.logo?.favicon, storeOrigin),
     navigation: blogEnabled
       ? withBlogIndexLink(menuLinks, localContentPaths)
       : withoutBlogLinks(menuLinks),

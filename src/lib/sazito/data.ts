@@ -10,8 +10,8 @@ import type {
 
 import { localStorefrontPath } from "@/lib/seo";
 
-import { sazitoCacheConfig } from "./cache";
-import { sazitoClient, sazitoStoreDomain, sazitoStoreOrigin } from "./client";
+import { sazitoCacheConfig, sazitoCacheKey } from "./cache";
+import { sazitoClient, sazitoStoreOrigin } from "./client";
 import { toCmsPageView } from "./cms";
 import {
   normalizeStoreAssetUrl,
@@ -41,7 +41,7 @@ const getGeneralInfo = unstable_cache(
       await sazitoClient.general.getInfo({ cache: false }),
       "دریافت اطلاعات فروشگاه ناموفق بود.",
     ),
-  ["sazito-general-info", sazitoStoreDomain],
+  sazitoCacheKey("sazito-general-info"),
   sazitoCacheConfig,
 );
 
@@ -51,7 +51,7 @@ const getHeaderMenu = unstable_cache(
       await sazitoClient.menu.getHeaderMenu(undefined, { cache: false }),
       "دریافت منوی فروشگاه ناموفق بود.",
     ),
-  ["sazito-header-menu", sazitoStoreDomain],
+  sazitoCacheKey("sazito-header-menu"),
   sazitoCacheConfig,
 );
 
@@ -78,7 +78,7 @@ const getCmsContent = unstable_cache(
 
     return { items: [...pages.items, ...blogPosts.items] };
   },
-  ["sazito-cms-content-v2", sazitoStoreDomain],
+  sazitoCacheKey("sazito-cms-content-v2"),
   sazitoCacheConfig,
 );
 
@@ -88,7 +88,7 @@ const getCmsPageByPath = unstable_cache(
       await sazitoClient.cms.getPage(path, { cache: false }),
       "دریافت صفحه ناموفق بود.",
     ),
-  ["sazito-cms-page", sazitoStoreDomain],
+  sazitoCacheKey("sazito-cms-page"),
   sazitoCacheConfig,
 );
 
@@ -98,7 +98,7 @@ const getBlogPostByPath = unstable_cache(
       await sazitoClient.cms.getBlogPost(path, { cache: false }),
       "دریافت نوشته وبلاگ ناموفق بود.",
     ),
-  ["sazito-blog-post", sazitoStoreDomain],
+  sazitoCacheKey("sazito-blog-post"),
   sazitoCacheConfig,
 );
 
@@ -119,7 +119,7 @@ const getCategories = unstable_cache(
       ),
       "دریافت دسته‌بندی‌ها ناموفق بود.",
     ),
-  ["sazito-categories", sazitoStoreDomain],
+  sazitoCacheKey("sazito-categories"),
   sazitoCacheConfig,
 );
 
@@ -132,7 +132,7 @@ const getBestSellers = unstable_cache(
       ),
       "دریافت محصولات پرفروش ناموفق بود.",
     ),
-  ["sazito-products-best-selling", sazitoStoreDomain],
+  sazitoCacheKey("sazito-products-best-selling"),
   sazitoCacheConfig,
 );
 
@@ -145,7 +145,7 @@ const getNewest = unstable_cache(
       ),
       "دریافت محصولات تازه ناموفق بود.",
     ),
-  ["sazito-products-newest", sazitoStoreDomain],
+  sazitoCacheKey("sazito-products-newest"),
   sazitoCacheConfig,
 );
 
@@ -187,7 +187,7 @@ const getSitemapProducts = unstable_cache(
 
     return products.slice(0, maximumProducts);
   },
-  ["sazito-sitemap-products", sazitoStoreDomain],
+  sazitoCacheKey("sazito-sitemap-products"),
   sazitoCacheConfig,
 );
 
@@ -205,7 +205,7 @@ const getDiscounted = unstable_cache(
       ),
       "دریافت محصولات تخفیف‌دار ناموفق بود.",
     ),
-  ["sazito-products-discounted", sazitoStoreDomain],
+  sazitoCacheKey("sazito-products-discounted"),
   sazitoCacheConfig,
 );
 
@@ -215,7 +215,7 @@ const resolveEntityRoute = unstable_cache(
       await sazitoClient.entityRoutes.resolve(path, { cache: false }),
       "دریافت محصول ناموفق بود.",
     ),
-  ["sazito-entity-route", sazitoStoreDomain],
+  sazitoCacheKey("sazito-entity-route"),
   sazitoCacheConfig,
 );
 
@@ -246,7 +246,7 @@ const getCategoryProducts = unstable_cache(
       ),
       "دریافت محصولات این دسته ناموفق بود.",
     ),
-  ["sazito-category-products", sazitoStoreDomain],
+  sazitoCacheKey("sazito-category-products"),
   sazitoCacheConfig,
 );
 
@@ -273,7 +273,7 @@ const searchStore = unstable_cache(
       ),
       "جست‌وجوی محصولات ناموفق بود.",
     ),
-  ["sazito-search", sazitoStoreDomain],
+  sazitoCacheKey("sazito-search"),
   sazitoCacheConfig,
 );
 
@@ -286,7 +286,7 @@ const getRelatedProducts = unstable_cache(
       ),
       "دریافت محصولات مرتبط ناموفق بود.",
     ),
-  ["sazito-related-products", sazitoStoreDomain],
+  sazitoCacheKey("sazito-related-products"),
   sazitoCacheConfig,
 );
 
@@ -298,7 +298,7 @@ const getReviewStatistics = unstable_cache(
       }),
       "دریافت امتیاز محصول ناموفق بود.",
     ),
-  ["sazito-review-statistics", sazitoStoreDomain],
+  sazitoCacheKey("sazito-review-statistics"),
   sazitoCacheConfig,
 );
 
@@ -312,7 +312,7 @@ const getProductReviews = unstable_cache(
       ),
       "دریافت دیدگاه‌های محصول ناموفق بود.",
     ),
-  ["sazito-product-reviews", sazitoStoreDomain],
+  sazitoCacheKey("sazito-product-reviews"),
   sazitoCacheConfig,
 );
 

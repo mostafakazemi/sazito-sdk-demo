@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 
 import { sazitoStoreOrigin } from "@/lib/sazito/client";
+import { mockSazitoResponse } from "@/lib/sazito/mock";
 
 type ProxyContext = {
   params: Promise<{ path: string[] }>;
@@ -31,6 +32,19 @@ async function proxySazitoRequest(request: Request, context: ProxyContext) {
   }
 
   const incomingUrl = new URL(request.url);
+  const mockResponse = mockSazitoResponse({
+    pathname: `/${path.join("/")}`,
+    searchParams: incomingUrl.searchParams,
+    method: request.method,
+  });
+
+  if (mockResponse) {
+    return NextResponse.json(mockResponse.body, {
+      status: mockResponse.status ?? 200,
+      headers: { "Cache-Control": "no-store" },
+    });
+  }
+
   const targetUrl = new URL(`/${path.join("/")}`, SAZITO_API_ORIGIN);
   targetUrl.search = incomingUrl.search;
 
