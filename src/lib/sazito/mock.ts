@@ -76,7 +76,7 @@ function jsonResult(body: unknown, status = 200): MockResult {
 function pageValue(request: MockRequest, name: string, fallback: number) {
   const value = Number(
     request.searchParams.get(name) ??
-      request.searchParams.get(name.replace("page", "page_")),
+      request.searchParams.get(name === "page" ? "page_number" : "page_size"),
   );
   return Number.isFinite(value) && value > 0 ? value : fallback;
 }
@@ -185,6 +185,9 @@ export function mockSazitoResponse(request: MockRequest): MockResult | null {
   }
   if (pathname === "/api/v1/feedbacks/comments") return jsonResult({ id: "نظر-نمونه-۱" });
   if (pathname === "/api/v1/feedbacks/comments/details") return jsonResult(clone(feedbackReviews));
+  if (pathname.startsWith("/api/v1/feedbacks/comments/details/")) {
+    return jsonResult(clone(feedbackReviews));
+  }
   if (pathname.startsWith("/api/v1/feedbacks/")) {
     return jsonResult({ id: 1, comment: "نظر نمونه", status: "approved" });
   }
