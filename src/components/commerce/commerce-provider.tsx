@@ -60,7 +60,16 @@ function createSazitoProxyFetch(domain: string): typeof fetch {
     }
 
     const proxyUrl = `/api/sazito${target.pathname}${target.search}`;
-    return fetch(proxyUrl, init);
+    if (!init?.headers) return fetch(proxyUrl, init);
+
+    const headers = new Headers(init.headers);
+    for (const [name, value] of headers.entries()) {
+      if ([...value].some((character) => character.charCodeAt(0) > 255)) {
+        headers.delete(name);
+      }
+    }
+
+    return fetch(proxyUrl, { ...init, headers });
   };
 }
 
@@ -71,24 +80,34 @@ export function CommerceProvider({
   domain: string;
   children: React.ReactNode;
 }) {
-  const client = React.useMemo(
-    () =>
-      createSazitoClient({
-        domain,
-        timeout: 15_000,
-        retry: { enabled: false, retries: 0, retryDelay: 0 },
-        cache: {
-          cart: { enabled: false },
-          orders: { enabled: false },
-          search: { enabled: false },
-        },
-        customFetchApi:
-          process.env.NEXT_PUBLIC_SAZITO_USE_MOCKS?.trim() === "true"
-            ? createMockSazitoFetch()
-            : createSazitoProxyFetch(domain),
-      }),
-    [domain],
-  );
+  const client = React.useMemo(() => {
+    const useMocks =
+      process.env.NEXT_PUBLIC_SAZITO_USE_MOCKS?.trim() === "true";
+    const nextClient = createSazitoClient({
+      domain,
+      timeout: 15_000,
+      retry: { enabled: false, retries: 0, retryDelay: 0 },
+      cache: {
+        cart: { enabled: false },
+        orders: { enabled: false },
+        search: { enabled: false },
+      },
+      customFetchApi: useMocks
+        ? createMockSazitoFetch()
+        : createSazitoProxyFetch(domain),
+    });
+
+    const storedToken = nextClient.getAuthToken();
+    if (
+      !useMocks &&
+      storedToken &&
+      [...storedToken].some((character) => character.charCodeAt(0) > 255)
+    ) {
+      nextClient.clearAuth();
+    }
+
+    return nextClient;
+  }, [domain]);
   const [cart, setCart] = React.useState<Cart | null>(null);
   const [isLoading, setIsLoading] = React.useState(true);
   const [isMutating, setIsMutating] = React.useState(false);

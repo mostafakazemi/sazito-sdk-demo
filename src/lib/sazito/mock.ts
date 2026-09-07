@@ -228,7 +228,7 @@ export function mockSazitoResponse(request: MockRequest): MockResult | null {
   }
   if (pathname.startsWith("/api/v1/users/") || pathname.startsWith("/api/v1/sessions/")) {
     if (pathname.endsWith("/current")) return jsonResult(clone(user));
-    if (pathname.endsWith("/login") || pathname.endsWith("/login_request_verification")) return jsonResult({ jwt: "توکن-نمونه", user: clone(user.user) });
+    if (pathname.endsWith("/login") || pathname.endsWith("/login_request_verification")) return jsonResult({ jwt: "mock-token-2026", user: clone(user.user) });
     if (pathname.endsWith("/register") || pathname.endsWith("/update_mobile_phone_verification")) return jsonResult(clone(user));
     return jsonResult({ ok: true, message: "درخواست با موفقیت انجام شد." });
   }
