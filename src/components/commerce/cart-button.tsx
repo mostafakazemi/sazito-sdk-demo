@@ -121,7 +121,7 @@ export function CartButton() {
                     <div className="flex gap-3">
                       <Link href={href} onClick={() => setCartOpen(false)} className="relative flex size-20 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-muted">
                         {item.product.image?.url ? (
-                          <Image src={item.product.image.url} alt={item.product.image.alt || item.product.name} fill sizes="80px" className="object-contain p-1" />
+                          <Image src={item.product.image.url} alt={item.product.image.alt || item.product.name} fill sizes="80px" className="object-cover" />
                         ) : (
                           <ImageOff className="size-5 text-muted-foreground" />
                         )}

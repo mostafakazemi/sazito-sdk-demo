@@ -9,7 +9,7 @@ export function CatalogLoading() {
         <Skeleton className="h-96 rounded-[1.5rem]" />
         <div className="grid grid-cols-2 gap-3 sm:gap-5 md:grid-cols-3">
           {Array.from({ length: 6 }, (_, index) => (
-            <Skeleton key={index} className="aspect-[0.72] rounded-[1.5rem]" />
+        <Skeleton key={index} className="aspect-[4/3] rounded-[1.5rem]" />
           ))}
         </div>
       </div>

@@ -146,7 +146,7 @@ export function StoreSearch() {
                     >
                       <span className="relative flex size-16 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-muted">
                         {product.image ? (
-                          <Image src={product.image.src} alt="" fill sizes="64px" className="object-contain p-1" />
+                          <Image src={product.image.src} alt="" fill sizes="64px" className="object-cover" />
                         ) : (
                           <ImageOff className="size-5 text-muted-foreground" />
                         )}
