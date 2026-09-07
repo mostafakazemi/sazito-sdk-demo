@@ -1,8 +1,7 @@
 import "server-only";
 
-import { createSazitoClient } from "@sazito/client-sdk";
-
 import { createMockSazitoFetch } from "./mock";
+import { createSazitoClient } from "./create-client";
 
 function readStoreDomain() {
   const domain = process.env.SAZITO_STORE_DOMAIN?.trim();
@@ -31,7 +30,6 @@ const customFetchApi =
 export const sazitoClient = createSazitoClient({
   domain: sazitoStoreDomain,
   timeout: 15_000,
-  debug: true,
   retry: {
     enabled: true,
     retries: 2,

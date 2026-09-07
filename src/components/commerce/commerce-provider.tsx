@@ -3,7 +3,6 @@
 import * as React from "react";
 import { SazitoProvider } from "@sazito/checkout/next";
 import {
-  createSazitoClient,
   type Cart,
   type FormAttributeValue,
   type SazitoClient,
@@ -11,6 +10,7 @@ import {
 
 import { cartErrorMessage, cartItemCount } from "@/lib/sazito/cart";
 import { createMockSazitoFetch } from "@/lib/sazito/mock";
+import { createSazitoClient } from "@/lib/sazito/create-client";
 
 type CartOperationResult =
   | { ok: true }
@@ -76,7 +76,6 @@ export function CommerceProvider({
       createSazitoClient({
         domain,
         timeout: 15_000,
-        debug: true,
         retry: { enabled: false, retries: 0, retryDelay: 0 },
         cache: {
           cart: { enabled: false },
