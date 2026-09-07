@@ -25,6 +25,8 @@ STOREFRONT_URL=https://testmosi.sazito.com
 SAZITO_REVALIDATE_SECRET=replace-with-at-least-32-random-characters
 SAZITO_USE_MOCKS=true
 NEXT_PUBLIC_SAZITO_USE_MOCKS=true
+SAZITO_DEBUG=true
+NEXT_PUBLIC_SAZITO_DEBUG=true
 ```
 
 - `SAZITO_STORE_DOMAIN` is the Sazito shop domain without a protocol.
@@ -36,6 +38,8 @@ NEXT_PUBLIC_SAZITO_USE_MOCKS=true
 - `NEXT_PUBLIC_SAZITO_USE_MOCKS` enables mock responses for browser-side cart
   and commerce SDK calls. Keep both flags set to `true` for a fully mocked
   local storefront.
+- `SAZITO_DEBUG` controls server-side SDK logs, and `NEXT_PUBLIC_SAZITO_DEBUG`
+  controls browser-side SDK logs. Both default to `true` when omitted.
 
 ### Run with mock data
 
