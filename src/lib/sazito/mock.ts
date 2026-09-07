@@ -28,6 +28,7 @@ import paymentCreate from "./mocks/payment-create.json";
 import paymentAction from "./mocks/payment-action.json";
 import uploadResponse from "./mocks/upload-response.json";
 import booking from "./mocks/booking.json";
+import discountPolicy from "./mocks/discount-policy.json";
 
 type MockRequest = {
   pathname: string;
@@ -40,6 +41,7 @@ type MockResult = { status?: number; body: unknown };
 type JsonObject = Record<string, unknown>;
 type Fixture = JsonObject | unknown[];
 type MockCartState = {
+  discountCode?: string;
   result: {
     id: number;
     identifier: string;
@@ -240,6 +242,41 @@ function updateCartTotals(state: MockCartState) {
   state.result.grossTotal = state.result.netTotal;
 }
 
+function createMockInvoice(state: MockCartState) {
+  const couponTotal = state.discountCode
+    ? Math.round(state.result.netTotal * discountPolicy.percentage / 100)
+    : 0;
+  return {
+    ...clone(invoice),
+    items: state.result.items.map((item) => {
+      const product = item.product as JsonObject;
+      return {
+        id: item.id,
+        productVariantId: item.productVariantId,
+        productId: product.productId,
+        name: product.name,
+        url: product.url,
+        image: product.image,
+        attributes: product.attributes,
+        productType: product.productType,
+        quantity: item.quantity,
+        unitPrice: item.unitPrice,
+        lineTotal: item.lineTotal,
+        rawPrice: item.unitPrice,
+        customerProfit: 0,
+      };
+    }),
+    needsShipping: state.result.needsShipping,
+    netTotal: state.result.netTotal,
+    finalTotal: Math.max(0, state.result.netTotal - couponTotal),
+    couponTotal,
+    discountUsages: state.discountCode
+      ? [{ discountCode: { code: state.discountCode } }]
+      : [],
+    itemsTotalRawPrice: state.result.netTotal,
+  };
+}
+
 function mutateMockCart(state: MockCartState, request: MockRequest) {
   if (request.method !== "POST") return;
 
@@ -332,7 +369,16 @@ export function mockSazitoResponse(
     if (pathname.endsWith("applicable_shipping_methods")) {
       return jsonResult(clone(shippingRates));
     }
-    return jsonResult({ data: clone(invoice) });
+    const state = cartState ?? createMockCartState();
+    if (request.method === "POST" && pathname.endsWith("/add_discount_code")) {
+      const body = (request.body ?? {}) as JsonObject;
+      const code = body.discount_code ?? body.discountCode;
+      if (typeof code !== "string" || !code.trim()) {
+        return jsonResult({ message: "کد تخفیف را وارد کنید." }, 422);
+      }
+      state.discountCode = code.trim().toUpperCase();
+    }
+    return jsonResult({ result: createMockInvoice(state) });
   }
 
   if (pathname === "/api/v2/shipping_addresses") {

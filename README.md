@@ -59,6 +59,10 @@ NEXT_PUBLIC_SAZITO_USE_MOCKS=false
 
 ### Mock fixture layout
 
+In mock mode, any non-empty discount code applies a 10% discount (for example,
+`تخفیف`). The percentage is configured in `src/lib/sazito/mocks/discount-policy.json`.
+The discount persists during the mock session and recalculates with cart quantities.
+
 Mock payloads live in `src/lib/sazito/mocks/`, with one JSON file per endpoint
 family. The resolver in `src/lib/sazito/mock.ts` only adds request-specific
 behavior such as pagination, URL entity resolution, and path parameters.

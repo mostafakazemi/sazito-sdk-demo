@@ -1,4 +1,5 @@
 import { afterEach, describe, expect, it } from "vitest";
+import { createSazitoClient, CredentialsManager, MemoryStorage } from "@sazito/client-sdk";
 
 import { createMockSazitoFetch, mockSazitoResponse } from "./mock";
 
@@ -113,5 +114,74 @@ describe("Sazito mock endpoint coverage", () => {
     });
     const removed = (await removeResponse.json()) as { result: { items: unknown[] } };
     expect(removed.result.items).toHaveLength(0);
+  });
+
+  it("builds a payable mock invoice from the cart", async () => {
+    process.env.SAZITO_USE_MOCKS = "true";
+    const mockFetch = createMockSazitoFetch();
+
+    await mockFetch("https://mock-store.sazito.com/api/v2/carts", {
+      method: "POST",
+      body: JSON.stringify({ variants: [{ id: 10, count: 2 }] }),
+    });
+
+    const response = await mockFetch("https://mock-store.sazito.com/api/v2/invoices", {
+      method: "POST",
+      body: JSON.stringify({ cart_id: "0", cart_identifier: "سبد-نمونه-۱" }),
+    });
+    const result = (await response.json()) as {
+      result: { items: unknown[]; netTotal: number; finalTotal: number };
+    };
+
+    expect(result.result.items).toHaveLength(1);
+    expect(result.result.netTotal).toBe(245000);
+    expect(result.result.finalTotal).toBe(245000);
+  });
+
+  it("applies and recalculates mock discounts through the SDK", async () => {
+    process.env.SAZITO_USE_MOCKS = "true";
+    const client = createSazitoClient(
+      { domain: "mock-store.sazito.com", customFetchApi: createMockSazitoFetch(), debug: false },
+      new CredentialsManager(new MemoryStorage()),
+    );
+    const cart = await client.cart.addItemWithAttributes(10, 2);
+    await client.invoices.create();
+    const discounted = await client.invoices.addDiscountCode("تخفیف");
+    expect(discounted.error).toBeUndefined();
+    expect(discounted.data).toMatchObject({ netTotal: 245000, couponTotal: 24500, discountTotal: 0, finalTotal: 220500, discountCode: "تخفیف" });
+    expect((await client.invoices.refresh()).data?.finalTotal).toBe(220500);
+    expect((await client.invoices.addDiscountCode("تخفیف")).data?.finalTotal).toBe(220500);
+    await client.cart.updateItemWithAttributes(cart.data!.items[0].id, 10, 3);
+    expect((await client.invoices.refresh()).data).toMatchObject({ couponTotal: 36750, finalTotal: 330750 });
+    expect((await client.invoices.addDiscountCode(" ")).error?.status).toBe(422);
+    await client.cart.removeItem(cart.data!.items[0].id, 10);
+    expect((await client.invoices.refresh()).data).toMatchObject({ couponTotal: 0, finalTotal: 0 });
+  });
+
+  it("preserves prices through SDK cart and invoice operations", async () => {
+    process.env.SAZITO_USE_MOCKS = "true";
+    const client = createSazitoClient(
+      { domain: "mock-store.sazito.com", customFetchApi: createMockSazitoFetch(), debug: false },
+      new CredentialsManager(new MemoryStorage()),
+    );
+    const added = await client.cart.addItemWithAttributes(10, 2);
+    expect(added.error).toBeUndefined();
+    expect(added.data?.netTotal).toBe(245000);
+    expect(added.data?.items[0]).toMatchObject({ quantity: 2, unitPrice: 122500, lineTotal: 245000 });
+
+    const created = await client.invoices.create();
+    expect(created.error).toBeUndefined();
+    expect(created.data?.finalTotal).toBe(245000);
+    expect(created.data?.items).toHaveLength(1);
+
+    await client.cart.updateItemWithAttributes(added.data!.items[0].id, 10, 3);
+    const refreshed = await client.invoices.refresh();
+    expect(refreshed.data?.finalTotal).toBe(367500);
+    expect(refreshed.data?.items[0].quantity).toBe(3);
+
+    await client.cart.removeItem(added.data!.items[0].id, 10);
+    const empty = await client.invoices.refresh();
+    expect(empty.data?.finalTotal).toBe(0);
+    expect(empty.data?.items).toHaveLength(0);
   });
 });
