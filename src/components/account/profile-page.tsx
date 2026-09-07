@@ -2,6 +2,10 @@
 
 import * as React from "react";
 import { CheckCircle2, LoaderCircle, Save } from "lucide-react";
+import DatePicker from "react-multi-date-picker";
+import DateObject from "react-date-object";
+import persian from "react-date-object/calendars/persian";
+import persianFa from "react-date-object/locales/persian_fa";
 
 import { useAccount } from "@/components/account/account-provider";
 import { AccountGate, AccountShell } from "@/components/account/account-shell";
@@ -12,8 +16,36 @@ import { Card, CardContent } from "@/components/ui/card";
 const inputClassName =
   "h-12 w-full rounded-2xl border border-border/80 bg-background px-4 text-sm outline-none transition-[border-color,box-shadow] placeholder:text-muted-foreground focus:border-primary focus:ring-2 focus:ring-ring/25 disabled:opacity-60";
 
+function normalizeBirthDate(value?: string) {
+  if (!value) return "";
+
+  const match = value.match(/^(\d{4})-(\d{2})-(\d{2})/);
+  return match ? match[0] : "";
+}
+
+function toPersianDate(value: string) {
+  if (!value) return null;
+
+  const date = new DateObject(new Date(`${value}T12:00:00`));
+  return date.convert(persian, persianFa);
+}
+
+function toIsoDate(value: DateObject | null) {
+  if (!value) return "";
+
+  const date = value.toDate();
+  return [date.getFullYear(), date.getMonth() + 1, date.getDate()]
+    .map((part) => String(part).padStart(2, "0"))
+    .join("-");
+}
+
 function ProfileForm() {
   const { user, updateProfile } = useAccount();
+  const [birthDateOverride, setBirthDateOverride] = React.useState<string | null>(
+    null,
+  );
+  const birthDate =
+    birthDateOverride ?? normalizeBirthDate(user?.birthDate);
   const [message, setMessage] = React.useState<{
     type: "success" | "error";
     text: string;
@@ -91,18 +123,23 @@ function ProfileForm() {
           </label>
 
           <div className="grid gap-5 sm:grid-cols-2">
-            <label className="grid gap-2 text-sm font-bold" htmlFor="birth-date">
-              تاریخ تولد
-              <input
+            <div className="grid gap-2 text-sm font-bold">
+              <label htmlFor="birth-date">تاریخ تولد</label>
+              <DatePicker
                 id="birth-date"
-                name="birthDate"
-                type="date"
-                dir="ltr"
-                defaultValue={user?.birthDate?.slice(0, 10) ?? ""}
+                calendar={persian}
+                locale={persianFa}
+                value={toPersianDate(birthDate)}
+                onChange={(value) => setBirthDateOverride(toIsoDate(value))}
+                format="YYYY/MM/DD"
+                calendarPosition="bottom-right"
+                inputClass={inputClassName}
                 disabled={isPending}
-                className={inputClassName}
+                placeholder="انتخاب تاریخ تولد"
+                containerClassName="w-full"
               />
-            </label>
+              <input type="hidden" name="birthDate" value={birthDate} />
+            </div>
             <label className="grid gap-2 text-sm font-bold" htmlFor="profile-mobile">
               شماره موبایل
               <input
