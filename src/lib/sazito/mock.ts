@@ -20,6 +20,7 @@ import bookings from "./mocks/bookings.json";
 import events from "./mocks/events.json";
 import availabilities from "./mocks/availabilities.json";
 import dynamicForm from "./mocks/dynamic-form.json";
+import productImages from "./mocks/product-images.json";
 import walletBalance from "./mocks/wallet-balance.json";
 import walletTransactions from "./mocks/wallet-transactions.json";
 import shippingRates from "./mocks/shipping-rates.json";
@@ -111,8 +112,16 @@ function productFixture(request: MockRequest) {
     };
     const id = (page - 1) * pageSize + index + 1;
     item.id = id;
-    item.name = `محصول نمونه ${id}`;
-    item.url = `/product/sample-product-${id}`;
+    const image = productImages[(id - 1) % productImages.length];
+    item.name = image.alt;
+    item.url = `/product/product-${id}`;
+    item.summary = `انتخابی کاربردی و باکیفیت از ${image.alt}.`;
+    item.description = `توضیحات کامل درباره ${image.alt}؛ محصولی محبوب مشتریان خانه‌پوش.`;
+    item.images = item.images.map((currentImage: Record<string, unknown>, index: number) =>
+      index === 0
+        ? { ...currentImage, url: image.url, alt: image.alt, name: image.alt }
+        : currentImage,
+    );
     item.variants = item.variants.map((variant: Record<string, unknown>) => ({
       ...variant,
       id: id * 10,
@@ -125,9 +134,15 @@ function productFixture(request: MockRequest) {
 
 function entityRoute(pathname: string) {
   if (pathname.startsWith("/product/")) {
-    const item = clone(products.items[0]);
+    const numericId = Number(pathname.split("-").pop()) || 1;
+    const item = clone(products.items[0]) as typeof products.items[number] & {
+      [key: string]: unknown;
+    };
+    const image = productImages[(numericId - 1) % productImages.length];
+    item.id = numericId;
     item.url = pathname;
-    item.name = pathname.split("/").pop()?.replace(/-/g, " ") ?? "محصول نمونه";
+    item.name = image.alt;
+    item.images[0] = { ...item.images[0], url: image.url, alt: image.alt, name: image.alt };
     return { entityType: "product", entityId: item.id, entity: item };
   }
   if (pathname.startsWith("/category/")) {
@@ -153,7 +168,7 @@ function searchFixture(request: MockRequest) {
 function addressFixture(id = 1) {
   const address = clone(addresses.addresses[0]);
   address.id = id;
-  address.identifier = `نشانی-نمونه-${id}`;
+  address.identifier = `نشانی منزل ${id}`;
   return address;
 }
 
@@ -181,15 +196,15 @@ export function mockSazitoResponse(request: MockRequest): MockResult | null {
   }
   if (pathname.startsWith("/api/v1/dynamic_form/")) return jsonResult(clone(dynamicForm));
   if (pathname.startsWith("/api/v1/feedbacks/seed/")) {
-    return jsonResult(feedbackSeed(pathname.split("/").pop() ?? "سفارش-نمونه"));
+    return jsonResult(feedbackSeed(pathname.split("/").pop() ?? "سفارش کفش آریا"));
   }
-  if (pathname === "/api/v1/feedbacks/comments") return jsonResult({ id: "نظر-نمونه-۱" });
+  if (pathname === "/api/v1/feedbacks/comments") return jsonResult({ id: "نظر-کفش-آریا-۱" });
   if (pathname === "/api/v1/feedbacks/comments/details") return jsonResult(clone(feedbackReviews));
   if (pathname.startsWith("/api/v1/feedbacks/comments/details/")) {
     return jsonResult(clone(feedbackReviews));
   }
   if (pathname.startsWith("/api/v1/feedbacks/")) {
-    return jsonResult({ id: 1, comment: "نظر نمونه", status: "approved" });
+    return jsonResult({ id: 1, comment: "نظر درباره کفش پیاده‌روی آریا", status: "approved" });
   }
   if (pathname.startsWith("/api/v2/carts")) return jsonResult(clone(cart));
 
@@ -251,7 +266,7 @@ export function mockSazitoResponse(request: MockRequest): MockResult | null {
   const fixture = staticFixtures[pathname];
   if (fixture) return jsonResult(clone(fixture));
 
-  return jsonResult({ error: { type: "validation", message: `برای مسیر ${pathname} فیکسچر نمونه ثبت نشده است.` } }, 501);
+  return jsonResult({ error: { type: "validation", message: `برای مسیر ${pathname} داده نمونه ثبت نشده است.` } }, 501);
 }
 
 export function createMockSazitoFetch(): typeof fetch {

@@ -73,4 +73,19 @@ describe("Sazito mock endpoint coverage", () => {
 
     expect(response?.body).toMatchObject({ page: 2, pageSize: 3 });
   });
+
+  it("uses different semantic images for generated products", () => {
+    process.env.SAZITO_USE_MOCKS = "true";
+
+    const response = mockSazitoResponse({
+      pathname: "/api/v1/products",
+      searchParams: new URLSearchParams({ page_size: "4" }),
+      method: "GET",
+    });
+    const body = response?.body as {
+      items: Array<{ images: Array<{ url: string }> }>;
+    };
+
+    expect(new Set(body.items.map((item) => item.images[0]?.url)).size).toBe(4);
+  });
 });
