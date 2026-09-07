@@ -158,6 +158,21 @@ describe("Sazito mock endpoint coverage", () => {
     expect((await client.invoices.refresh()).data).toMatchObject({ couponTotal: 0, finalTotal: 0 });
   });
 
+  it("provides selectable payment methods through the checkout SDK client", async () => {
+    process.env.SAZITO_USE_MOCKS = "true";
+    const client = createSazitoClient(
+      { domain: "mock-store.sazito.com", customFetchApi: createMockSazitoFetch(), debug: false },
+      new CredentialsManager(new MemoryStorage()),
+    );
+    await client.cart.addItemWithAttributes(10, 1);
+    await client.invoices.create();
+    const response = await client.payments.getMethods();
+    expect(response.error).toBeUndefined();
+    expect(response.data).toHaveLength(2);
+    expect(response.data?.find((method) => method.isDefault)).toMatchObject({ id: 1, titleFa: "درگاه پرداخت آنلاین" });
+    expect(response.data?.every((method) => method.id > 0)).toBe(true);
+  });
+
   it("preserves prices through SDK cart and invoice operations", async () => {
     process.env.SAZITO_USE_MOCKS = "true";
     const client = createSazitoClient(

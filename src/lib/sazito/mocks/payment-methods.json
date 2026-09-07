@@ -1,1 +1,1 @@
-[{"id":1,"name":"پرداخت آنلاین","title":"درگاه پرداخت آنلاین","code":"online","type":"gateway","enabled":true},{"id":2,"name":"پرداخت در محل","title":"پرداخت هنگام تحویل","code":"cash","type":"cash","enabled":true}]
+{"paymentTypes":[{"id":1,"title":"درگاه پرداخت آنلاین","titleFa":"درگاه پرداخت آنلاین","code":"online","isDefault":true,"order":1},{"id":2,"title":"پرداخت هنگام تحویل","titleFa":"پرداخت هنگام تحویل","code":"cash","isDefault":false,"order":2}]}
