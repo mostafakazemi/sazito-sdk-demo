@@ -33,11 +33,23 @@ type MockRequest = {
   pathname: string;
   searchParams: URLSearchParams;
   method: string;
+  body?: unknown;
 };
 
 type MockResult = { status?: number; body: unknown };
 type JsonObject = Record<string, unknown>;
 type Fixture = JsonObject | unknown[];
+type MockCartState = {
+  result: {
+    id: number;
+    identifier: string;
+    items: JsonObject[];
+    netTotal: number;
+    grossTotal: number;
+    needsShipping: boolean;
+    minBasketLimitViolated: boolean;
+  };
+};
 
 const staticFixtures: Record<string, Fixture> = {
   "/api/v2/general/info": generalInfo,
@@ -107,6 +119,7 @@ function productFixture(request: MockRequest) {
       id: number;
       name: string;
       url: string;
+      images: Record<string, unknown>[];
       variants: Record<string, unknown>[];
       [key: string]: unknown;
     };
@@ -185,7 +198,110 @@ function feedbackSeed(orderIdentifier: string) {
   return seed;
 }
 
-export function mockSazitoResponse(request: MockRequest): MockResult | null {
+function createMockCartState(): MockCartState {
+  return clone(cart) as MockCartState;
+}
+
+function cartProductSnapshot(variantId: number) {
+  const productId = Math.max(1, Math.floor(variantId / 10));
+  const image = productImages[(productId - 1) % productImages.length];
+  const product = clone(products.items[0]);
+
+  return {
+    variantId,
+    productId,
+    name: image.alt,
+    url: `/product/product-${productId}`,
+    image: {
+      id: product.images[0].id,
+      url: image.url,
+      alt: image.alt,
+      name: image.alt,
+      width: 1200,
+      height: 900,
+    },
+    attributes: product.variants[0].attributes,
+    productType: product.productType,
+    hasMaxOrder: product.variants[0].hasMaxOrder,
+    maxOrderQuantity: product.variants[0].maxOrderQuantity,
+    minOrderQuantity: product.variants[0].minOrderQuantity,
+  };
+}
+
+function cartVariantPrice() {
+  return products.items[0].variants[0].price;
+}
+
+function updateCartTotals(state: MockCartState) {
+  state.result.netTotal = state.result.items.reduce(
+    (total, item) => total + Number(item.lineTotal ?? 0),
+    0,
+  );
+  state.result.grossTotal = state.result.netTotal;
+}
+
+function mutateMockCart(state: MockCartState, request: MockRequest) {
+  if (request.method !== "POST") return;
+
+  const body = (request.body ?? {}) as JsonObject;
+  const variants = Array.isArray(body.variants)
+    ? body.variants
+    : Array.isArray(body.product_variants)
+      ? body.product_variants
+      : [];
+  const variant = variants[0] as JsonObject | undefined;
+  const variantId = Number(variant?.id ?? variant?.variantId);
+  const quantity = Number(variant?.count ?? variant?.quantity);
+  const formAttributes = body.formAttributes ?? body.form_attributes;
+
+  if (!Number.isFinite(variantId)) return;
+
+  if (request.pathname.endsWith("/remove_products_from_cart")) {
+    const cartProductId = String(body.cartProductId ?? body.cart_product_id);
+    state.result.items = state.result.items.filter(
+      (item) => String(item.id) !== cartProductId,
+    );
+  } else if (request.pathname.endsWith("/update_products_in_cart")) {
+    const cartProductId = String(body.cartProductId ?? body.cart_product_id);
+    const item = state.result.items.find(
+      (currentItem) => String(currentItem.id) === cartProductId,
+    );
+    if (item && Number.isFinite(quantity) && quantity > 0) {
+      item.quantity = quantity;
+      item.lineTotal = quantity * Number(item.unitPrice ?? cartVariantPrice());
+    }
+  } else if (
+    request.pathname === "/api/v2/carts" ||
+    request.pathname.endsWith("/add_products_to_cart")
+  ) {
+    const existingItem = state.result.items.find(
+      (item) => Number(item.productVariantId) === variantId,
+    );
+    if (existingItem) {
+      existingItem.quantity = Number(existingItem.quantity ?? 0) + quantity;
+      existingItem.lineTotal =
+        Number(existingItem.quantity) * Number(existingItem.unitPrice);
+    } else {
+      const unitPrice = cartVariantPrice();
+      state.result.items.push({
+        id: `mock-cart-item-${variantId}`,
+        productVariantId: variantId,
+        quantity,
+        unitPrice,
+        lineTotal: quantity * unitPrice,
+        product: cartProductSnapshot(variantId),
+        ...(formAttributes ? { formAttributes } : {}),
+      });
+    }
+  }
+
+  updateCartTotals(state);
+}
+
+export function mockSazitoResponse(
+  request: MockRequest,
+  cartState?: MockCartState,
+): MockResult | null {
   if (!isMockModeEnabled()) return null;
 
   const { pathname } = request;
@@ -206,7 +322,11 @@ export function mockSazitoResponse(request: MockRequest): MockResult | null {
   if (pathname.startsWith("/api/v1/feedbacks/")) {
     return jsonResult({ id: 1, comment: "نظر درباره کفش پیاده‌روی آریا", status: "approved" });
   }
-  if (pathname.startsWith("/api/v2/carts")) return jsonResult(clone(cart));
+  if (pathname.startsWith("/api/v2/carts")) {
+    const state = cartState ?? createMockCartState();
+    mutateMockCart(state, request);
+    return jsonResult(clone(state));
+  }
 
   if (pathname.startsWith("/api/v2/invoices")) {
     if (pathname.endsWith("applicable_shipping_methods")) {
@@ -270,10 +390,28 @@ export function mockSazitoResponse(request: MockRequest): MockResult | null {
 }
 
 export function createMockSazitoFetch(): typeof fetch {
+  const cartState = createMockCartState();
+
   return async (input, init) => {
     const requestUrl = typeof input === "string" ? input : input instanceof URL ? input.href : input.url;
     const url = new URL(requestUrl, "http://localhost");
-    const response = mockSazitoResponse({ pathname: url.pathname, searchParams: url.searchParams, method: (init?.method ?? "GET").toUpperCase() });
+    let body: unknown;
+    if (typeof init?.body === "string" && init.body) {
+      try {
+        body = JSON.parse(init.body);
+      } catch {
+        body = undefined;
+      }
+    }
+    const response = mockSazitoResponse(
+      {
+        pathname: url.pathname,
+        searchParams: url.searchParams,
+        method: (init?.method ?? "GET").toUpperCase(),
+        body,
+      },
+      cartState,
+    );
     if (!response) return fetch(input, init);
     return Response.json(response.body, { status: response.status ?? 200, headers: { "Cache-Control": "no-store" } });
   };

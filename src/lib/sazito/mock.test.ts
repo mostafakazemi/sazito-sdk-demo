@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it } from "vitest";
 
-import { mockSazitoResponse } from "./mock";
+import { createMockSazitoFetch, mockSazitoResponse } from "./mock";
 
 const endpointCases = [
   "/api/v2/general/info",
@@ -87,5 +87,31 @@ describe("Sazito mock endpoint coverage", () => {
     };
 
     expect(new Set(body.items.map((item) => item.images[0]?.url)).size).toBe(4);
+  });
+
+  it("keeps mock cart mutations across requests", async () => {
+    process.env.SAZITO_USE_MOCKS = "true";
+    const mockFetch = createMockSazitoFetch();
+
+    const createResponse = await mockFetch("https://mock-store.sazito.com/api/v2/carts", {
+      method: "POST",
+      body: JSON.stringify({ variants: [{ id: 10, count: 2 }] }),
+    });
+    const created = (await createResponse.json()) as { result: { items: unknown[] } };
+    expect(created.result.items).toHaveLength(1);
+
+    const updateResponse = await mockFetch("https://mock-store.sazito.com/api/v2/carts/0/update_products_in_cart", {
+      method: "POST",
+      body: JSON.stringify({ cartProductId: "mock-cart-item-10", variants: [{ id: 10, count: 3 }] }),
+    });
+    const updated = (await updateResponse.json()) as { result: { items: Array<{ quantity: number }> } };
+    expect(updated.result.items[0].quantity).toBe(3);
+
+    const removeResponse = await mockFetch("https://mock-store.sazito.com/api/v2/carts/0/remove_products_from_cart", {
+      method: "POST",
+      body: JSON.stringify({ cartProductId: "mock-cart-item-10", variants: [{ id: 10 }] }),
+    });
+    const removed = (await removeResponse.json()) as { result: { items: unknown[] } };
+    expect(removed.result.items).toHaveLength(0);
   });
 });
