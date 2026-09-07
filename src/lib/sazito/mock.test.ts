@@ -122,6 +122,31 @@ describe("Sazito mock endpoint coverage", () => {
     expect(new Set(body.items.map((item) => item.images[0]?.url)).size).toBe(4);
   });
 
+  it("includes every supported social link in mock store info", () => {
+    process.env.SAZITO_USE_MOCKS = "true";
+    const response = mockSazitoResponse({
+      pathname: "/api/v2/general/info",
+      searchParams: new URLSearchParams(),
+      method: "GET",
+    });
+    const body = response?.body as {
+      result: { social: Record<string, string> };
+    };
+    expect(Object.keys(body.result.social)).toEqual(expect.arrayContaining([
+      "instagram",
+      "telegram",
+      "whatsapp",
+      "twitter",
+      "facebook",
+      "bale",
+      "eitaa",
+      "rubika",
+      "soroush_plus",
+      "phone1",
+      "phone2",
+    ]));
+  });
+
   it("keeps mock cart mutations across requests", async () => {
     process.env.SAZITO_USE_MOCKS = "true";
     const mockFetch = createMockSazitoFetch();
