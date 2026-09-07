@@ -111,6 +111,8 @@ export function CommerceProvider({
   const [cart, setCart] = React.useState<Cart | null>(null);
   const [isLoading, setIsLoading] = React.useState(true);
   const [isMutating, setIsMutating] = React.useState(false);
+  const addQueue = React.useRef<Promise<void>>(Promise.resolve());
+  const pendingAdds = React.useRef(0);
   const [isCartOpen, setCartOpen] = React.useState(false);
 
   const syncCart = React.useCallback((nextCart: Cart | null) => {
@@ -178,9 +180,17 @@ export function CommerceProvider({
       quantity: number,
       formAttributes?: Record<string, FormAttributeValue>,
     ): Promise<CartOperationResult> => {
+      const previousAdd = addQueue.current;
+      let releaseQueue!: () => void;
+      addQueue.current = new Promise<void>((resolve) => {
+        releaseQueue = resolve;
+      });
+      pendingAdds.current += 1;
       setIsMutating(true);
 
       try {
+        // Serialize additions so the first request establishes cart credentials.
+        await previousAdd;
         const response = await client.cart.addItemWithAttributes(
           variantId,
           quantity,
@@ -205,7 +215,9 @@ export function CommerceProvider({
           message: "ارتباط با فروشگاه برقرار نشد. دوباره تلاش کنید.",
         };
       } finally {
-        setIsMutating(false);
+        pendingAdds.current -= 1;
+        setIsMutating(pendingAdds.current > 0);
+        releaseQueue();
       }
     },
     [client],

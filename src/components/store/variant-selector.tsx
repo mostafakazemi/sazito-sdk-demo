@@ -209,7 +209,8 @@ export function VariantSelector({
   variants: ProductVariantView[];
   defaultVariantId: number | null;
 }) {
-  const { addItem, client, isMutating } = useCommerce();
+  const { addItem, client } = useCommerce();
+  const [isAdding, setIsAdding] = React.useState(false);
   const [selectedId, setSelectedId] = React.useState(
     defaultVariantId ?? variants[0]?.id ?? null,
   );
@@ -281,6 +282,7 @@ export function VariantSelector({
     }));
   };
   const handleAddToCart = async () => {
+    if (isAdding) return;
     setFeedback(null);
 
     if (formId) {
@@ -296,13 +298,17 @@ export function VariantSelector({
       }
     }
 
-    const result = await addItem(selected.id, quantity, formId ? formValues : undefined);
-
-    setFeedback(
-      result.ok
-        ? { type: "success", message: "محصول به سبد خرید اضافه شد." }
-        : { type: "error", message: result.message },
-    );
+    setIsAdding(true);
+    try {
+      const result = await addItem(selected.id, quantity, formId ? formValues : undefined);
+      setFeedback(
+        result.ok
+          ? { type: "success", message: "محصول به سبد خرید اضافه شد." }
+          : { type: "error", message: result.message },
+      );
+    } finally {
+      setIsAdding(false);
+    }
   };
 
   return (
@@ -418,7 +424,7 @@ export function VariantSelector({
                   value={formValues[field.name]}
                   error={formErrors[field.name]}
                   isUploading={uploadingField === field.name}
-                  disabled={isMutating}
+                  disabled={isAdding}
                   onChange={(value) => {
                     setFormValues((current) => ({ ...current, [field.name]: value }));
                     setFormErrors((current) => {
@@ -475,7 +481,7 @@ export function VariantSelector({
             <button
               type="button"
               onClick={() => setQuantity(quantity - 1)}
-              disabled={quantity <= selected.minQuantity || isMutating}
+              disabled={quantity <= selected.minQuantity || isAdding}
               aria-label="کم کردن تعداد"
               className="flex size-10 items-center justify-center rounded-xl text-primary outline-none transition-colors hover:bg-secondary focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-35"
             >
@@ -488,7 +494,7 @@ export function VariantSelector({
               type="button"
               onClick={() => setQuantity(quantity + 1)}
               disabled={
-                isMutating ||
+                isAdding ||
                 (selected.maxQuantity !== null && quantity >= selected.maxQuantity)
               }
               aria-label="زیاد کردن تعداد"
@@ -501,10 +507,11 @@ export function VariantSelector({
           <Button
             type="button"
             size="lg"
-            disabled={!selected.available || isMutating || formLoading || Boolean(uploadingField)}
+            disabled={!selected.available || isAdding || formLoading || Boolean(uploadingField)}
+            aria-busy={isAdding}
             onClick={() => void handleAddToCart()}
           >
-            {isMutating ? (
+            {isAdding ? (
               <LoaderCircle className="animate-spin" />
             ) : (
               <ShoppingBag />
