@@ -1,4 +1,4 @@
-import { afterEach, describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import { createSazitoClient, CredentialsManager, MemoryStorage } from "@sazito/client-sdk";
 
 import { createMockSazitoFetch, mockSazitoResponse } from "./mock";
@@ -47,8 +47,40 @@ const endpointCases = [
 
 describe("Sazito mock endpoint coverage", () => {
   afterEach(() => {
+    vi.useRealTimers();
+    vi.unstubAllEnvs();
     delete process.env.SAZITO_USE_MOCKS;
     delete process.env.NEXT_PUBLIC_SAZITO_USE_MOCKS;
+  });
+
+  it("delays mock responses by the configured duration", async () => {
+    vi.useFakeTimers();
+    vi.stubEnv("SAZITO_USE_MOCKS", "true");
+    vi.stubEnv("SAZITO_MOCK_DELAY_MS", "500");
+    const finished = vi.fn();
+    const pending = createMockSazitoFetch()("https://mock-store.sazito.com/api/v2/carts/0").then(finished);
+    await vi.advanceTimersByTimeAsync(499);
+    expect(finished).not.toHaveBeenCalled();
+    await vi.advanceTimersByTimeAsync(1);
+    await pending;
+    expect(finished).toHaveBeenCalledOnce();
+  });
+
+  it("cancels delayed mutations without adding cart items", async () => {
+    vi.useFakeTimers();
+    vi.stubEnv("SAZITO_USE_MOCKS", "true");
+    const mockFetch = createMockSazitoFetch({ delayMs: 500 });
+    const controller = new AbortController();
+    const pending = mockFetch("https://mock-store.sazito.com/api/v2/carts", {
+      method: "POST", body: JSON.stringify({ variants: [{ id: 10, count: 1 }] }), signal: controller.signal,
+    });
+    const rejected = expect(pending).rejects.toMatchObject({ name: "AbortError" });
+    controller.abort();
+    await rejected;
+    expect(vi.getTimerCount()).toBe(0);
+    const read = mockFetch("https://mock-store.sazito.com/api/v2/carts/0");
+    await vi.advanceTimersByTimeAsync(500);
+    expect(await (await read).json()).toMatchObject({ result: { items: [], netTotal: 0 } });
   });
 
   it.each(endpointCases)("has a response for %s", (pathname) => {

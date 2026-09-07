@@ -435,10 +435,37 @@ export function mockSazitoResponse(
   return jsonResult({ error: { type: "validation", message: `برای مسیر ${pathname} داده نمونه ثبت نشده است.` } }, 501);
 }
 
-export function createMockSazitoFetch(): typeof fetch {
+function waitForMockResponse(delayMs: number, signal?: AbortSignal | null) {
+  signal?.throwIfAborted();
+  if (delayMs === 0) return Promise.resolve();
+  return new Promise<void>((resolve, reject) => {
+    const onAbort = () => {
+      clearTimeout(timer);
+      reject(signal?.reason);
+    };
+    const timer = setTimeout(() => {
+      signal?.removeEventListener("abort", onAbort);
+      resolve();
+    }, delayMs);
+    signal?.addEventListener("abort", onAbort, { once: true });
+  });
+}
+
+export function createMockSazitoFetch(options: { delayMs?: number } = {}): typeof fetch {
   const cartState = createMockCartState();
+  const configuredDelay = options.delayMs ?? Number(
+    typeof window === "undefined"
+      ? process.env.SAZITO_MOCK_DELAY_MS ?? process.env.NEXT_PUBLIC_SAZITO_MOCK_DELAY_MS ?? 0
+      : process.env.NEXT_PUBLIC_SAZITO_MOCK_DELAY_MS ?? 0,
+  );
+  const delayMs = Number.isFinite(configuredDelay) && configuredDelay >= 0
+    ? Math.min(Math.floor(configuredDelay), 2147483647)
+    : 0;
 
   return async (input, init) => {
+    if (!isMockModeEnabled()) return fetch(input, init);
+    const signal = init?.signal ?? (input instanceof Request ? input.signal : undefined);
+    await waitForMockResponse(delayMs, signal);
     const requestUrl = typeof input === "string" ? input : input instanceof URL ? input.href : input.url;
     const url = new URL(requestUrl, "http://localhost");
     let body: unknown;

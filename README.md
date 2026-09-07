@@ -43,6 +43,13 @@ NEXT_PUBLIC_SAZITO_DEBUG=true
 
 ### Run with mock data
 
+Set `SAZITO_MOCK_DELAY_MS=500` for server calls and
+`NEXT_PUBLIC_SAZITO_MOCK_DELAY_MS=500` for browser calls to simulate 500 ms of
+latency per mock request. Use `0` for instant responses and restart the dev
+server after changing these values. Missing or invalid values default to `0`.
+Tests or custom clients can override this with `createMockSazitoFetch({ delayMs: 1000 })`.
+Live API requests are unaffected.
+
 The local environment is already configured for mocks. Start the app with:
 
 ```bash
