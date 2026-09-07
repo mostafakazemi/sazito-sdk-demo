@@ -3,7 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Home, Menu, PackageOpen } from "lucide-react";
+import { Menu, PackageOpen } from "lucide-react";
 
 import { AccountButton } from "@/components/account/account-button";
 import { CartButton } from "@/components/commerce/cart-button";
@@ -12,7 +12,6 @@ import { DesktopNavigation, MobileNavigation } from "@/components/store/header-n
 import { Button } from "@/components/ui/button";
 import {
   Sheet,
-  SheetClose,
   SheetContent,
   SheetDescription,
   SheetHeader,
@@ -20,10 +19,6 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet";
 import type { StoreChrome } from "@/lib/sazito/types";
-import { cn } from "@/lib/utils";
-
-const navLinkClassName =
-  "shrink-0 whitespace-nowrap rounded-xl px-3 py-2 text-[13px] font-bold text-muted-foreground outline-none transition-[color,background-color,box-shadow] hover:bg-card hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring";
 
 function Brand({ store }: { store: StoreChrome }) {
   return (
@@ -72,18 +67,6 @@ export function StoreHeader({ store }: { store: StoreChrome }) {
           aria-label="منوی اصلی"
         >
           <div className="header-nav-scroll flex items-center justify-start gap-0.5 overflow-x-auto p-1">
-            <Link
-              href="/"
-              aria-current={pathname === "/" ? "page" : undefined}
-              className={cn(
-                navLinkClassName,
-                "flex items-center gap-1.5",
-                pathname === "/" && "bg-card text-primary shadow-sm",
-              )}
-            >
-              <Home className="size-3.5" aria-hidden="true" />
-              خانه
-            </Link>
             <DesktopNavigation items={store.navigation} pathname={pathname} />
           </div>
         </nav>
@@ -112,21 +95,6 @@ export function StoreHeader({ store }: { store: StoreChrome }) {
             </SheetHeader>
             <nav className="p-4" aria-label="منوی موبایل">
               <ul className="grid gap-1.5">
-                <li>
-                  <SheetClose asChild>
-                    <Link
-                      href="/"
-                      aria-current={pathname === "/" ? "page" : undefined}
-                      className={cn(
-                        "flex items-center gap-2 rounded-2xl px-4 py-3.5 font-bold outline-none transition-colors hover:bg-accent focus-visible:ring-2 focus-visible:ring-ring",
-                        pathname === "/" && "bg-accent text-accent-foreground",
-                      )}
-                    >
-                      <Home className="size-4" aria-hidden="true" />
-                      خانه
-                    </Link>
-                  </SheetClose>
-                </li>
                 <MobileNavigation items={store.navigation} pathname={pathname} />
               </ul>
             </nav>
