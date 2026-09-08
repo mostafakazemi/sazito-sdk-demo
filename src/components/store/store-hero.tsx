@@ -56,16 +56,21 @@ export function StoreHero({
       <Carousel
         setApi={setApi}
         opts={{ direction: "rtl", loop: slides.length > 1 }}
-        className="hero-mesh overflow-hidden rounded-4xl text-white shadow-[0_28px_80px_-38px_rgba(31,42,36,0.8)]"
-        onMouseEnter={() => setIsPaused(true)}
-        onMouseLeave={() => setIsPaused(false)}
-        onFocusCapture={() => setIsPaused(true)}
-        onBlurCapture={(event) => {
-          if (!event.currentTarget.contains(event.relatedTarget)) setIsPaused(false);
-        }}
+        className="group hero-mesh overflow-hidden rounded-4xl text-white shadow-[0_28px_80px_-38px_rgba(31,42,36,0.8)]"
       >
         <div className="pointer-events-none absolute -right-20 -top-24 size-80 rounded-full border border-white/10" />
         <div className="pointer-events-none absolute -bottom-32 left-16 size-96 rounded-full border border-white/10" />
+        {slides.length > 1 ? (
+          <button
+            type="button"
+            onClick={() => setIsPaused((paused) => !paused)}
+            className="absolute left-5 top-5 z-20 inline-flex size-10 items-center justify-center rounded-full border border-white/20 bg-black/20 text-white opacity-100 backdrop-blur transition-opacity hover:bg-black/35 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white sm:opacity-0 sm:group-hover:opacity-100 sm:group-focus-within:opacity-100"
+            aria-label={isPaused ? "پخش خودکار اسلایدها" : "توقف خودکار اسلایدها"}
+            title={isPaused ? "پخش" : "توقف"}
+          >
+            {isPaused ? <Play className="size-4" /> : <Pause className="size-4" />}
+          </button>
+        ) : null}
         <CarouselContent className="-mr-0">
           {slides.map((product, index) => (
             <CarouselItem key={product?.id ?? `empty-${index}`} className="pr-0">
@@ -119,18 +124,18 @@ export function StoreHero({
                 {product?.image ? (
                   <Link
                     href={product.href}
-                    className="group relative mx-auto block aspect-square w-full max-w-md overflow-hidden rounded-4xl border border-white/20 bg-white/94 p-5 shadow-2xl"
+                    className="group relative mx-auto block aspect-[4/3] w-full max-w-md overflow-hidden rounded-4xl border border-white/20 bg-white/94 p-2 shadow-2xl sm:p-3"
                   >
                     <Image
                       src={product.image.src}
                       alt={product.image.alt}
                       fill
                       sizes="(max-width: 1024px) 80vw, 40vw"
-                      className="object-contain p-8 transition-transform duration-500 group-hover:scale-[1.03]"
+                      className="object-contain p-3 transition-transform duration-500 group-hover:scale-[1.04] sm:p-4"
                       loading={index === 0 ? "eager" : "lazy"}
                       priority={index === 0}
                     />
-                    <div className="absolute inset-x-4 bottom-4 rounded-2xl bg-foreground/88 p-4 text-white backdrop-blur">
+                    <div className="absolute inset-x-3 bottom-3 rounded-2xl bg-foreground/88 p-3 text-white backdrop-blur sm:inset-x-4 sm:bottom-4 sm:p-4">
                       <p className="truncate font-bold">{product.name}</p>
                       <p className="mt-1 text-sm text-white/75">
                         {product.price ? formatPrice(product.price.current) : "قیمت نامشخص"}
@@ -157,7 +162,7 @@ export function StoreHero({
               aria-label="اسلاید بعدی"
               className="left-3 border-white/20 bg-white/10 text-white hover:bg-white/20 hover:text-white sm:left-5"
             />
-            <div className="absolute inset-x-6 bottom-5 flex items-center justify-between gap-4 sm:inset-x-10">
+            <div className="absolute inset-x-6 bottom-5 z-20 flex items-center justify-between gap-4 sm:inset-x-10">
               <div className="flex items-center gap-2" role="tablist" aria-label="انتخاب اسلاید">
                 {slides.map((product, index) => (
                   <button
@@ -173,15 +178,6 @@ export function StoreHero({
                   />
                 ))}
               </div>
-              <button
-                type="button"
-                onClick={() => setIsPaused((paused) => !paused)}
-                className="inline-flex size-9 items-center justify-center rounded-full border border-white/20 bg-white/10 text-white transition-colors hover:bg-white/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
-                aria-label={isPaused ? "پخش خودکار اسلایدها" : "توقف خودکار اسلایدها"}
-                title={isPaused ? "پخش" : "توقف"}
-              >
-                {isPaused ? <Play className="size-4" /> : <Pause className="size-4" />}
-              </button>
             </div>
           </>
         ) : null}
