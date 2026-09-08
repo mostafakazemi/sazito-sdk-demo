@@ -25,7 +25,7 @@ const checkoutTheme = {
   success: "#2F6B57",
   successForeground: "#FFFFFF",
   radius: 18,
-  fontFamily: "var(--font-estedad), Tahoma, Arial, sans-serif",
+  fontFamily: "var(--font-ui)",
 } satisfies NonNullable<CheckoutConfig["theme"]>;
 
 function CheckoutStateBridge() {

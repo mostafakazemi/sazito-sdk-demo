@@ -1,4 +1,6 @@
 import type { Metadata } from "next";
+import { cookies } from "next/headers";
+import Script from "next/script";
 
 import { AccountProvider } from "@/components/account/account-provider";
 import { CommerceProvider } from "@/components/commerce/commerce-provider";
@@ -52,10 +54,62 @@ export default async function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   const store = await getStoreChrome();
+  const cookieStore = await cookies();
+  const themePreference = cookieStore.get("sazito-theme")?.value;
+  const storedFontScale = Number(cookieStore.get("sazito-font-scale")?.value);
+  const initialFontScale = storedFontScale >= 85 && storedFontScale <= 125 ? storedFontScale : 100;
+  const storedFontFamily = cookieStore.get("sazito-font-family")?.value;
+  const initialFontFamily =
+    storedFontFamily === "vazirmatn" || storedFontFamily === "noto" ? storedFontFamily : "estedad";
+  const initialFontCss =
+    initialFontFamily === "vazirmatn"
+      ? "Vazirmatn, sans-serif"
+      : initialFontFamily === "noto"
+        ? "Noto Sans Arabic, sans-serif"
+        : '"Estedad", sans-serif';
+  const initialTheme = themePreference === "dark" ? "dark" : "light";
 
   return (
-    <html lang="fa" dir="rtl" data-scroll-behavior="smooth">
-      <body className="flex min-h-screen flex-col antialiased">
+    <html
+      lang="fa"
+      dir="rtl"
+      data-scroll-behavior="smooth"
+      data-theme={initialTheme}
+      data-theme-preference={
+        themePreference === "light" || themePreference === "dark" ? themePreference : "system"
+      }
+      style={{ fontSize: `${initialFontScale}%`, "--font-ui": initialFontCss } as React.CSSProperties}
+      suppressHydrationWarning
+    >
+      <head>
+        <Script id="sazito-theme-init" strategy="beforeInteractive">
+          {`(() => {
+  try {
+    const preference = document.cookie.split("; ").find((cookie) => cookie.startsWith("sazito-theme="))?.split("=")[1];
+    const theme = preference === "light" || preference === "dark"
+      ? preference
+      : window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+    document.documentElement.dataset.theme = theme;
+    document.documentElement.dataset.themePreference = preference === "light" || preference === "dark" ? preference : "system";
+    const storedScale = Number(localStorage.getItem("sazito-font-scale"));
+    const fontScale = storedScale >= 85 && storedScale <= 125 ? storedScale : 100;
+    const storedFamily = localStorage.getItem("sazito-font-family");
+    const fontFamily = storedFamily === "vazirmatn" || storedFamily === "noto" ? storedFamily : "estedad";
+    const fontCss = fontFamily === "vazirmatn"
+      ? "Vazirmatn, sans-serif"
+      : fontFamily === "noto" ? "Noto Sans Arabic, sans-serif" : '"Estedad", sans-serif';
+    document.documentElement.style.fontSize = fontScale + "%";
+    document.documentElement.style.setProperty("--font-ui", fontCss);
+    document.cookie = "sazito-font-scale=" + fontScale + "; path=/; max-age=31536000; samesite=lax";
+    document.cookie = "sazito-font-family=" + fontFamily + "; path=/; max-age=31536000; samesite=lax";
+  } catch {
+    document.documentElement.dataset.theme = "light";
+    document.documentElement.dataset.themePreference = "system";
+  }
+})();`}
+        </Script>
+      </head>
+      <body id="page-top" className="flex min-h-screen flex-col antialiased">
         <CommerceProvider domain={sazitoStoreDomain}>
           <AccountProvider>
             <StoreVisitTracker />

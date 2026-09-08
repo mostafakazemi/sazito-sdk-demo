@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ExternalLink, Leaf, PhoneCall } from "lucide-react";
+import { ArrowUp, Leaf, PhoneCall } from "lucide-react";
 
 import { SocialIcon } from "@/components/store/social-icon";
 import { Separator } from "@/components/ui/separator";
@@ -64,9 +64,9 @@ export function StoreFooter({ store }: { store: StoreChrome }) {
         <Separator className="my-8" />
         <div className="flex flex-col gap-3 text-xs text-muted-foreground sm:flex-row sm:items-center sm:justify-between">
           <p>ویترین مستقل فروشگاه، متصل به زیرساخت سازیتو</p>
-          <Link href="/" className="inline-flex items-center gap-1 font-semibold hover:text-primary">
+          <Link href="/#page-top" className="inline-flex items-center gap-1 font-semibold hover:text-primary">
             بازگشت به ابتدای فروشگاه
-            <ExternalLink className="size-3" />
+            <ArrowUp className="size-3" aria-hidden="true" />
           </Link>
         </div>
       </div>
