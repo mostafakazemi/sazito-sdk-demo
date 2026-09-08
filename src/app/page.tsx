@@ -41,7 +41,20 @@ export default async function Home() {
   return (
     <div className="pb-16 sm:pb-24">
       <JsonLd data={buildStoreJsonLd(data.store)} />
-      <StoreHero store={data.store} product={data.heroProduct} />
+      <StoreHero
+        store={data.store}
+        products={[
+          data.heroProduct,
+          ...data.bestSellers,
+          ...data.newest,
+          ...data.discounted,
+        ].filter(
+          (product, index, items): product is NonNullable<typeof product> => {
+            if (!product) return false;
+            return items.findIndex((item) => item?.id === product.id) === index;
+          },
+        )}
+      />
 
       <div className="site-container space-y-16 pt-12 sm:space-y-24 sm:pt-18">
         {data.hasCatalogError ? (
