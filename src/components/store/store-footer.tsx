@@ -1,6 +1,6 @@
-import Link from "next/link";
-import { ArrowUp, Leaf, PhoneCall } from "lucide-react";
+import { Leaf, PhoneCall } from "lucide-react";
 
+import { BackToTopLink } from "@/components/store/back-to-top-link";
 import { SocialIcon } from "@/components/store/social-icon";
 import { Separator } from "@/components/ui/separator";
 import type { StoreChrome } from "@/lib/sazito/types";
@@ -64,10 +64,7 @@ export function StoreFooter({ store }: { store: StoreChrome }) {
         <Separator className="my-8" />
         <div className="flex flex-col gap-3 text-xs text-muted-foreground sm:flex-row sm:items-center sm:justify-between">
           <p>ویترین مستقل فروشگاه، متصل به زیرساخت سازیتو</p>
-          <Link href="/#page-top" className="inline-flex items-center gap-1 font-semibold hover:text-primary">
-            بازگشت به ابتدای فروشگاه
-            <ArrowUp className="size-3" aria-hidden="true" />
-          </Link>
+          <BackToTopLink />
         </div>
       </div>
     </footer>
