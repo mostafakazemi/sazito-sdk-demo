@@ -85,23 +85,34 @@ export default async function RootLayout({
         <Script id="sazito-theme-init" strategy="beforeInteractive">
           {`(() => {
   try {
-    const preference = document.cookie.split("; ").find((cookie) => cookie.startsWith("sazito-theme="))?.split("=")[1];
+    const readCookie = (name) => document.cookie.split("; ").find((cookie) => cookie.startsWith(name + "="))?.split("=")[1];
+    const preference = readCookie("sazito-theme");
     const theme = preference === "light" || preference === "dark"
       ? preference
       : window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
     document.documentElement.dataset.theme = theme;
     document.documentElement.dataset.themePreference = preference === "light" || preference === "dark" ? preference : "system";
-    const storedScale = Number(localStorage.getItem("sazito-font-scale"));
-    const fontScale = storedScale >= 85 && storedScale <= 125 ? storedScale : 100;
-    const storedFamily = localStorage.getItem("sazito-font-family");
-    const fontFamily = storedFamily === "vazirmatn" || storedFamily === "noto" ? storedFamily : "estedad";
+    const cookieScale = Number(readCookie("sazito-font-scale"));
+    const legacyScale = Number(localStorage.getItem("sazito-font-scale"));
+    const fontScale = cookieScale >= 85 && cookieScale <= 125
+      ? cookieScale
+      : legacyScale >= 85 && legacyScale <= 125 ? legacyScale : 100;
+    const cookieFamily = readCookie("sazito-font-family");
+    const legacyFamily = localStorage.getItem("sazito-font-family");
+    const fontFamily = cookieFamily === "vazirmatn" || cookieFamily === "noto"
+      ? cookieFamily
+      : legacyFamily === "vazirmatn" || legacyFamily === "noto" ? legacyFamily : "estedad";
     const fontCss = fontFamily === "vazirmatn"
       ? "Vazirmatn, sans-serif"
       : fontFamily === "noto" ? "Noto Sans Arabic, sans-serif" : '"Estedad", sans-serif';
     document.documentElement.style.fontSize = fontScale + "%";
     document.documentElement.style.setProperty("--font-ui", fontCss);
-    document.cookie = "sazito-font-scale=" + fontScale + "; path=/; max-age=31536000; samesite=lax";
-    document.cookie = "sazito-font-family=" + fontFamily + "; path=/; max-age=31536000; samesite=lax";
+    if (!readCookie("sazito-font-scale")) {
+      document.cookie = "sazito-font-scale=" + fontScale + "; path=/; max-age=31536000; samesite=lax";
+    }
+    if (!readCookie("sazito-font-family")) {
+      document.cookie = "sazito-font-family=" + fontFamily + "; path=/; max-age=31536000; samesite=lax";
+    }
   } catch {
     document.documentElement.dataset.theme = "light";
     document.documentElement.dataset.themePreference = "system";
