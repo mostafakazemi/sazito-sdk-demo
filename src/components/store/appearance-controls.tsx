@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { Laptop, Moon, RotateCcw, Sun, Type } from "lucide-react";
+import { Laptop, Moon, RotateCcw, Sun, Type, X } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 
@@ -91,15 +91,55 @@ function useAppearance() {
 
 export function AppearanceControls() {
   const appearance = useAppearance();
+  const controlsRef = React.useRef<HTMLDetailsElement>(null);
+
+  React.useEffect(() => {
+    const handlePointerDown = (event: PointerEvent) => {
+      const controls = controlsRef.current;
+      if (controls?.open && event.target instanceof Node && !controls.contains(event.target)) {
+        controls.open = false;
+      }
+    };
+    const handleKeyDown = (event: KeyboardEvent) => {
+      const controls = controlsRef.current;
+      if (event.key === "Escape" && controls?.open) {
+        controls.open = false;
+        controls.querySelector<HTMLElement>("summary")?.focus();
+      }
+    };
+
+    document.addEventListener("pointerdown", handlePointerDown);
+    document.addEventListener("keydown", handleKeyDown);
+    return () => {
+      document.removeEventListener("pointerdown", handlePointerDown);
+      document.removeEventListener("keydown", handleKeyDown);
+    };
+  }, []);
 
   return (
-    <details className="relative">
+    <details ref={controlsRef} className="relative">
       <summary className="flex size-10 cursor-pointer list-none items-center justify-center rounded-full border border-border/80 bg-card text-foreground shadow-sm outline-none transition-colors hover:border-primary/40 hover:bg-accent focus-visible:ring-2 focus-visible:ring-ring [&::-webkit-details-marker]:hidden">
         <Type className="size-4" aria-hidden="true" />
         <span className="sr-only">تنظیمات نمایش</span>
       </summary>
       <div className="absolute left-0 top-12 z-50 w-80 max-w-[calc(100vw-2rem)] rounded-2xl border border-border bg-card p-4 text-foreground shadow-xl">
-        <p className="text-sm font-black">تنظیمات نمایش</p>
+        <div className="flex items-center justify-between gap-3">
+          <p className="text-sm font-black">تنظیمات نمایش</p>
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon"
+            className="size-8 rounded-lg"
+            onClick={() => {
+              controlsRef.current!.open = false;
+              controlsRef.current?.querySelector<HTMLElement>("summary")?.focus();
+            }}
+            aria-label="بستن تنظیمات نمایش"
+            title="بستن"
+          >
+            <X />
+          </Button>
+        </div>
         <div className="mt-4 grid gap-2">
           <p className="text-xs font-bold text-muted-foreground">رنگ زمینه</p>
           <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
