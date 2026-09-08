@@ -1,1 +1,132 @@
-{"items":[{"id":501,"eventId":1,"event":{"id":1,"entityId":1,"title":"مشاوره نمونه","description":"رزرو زمان برای مشاوره نمونه","durationsMinute":[30,60],"startTime":"09:00","endTime":"17:00","capacity":10,"bookedCount":2,"availableSlots":8,"price":0,"location":"آنلاین"},"userId":1,"attendeeName":"کاربر نمونه","attendeeEmail":"sample@example.com","attendeePhone":"09120000000","status":"confirmed","bookingTime":"2026-01-10T10:00:00+03:30","createdAt":"2026-01-01T00:00:00.000Z"}],"page":1,"pageSize":20,"total":1}
+{
+  "items": [
+    {
+      "id": 501,
+      "eventId": 1,
+      "event": {
+        "id": 1,
+        "entityId": 1,
+        "title": "مشاوره طراحی دکوراسیون",
+        "description": "رزرو زمان برای مشاوره تخصصی دکوراسیون داخلی",
+        "durationsMinute": [30, 60],
+        "startTime": "09:00",
+        "endTime": "17:00",
+        "capacity": 10,
+        "bookedCount": 4,
+        "availableSlots": 6,
+        "price": 0,
+        "location": "آنلاین"
+      },
+      "userId": 1,
+      "attendeeName": "نگار احمدی",
+      "attendeeEmail": "negar.ahmadi@example.com",
+      "attendeePhone": "09121234567",
+      "status": "confirmed",
+      "bookingTime": "2026-10-10T10:00:00+03:30",
+      "createdAt": "2026-09-01T08:30:00.000Z"
+    },
+    {
+      "id": 502,
+      "eventId": 2,
+      "event": {
+        "id": 2,
+        "entityId": 2,
+        "title": "جلسه انتخاب پارچه",
+        "description": "جلسه اختصاصی برای انتخاب پارچه و رنگ مناسب",
+        "durationsMinute": [45],
+        "startTime": "10:00",
+        "endTime": "18:00",
+        "capacity": 8,
+        "bookedCount": 5,
+        "availableSlots": 3,
+        "price": 250000,
+        "location": "شعبه مرکزی، خیابان ولیعصر"
+      },
+      "userId": 1,
+      "attendeeName": "امیرحسین رضایی",
+      "attendeeEmail": "amir.rezaei@example.com",
+      "attendeePhone": "09129876543",
+      "status": "pending",
+      "bookingTime": "2026-10-18T14:30:00+03:30",
+      "createdAt": "2026-09-03T11:15:00.000Z"
+    },
+    {
+      "id": 503,
+      "eventId": 3,
+      "event": {
+        "id": 3,
+        "entityId": 3,
+        "title": "بازدید از شوروم پاییزی",
+        "description": "بازدید راهنمایی‌شده از مجموعه پاییز و زمستان",
+        "durationsMinute": [60, 90],
+        "startTime": "11:00",
+        "endTime": "20:00",
+        "capacity": 12,
+        "bookedCount": 9,
+        "availableSlots": 3,
+        "price": 0,
+        "location": "شوروم خانه‌پوش"
+      },
+      "userId": 1,
+      "attendeeName": "سارا کریمی",
+      "attendeeEmail": "sara.karimi@example.com",
+      "attendeePhone": "09351234567",
+      "status": "confirmed",
+      "bookingTime": "2026-09-25T16:00:00+03:30",
+      "createdAt": "2026-08-26T09:45:00.000Z"
+    },
+    {
+      "id": 504,
+      "eventId": 4,
+      "event": {
+        "id": 4,
+        "entityId": 4,
+        "title": "اندازه‌گیری و ثبت سفارش",
+        "description": "جلسه اندازه‌گیری و نهایی‌کردن جزئیات سفارش",
+        "durationsMinute": [30],
+        "startTime": "09:30",
+        "endTime": "16:30",
+        "capacity": 6,
+        "bookedCount": 6,
+        "availableSlots": 0,
+        "price": 150000,
+        "location": "شعبه شمالی"
+      },
+      "userId": 1,
+      "attendeeName": "محمد موسوی",
+      "attendeeEmail": "mohammad.mousavi@example.com",
+      "attendeePhone": "09105554433",
+      "status": "cancelled",
+      "bookingTime": "2026-08-14T12:00:00+03:30",
+      "createdAt": "2026-08-05T13:20:00.000Z"
+    },
+    {
+      "id": 505,
+      "eventId": 5,
+      "event": {
+        "id": 5,
+        "entityId": 5,
+        "title": "مشاوره خرید هدیه",
+        "description": "پیشنهادهای شخصی‌سازی‌شده برای انتخاب هدیه",
+        "durationsMinute": [30],
+        "startTime": "12:00",
+        "endTime": "19:00",
+        "capacity": 10,
+        "bookedCount": 2,
+        "availableSlots": 8,
+        "price": 0,
+        "location": "آنلاین"
+      },
+      "userId": 1,
+      "attendeeName": "الهام حسینی",
+      "attendeeEmail": "elham.hosseini@example.com",
+      "attendeePhone": "09211223344",
+      "status": "confirmed",
+      "bookingTime": "2026-11-02T18:00:00+03:30",
+      "createdAt": "2026-09-06T15:10:00.000Z"
+    }
+  ],
+  "page": 1,
+  "pageSize": 20,
+  "total": 5
+}
