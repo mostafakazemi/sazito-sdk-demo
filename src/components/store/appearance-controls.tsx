@@ -92,6 +92,7 @@ function useAppearance() {
 export function AppearanceControls() {
   const appearance = useAppearance();
   const controlsRef = React.useRef<HTMLDetailsElement>(null);
+  const [isOpen, setIsOpen] = React.useState(false);
 
   React.useEffect(() => {
     const handlePointerDown = (event: PointerEvent) => {
@@ -117,12 +118,19 @@ export function AppearanceControls() {
   }, []);
 
   return (
-    <details ref={controlsRef} className="relative">
+    <details
+      ref={controlsRef}
+      className="relative"
+      onToggle={(event) => setIsOpen(event.currentTarget.open)}
+    >
       <summary className="flex size-10 cursor-pointer list-none items-center justify-center rounded-full border border-border/80 bg-card text-foreground shadow-sm outline-none transition-colors hover:border-primary/40 hover:bg-accent focus-visible:ring-2 focus-visible:ring-ring [&::-webkit-details-marker]:hidden">
         <Type className="size-4" aria-hidden="true" />
         <span className="sr-only">تنظیمات نمایش</span>
       </summary>
-      <div className="absolute left-0 top-12 z-50 w-80 max-w-[calc(100vw-2rem)] rounded-2xl border border-border bg-card p-4 text-foreground shadow-xl">
+      <div
+        key={isOpen ? "appearance-open" : "appearance-closed"}
+        className="appearance-panel absolute left-0 top-12 z-50 w-80 max-w-[calc(100vw-2rem)] rounded-2xl border border-border bg-card p-4 text-foreground shadow-xl"
+      >
         <div className="flex items-center justify-between gap-3">
           <p className="text-sm font-black">تنظیمات نمایش</p>
           <Button
