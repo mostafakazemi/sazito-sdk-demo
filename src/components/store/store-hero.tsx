@@ -135,7 +135,7 @@ export function StoreHero({
                       loading={index === 0 ? "eager" : "lazy"}
                       priority={index === 0}
                     />
-                    <div className="absolute inset-x-3 bottom-3 rounded-2xl bg-foreground/88 p-3 text-white backdrop-blur sm:inset-x-4 sm:bottom-4 sm:p-4">
+                    <div className="absolute inset-x-3 bottom-3 rounded-2xl bg-black/65 p-3 text-white shadow-lg backdrop-blur-md sm:inset-x-4 sm:bottom-4 sm:p-4">
                       <p className="truncate font-bold">{product.name}</p>
                       <p className="mt-1 text-sm text-white/75">
                         {product.price ? formatPrice(product.price.current) : "قیمت نامشخص"}
