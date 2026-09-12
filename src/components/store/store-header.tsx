@@ -60,7 +60,7 @@ export function StoreHeader({ store }: { store: StoreChrome }) {
 
   return (
     <header className="sticky top-0 z-40 border-b border-border/70 bg-card/88 shadow-[0_8px_28px_-24px_rgba(31,42,36,0.7)] backdrop-blur-xl">
-      <div className="mx-auto flex h-18 w-[calc(100%-1.25rem)] max-w-368 items-center gap-3 sm:h-20 sm:w-[calc(100%-2rem)] lg:gap-5">
+      <div className="site-container flex h-18 items-center gap-3 sm:h-20 lg:gap-5">
         <Brand store={store} />
 
         <nav

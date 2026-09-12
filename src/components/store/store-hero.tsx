@@ -58,6 +58,7 @@ export function StoreHero({
         opts={{ direction: "rtl", loop: slides.length > 1 }}
         className="group hero-mesh overflow-hidden rounded-4xl text-white shadow-[0_28px_80px_-38px_rgba(31,42,36,0.8)]"
       >
+        <div className="hero-spotlight" aria-hidden="true" />
         <div className="pointer-events-none absolute -right-20 -top-24 size-80 rounded-full border border-white/10" />
         <div className="pointer-events-none absolute -bottom-32 left-16 size-96 rounded-full border border-white/10" />
         {slides.length > 1 ? (
@@ -74,8 +75,8 @@ export function StoreHero({
         <CarouselContent className="-mr-0">
           {slides.map((product, index) => (
             <CarouselItem key={product?.id ?? `empty-${index}`} className="pr-0">
-              <div className="relative grid min-h-[32rem] items-center gap-8 px-6 py-10 sm:px-10 lg:grid-cols-[1.05fr_0.95fr] lg:px-14 lg:py-14">
-                <div className="z-10 max-w-xl">
+              <div data-active={index === activeSlide} className="hero-slide relative grid min-h-[32rem] items-center gap-8 px-6 py-10 sm:px-10 lg:grid-cols-[1.05fr_0.95fr] lg:px-14 lg:py-14">
+                <div className="hero-copy z-10 max-w-xl">
                   <Badge className="border border-white/20 bg-white/12 text-white backdrop-blur" variant="outline">
                     <Sparkles />
                     {index === 0 ? "پیشنهاد منتخب فروشگاه" : "انتخابی برای شما"}
@@ -124,22 +125,28 @@ export function StoreHero({
                 {product?.image ? (
                   <Link
                     href={product.href}
-                    className="group relative mx-auto block aspect-[4/3] w-full max-w-md overflow-hidden rounded-4xl border border-white/20 bg-white/94 p-2 shadow-2xl sm:p-3"
+                    className="hero-product-image group/product relative mx-auto block w-full max-w-md rounded-4xl outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-4 focus-visible:ring-offset-transparent"
                   >
+                    <div className="hero-product-surface relative overflow-hidden rounded-4xl border border-white/30 shadow-2xl">
+                    <div className="relative aspect-[4/3] overflow-hidden bg-[#f8f7f3]">
                     <Image
                       src={product.image.src}
                       alt={product.image.alt}
                       fill
-                      sizes="(max-width: 1024px) 80vw, 40vw"
-                      className="object-contain p-3 transition-transform duration-500 group-hover:scale-[1.04] sm:p-4"
+                      sizes="(min-width: 1600px) 608px, (min-width: 1024px) 448px, (max-width: 640px) 85vw, 448px"
+                      className="object-cover transition-transform duration-700 group-hover/product:scale-[1.04] group-focus-visible/product:scale-[1.04]"
                       loading={index === 0 ? "eager" : "lazy"}
                       priority={index === 0}
                     />
-                    <div className="absolute inset-x-3 bottom-3 rounded-2xl bg-black/65 p-3 text-white shadow-lg backdrop-blur-md sm:inset-x-4 sm:bottom-4 sm:p-4">
-                      <p className="truncate font-bold">{product.name}</p>
-                      <p className="mt-1 text-sm text-white/75">
+                    </div>
+                    <div className="flex items-center justify-between gap-4 bg-[#172e26] px-5 py-4 text-white sm:px-6 sm:py-5">
+                      <div className="min-w-0">
+                      <p className="line-clamp-2 text-sm leading-6 font-bold">{product.name}</p>
+                      <p className="mt-1 text-base font-bold text-[#b9e4ce]">
                         {product.price ? formatPrice(product.price.current) : "قیمت نامشخص"}
                       </p>
+                      </div>
+                    </div>
                     </div>
                   </Link>
                 ) : (

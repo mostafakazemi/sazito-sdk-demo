@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { cookies } from "next/headers";
 import Script from "next/script";
+import { Gift, Package, ShoppingBag, Tag } from "lucide-react";
 
 import { AccountProvider } from "@/components/account/account-provider";
 import { CommerceProvider } from "@/components/commerce/commerce-provider";
@@ -121,6 +122,12 @@ export default async function RootLayout({
         </Script>
       </head>
       <body id="page-top" className="flex min-h-screen flex-col antialiased">
+        <div className="store-backdrop" aria-hidden="true">
+          <span><ShoppingBag /></span>
+          <span><Tag /></span>
+          <span><Package /></span>
+          <span><Gift /></span>
+        </div>
         <CommerceProvider domain={sazitoStoreDomain}>
           <AccountProvider>
             <StoreVisitTracker />
