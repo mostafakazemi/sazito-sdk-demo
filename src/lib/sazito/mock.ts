@@ -144,7 +144,7 @@ function productFixture(request: MockRequest) {
     }));
     return item;
   });
-  return { items, page, pageSize, total: 24, totalPages: 3 };
+  return { items, page, pageSize, total: 48, totalPages: 6 };
 }
 
 function entityRoute(pathname: string) {
