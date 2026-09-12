@@ -113,6 +113,17 @@ function paginatedFixture(fixture: Fixture, request: MockRequest) {
   };
 }
 
+function mockProductPricing(id: number) {
+  if (id === 1) return { price: 122500, originalPrice: 145000 };
+
+  const price = 280000 + ((id * 97300) % 1450000);
+  const discounted = id % 3 === 0;
+  return {
+    price,
+    originalPrice: discounted ? price + Math.round(price * 0.18) : price,
+  };
+}
+
 function productFixture(request: MockRequest) {
   const page = pageValue(request, "page", 1);
   const pageSize = pageValue(request, "pageSize", products.items.length);
@@ -137,10 +148,12 @@ function productFixture(request: MockRequest) {
         ? { ...currentImage, url: image.url, alt: image.alt, name: image.alt }
         : currentImage,
     );
+    const pricing = mockProductPricing(id);
     item.variants = item.variants.map((variant: Record<string, unknown>) => ({
       ...variant,
       id: id * 10,
       productId: id,
+      ...pricing,
     }));
     return item;
   });
@@ -158,6 +171,8 @@ function entityRoute(pathname: string) {
     item.url = pathname;
     item.name = image.alt;
     item.images[0] = { ...item.images[0], url: image.url, alt: image.alt, name: image.alt };
+    const pricing = mockProductPricing(numericId);
+    item.variants = item.variants.map((variant) => ({ ...variant, ...pricing }));
     return { entityType: "product", entityId: item.id, entity: item };
   }
   if (pathname.startsWith("/category/")) {

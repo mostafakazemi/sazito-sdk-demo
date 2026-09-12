@@ -49,7 +49,7 @@ export function StoreHero({
     if (!api || isPaused || slides.length < 2) return;
     const timer = window.setInterval(() => api.scrollNext(), AUTOPLAY_INTERVAL);
     return () => window.clearInterval(timer);
-  }, [api, isPaused, slides.length]);
+  }, [api, activeSlide, isPaused, slides.length]);
 
   return (
     <section className="site-container pt-5 sm:pt-8">
@@ -59,8 +59,8 @@ export function StoreHero({
         className="group hero-mesh overflow-hidden rounded-4xl text-white shadow-[0_28px_80px_-38px_rgba(31,42,36,0.8)]"
       >
         <div className="hero-spotlight" aria-hidden="true" />
-        <div className="pointer-events-none absolute -right-20 -top-24 size-80 rounded-full border border-white/10" />
-        <div className="pointer-events-none absolute -bottom-32 left-16 size-96 rounded-full border border-white/10" />
+        <div className="pointer-events-none absolute -right-20 -top-24 size-80 rounded-full border border-white/10 opacity-25 blur-[1px]" />
+        <div className="pointer-events-none absolute -bottom-32 left-16 size-96 rounded-full border border-white/10 opacity-25 blur-[1px]" />
         {slides.length > 1 ? (
           <button
             type="button"
@@ -126,6 +126,18 @@ export function StoreHero({
                   <Link
                     href={product.href}
                     className="hero-product-image group/product relative mx-auto block w-full max-w-md rounded-4xl outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-4 focus-visible:ring-offset-transparent"
+                    onPointerMove={(event) => {
+                      if (event.pointerType === "touch") return;
+                      const bounds = event.currentTarget.getBoundingClientRect();
+                      const x = (event.clientX - bounds.left) / bounds.width - 0.5;
+                      const y = (event.clientY - bounds.top) / bounds.height - 0.5;
+                      event.currentTarget.style.setProperty("--tilt-x", `${y * -8}deg`);
+                      event.currentTarget.style.setProperty("--tilt-y", `${x * 10}deg`);
+                    }}
+                    onPointerLeave={(event) => {
+                      event.currentTarget.style.removeProperty("--tilt-x");
+                      event.currentTarget.style.removeProperty("--tilt-y");
+                    }}
                   >
                     <div className="hero-product-surface relative overflow-hidden rounded-4xl border border-white/30 shadow-2xl">
                     <div className="relative aspect-[4/3] overflow-hidden bg-[#f8f7f3]">
@@ -169,7 +181,17 @@ export function StoreHero({
               aria-label="اسلاید بعدی"
               className="left-3 border-white/20 bg-white/10 text-white hover:bg-white/20 hover:text-white sm:left-5"
             />
-            <div className="absolute inset-x-6 bottom-5 z-20 flex items-center justify-between gap-4 sm:inset-x-10">
+            <div className="hero-autoplay-progress absolute inset-x-6 bottom-2 z-20 sm:inset-x-10" aria-hidden="true">
+              <div
+                key={activeSlide}
+                className="hero-autoplay-progress-bar"
+                style={{
+                  animationDuration: `${AUTOPLAY_INTERVAL}ms`,
+                  animationPlayState: isPaused ? "paused" : "running",
+                }}
+              />
+            </div>
+            <div className="absolute inset-x-6 bottom-6 z-20 flex items-center justify-between gap-4 sm:inset-x-10">
               <div className="flex items-center gap-2" role="tablist" aria-label="انتخاب اسلاید">
                 {slides.map((product, index) => (
                   <button
