@@ -278,6 +278,66 @@ details[open] > .appearance-panel {
   to { opacity: 1; transform: translateY(0); }
 }
 
+@media (max-width: 639px) {
+  .hero-slide {
+    min-height: 44rem;
+    grid-template-rows: auto auto;
+    align-items: start;
+    gap: 1.75rem;
+    padding: 2rem 1rem 4.5rem;
+  }
+
+  .hero-copy {
+    display: flex;
+    max-width: 100%;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+  }
+
+  .hero-copy h1 {
+    max-width: 100%;
+    font-size: clamp(2rem, 9vw, 2.75rem);
+    line-height: 1.3;
+  }
+
+  .hero-copy > p {
+    max-width: 20rem;
+  }
+
+  .hero-copy > div {
+    justify-content: center;
+  }
+
+  .hero-actions {
+    width: 100%;
+    gap: 0.625rem;
+  }
+
+  .hero-actions .inline-flex {
+    height: 2.625rem;
+    padding-inline: 0.875rem;
+    font-size: 0.8125rem;
+  }
+
+  .hero-product-image {
+    width: min(100%, 20rem);
+    max-width: 20rem;
+  }
+
+  .hero-product-surface {
+    border-radius: 1.5rem;
+  }
+
+  .hero-product-surface > div:first-child {
+    aspect-ratio: 4 / 3;
+  }
+
+  .hero-autoplay-progress {
+    inset-inline: 1rem;
+  }
+}
+
 @media (min-width: 1600px) {
   .store-product-grid { grid-template-columns: repeat(5, minmax(0, 1fr)); }
   .hero-slide { min-height: 38rem; }

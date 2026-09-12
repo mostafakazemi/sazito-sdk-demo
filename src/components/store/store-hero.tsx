@@ -92,7 +92,7 @@ export function StoreHero({
                         : "محصولی تازه برای تجربه خریدی ساده و مطمئن."
                       : store.description}
                   </p>
-                  <div className="mt-8 flex flex-wrap gap-3">
+                  <div className="hero-actions mt-8 flex flex-wrap gap-3">
                     <Button asChild size="lg" className="bg-white text-primary hover:bg-white/90">
                       <a href="#newest">
                         دیدن محصولات
