@@ -134,6 +134,38 @@ export function CartButton() {
                         {item.formAttributes && Object.keys(item.formAttributes).length ? (
                           <p className="mt-1 text-xs text-muted-foreground">دارای اطلاعات سفارشی</p>
                         ) : null}
+                        {item.product.attributes?.length ? (
+                          <div className="mt-2 flex flex-wrap gap-1.5">
+                            {item.product.attributes.map((attribute) => {
+                              const rawValue = attribute.value;
+                              const value =
+                                typeof rawValue === "string" ? rawValue : rawValue.value;
+                              const apiColor =
+                                typeof rawValue === "string" ? undefined : rawValue.extra;
+                              const swatch =
+                                typeof apiColor === "string" &&
+                                /^(#[0-9a-f]{3,8}|rgba?\([^)]*\)|hsla?\([^)]*\))$/i.test(apiColor.trim())
+                                  ? apiColor.trim()
+                                  : null;
+
+                              return (
+                                <span
+                                  key={`${attribute.name}-${value}`}
+                                  className="inline-flex items-center gap-1.5 rounded-full border border-border/70 bg-secondary/60 px-2 py-1 text-[0.6875rem] font-bold text-muted-foreground"
+                                >
+                                  {swatch ? (
+                                    <span
+                                      aria-hidden="true"
+                                      className="size-2.5 rounded-full border border-black/10"
+                                      style={{ backgroundColor: swatch }}
+                                    />
+                                  ) : null}
+                                  {attribute.name}: {value}
+                                </span>
+                              );
+                            })}
+                          </div>
+                        ) : null}
                       </div>
                       <button type="button" onClick={() => void mutate("remove")} disabled={isMutating} aria-label={`حذف ${item.product.name}`} className="flex size-9 shrink-0 items-center justify-center rounded-lg text-danger outline-none hover:bg-danger/10 focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-40">
                         <Trash2 className="size-4" />
