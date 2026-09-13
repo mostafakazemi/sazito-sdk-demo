@@ -422,7 +422,11 @@ export function mockSazitoResponse(
   if (pathname === "/api/v1/users/wallet/balance") return jsonResult(clone(walletBalance));
   if (pathname === "/api/v1/wallet/transactions") return jsonResult(staticFixtures[pathname]);
   if (pathname.startsWith("/api/v1/orders/")) {
-    const order = orders.orders.find((item) => item.id === entityId) ?? orders.orders[0];
+    const orderId = Number(pathname.split("/").pop());
+    const order = orders.orders.find((item) => item.id === orderId);
+    if (!order || request.searchParams.get("identifier") !== order.orderIdentifier) {
+      return jsonResult({ message: "Order not found" }, 404);
+    }
     return jsonResult(clone(order));
   }
   if (pathname.startsWith("/api/v1/users/") || pathname.startsWith("/api/v1/sessions/")) {

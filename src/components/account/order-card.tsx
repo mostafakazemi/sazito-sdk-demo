@@ -9,6 +9,7 @@ import {
   orderItems,
   orderTotal,
 } from "@/lib/sazito/account";
+import { orderDetailsHref } from "@/lib/sazito/order-routes";
 import { formatPrice } from "@/lib/sazito/presenters";
 
 export function OrderCard({ order }: { order: Order }) {
@@ -48,7 +49,7 @@ export function OrderCard({ order }: { order: Order }) {
           </p>
         ) : null}
         <Link
-          href={`/account/orders/${order.id}`}
+          href={orderDetailsHref(order)}
           className="mt-5 inline-flex items-center gap-2 rounded-xl text-sm font-bold text-primary outline-none hover:underline focus-visible:ring-2 focus-visible:ring-ring"
         >
           مشاهده جزئیات
