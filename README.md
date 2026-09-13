@@ -183,7 +183,7 @@ SEO discovery files are served at `/robots.txt` and `/sitemap.xml`.
 
 Checkout and order-history links share `orderDetailsHref` in
 `src/lib/sazito/order-routes.ts`. Checkout passes it as `getOrderDetailsUrl`.
-The host route is `/account/orders/{id}?identifier={orderIdentifier}`;
+The host route is `/orders/{id}?identifier={orderIdentifier}`;
 the detail page supplies both values to `client.orders.get` and permits guest
 access through the complete link. Order history and review controls retain
 their account requirements. Missing credentials are rejected before fetching.

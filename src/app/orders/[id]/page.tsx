@@ -7,7 +7,7 @@ export const metadata: Metadata = {
   robots: { index: false, follow: false },
 };
 
-export default async function AccountOrderDetailPage({
+export default async function PublicOrderDetailPage({
   params,
   searchParams,
 }: {
