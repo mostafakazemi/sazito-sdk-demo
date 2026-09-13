@@ -158,6 +158,42 @@ describe("Sazito mock endpoint coverage", () => {
     expect(response.data?.orders[0]?.invoice.invoiceItems[0]?.name).toBe("کفش نمونه");
   });
 
+  it("supports the complete mock feedback flow", async () => {
+    process.env.SAZITO_USE_MOCKS = "true";
+    const client = createSazitoClient({
+      domain: "mock-store.sazito.com",
+      customFetchApi: createMockSazitoFetch(),
+    });
+
+    const seed = await client.feedbacks.getSeed("سفارش-نمونه-۱");
+    expect(seed.error).toBeUndefined();
+    expect(seed.data?.items).toHaveLength(1);
+
+    const rating = await client.feedbacks.createOrderRating({
+      orderId: seed.data!.orderId,
+      orderIdentifier: seed.data!.orderIdentifier,
+      orderRate: 5,
+    });
+    expect(rating.error).toBeUndefined();
+    expect(rating.data?.id).toBe("نظر-کفش-آریا-۱");
+
+    const review = await client.feedbacks.submitProductReview({
+      commentId: rating.data!.id,
+      productId: seed.data!.items[0]!.productId,
+      productVariantId: seed.data!.items[0]!.productVariantId,
+      productRate: 5,
+      text: "تجربه خرید خوبی بود.",
+      recommendationStatus: "RECOMMENDED",
+    });
+    expect(review.error).toBeUndefined();
+
+    const upload = await client.feedbacks.uploadReviewImages([
+      { file: new Blob(["mock-image"], { type: "image/png" }), name: "تصویر.png" },
+    ]);
+    expect(upload.error).toBeUndefined();
+    expect(upload.data?.images[0]?.serveKey).toBe("کلید-فایل-نمونه");
+  });
+
   it("uses different semantic images for generated products", () => {
     process.env.SAZITO_USE_MOCKS = "true";
 

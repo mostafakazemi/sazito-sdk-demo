@@ -398,7 +398,14 @@ export function mockSazitoResponse(
   }
   if (pathname.startsWith("/api/v1/dynamic_form/")) return jsonResult(clone(dynamicForm));
   if (pathname.startsWith("/api/v1/feedbacks/seed/")) {
-    return jsonResult(feedbackSeed(pathname.split("/").pop() ?? "سفارش کفش آریا"));
+    const encodedIdentifier = pathname.split("/").pop() ?? "";
+    let identifier = encodedIdentifier;
+    try {
+      identifier = decodeURIComponent(encodedIdentifier);
+    } catch {
+      // Keep the encoded value so the SDK receives a normal validation error.
+    }
+    return jsonResult(feedbackSeed(identifier || "سفارش کفش آریا"));
   }
   if (pathname === "/api/v1/feedbacks/comments") return jsonResult({ id: "نظر-کفش-آریا-۱" });
   if (pathname === "/api/v1/feedbacks/comments/details") return jsonResult(clone(feedbackReviews));

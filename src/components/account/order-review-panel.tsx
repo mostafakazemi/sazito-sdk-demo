@@ -415,31 +415,48 @@ export function OrderReviewPanel({ order }: { order: Order }) {
   if (phase === "idle" || phase === "loading") {
     return (
       <Card>
-        <CardHeader className="sm:flex-row sm:items-center sm:justify-between">
-          <div>
-            <CardTitle className="flex items-center gap-2">
-              <MessageSquareText className="size-5 text-primary" />
-              تجربه خرید شما
-            </CardTitle>
-            <CardDescription className="mt-2 leading-7">
-              به سفارش و محصولاتی که خریده‌اید امتیاز دهید.
-            </CardDescription>
+        <CardHeader className="gap-4 p-4 sm:p-5 md:grid md:grid-cols-[minmax(0,1fr)_13rem] md:items-center">
+          <div className="flex min-w-0 items-start gap-3">
+            <span className="flex size-10 shrink-0 items-center justify-center rounded-2xl bg-secondary text-primary">
+              <MessageSquareText className="size-5" />
+            </span>
+            <div className="min-w-0">
+              <CardTitle className="text-base">تجربه خرید شما</CardTitle>
+              <CardDescription className="mt-1 text-xs leading-6">
+                به سفارش و محصولات خریداری‌شده امتیاز دهید.
+              </CardDescription>
+              <div className="mt-2 flex flex-wrap gap-2 text-[0.6875rem] font-bold text-muted-foreground">
+                <span className="rounded-full bg-secondary px-2.5 py-1">امتیاز سفارش</span>
+                <span className="rounded-full bg-secondary px-2.5 py-1">دیدگاه محصولات</span>
+              </div>
+            </div>
           </div>
-          <Button
-            type="button"
-            variant="outline"
-            disabled={phase === "loading"}
-            onClick={() => void loadSeed()}
-          >
-            {phase === "loading" ? (
-              <LoaderCircle className="animate-spin motion-reduce:animate-none" />
-            ) : message ? (
-              <RefreshCcw />
-            ) : (
-              <MessageSquareText />
-            )}
-            {message ? "تلاش دوباره" : "ثبت تجربه خرید"}
-          </Button>
+          <div className="flex shrink-0 items-center justify-between gap-3 rounded-2xl border border-border/70 bg-secondary/35 p-2.5 md:flex-col md:items-stretch">
+            <div className="flex items-center gap-2 px-1 text-xs text-muted-foreground md:justify-center">
+              <span className="flex items-center gap-0.5 text-highlight" aria-hidden="true">
+                {Array.from({ length: 5 }, (_, index) => (
+                  <Star key={index} className="size-3 fill-current" />
+                ))}
+              </span>
+              <span>کمتر از یک دقیقه</span>
+            </div>
+            <Button
+              type="button"
+              variant="outline"
+              className="h-9 shrink-0 px-3 text-xs"
+              disabled={phase === "loading"}
+              onClick={() => void loadSeed()}
+            >
+              {phase === "loading" ? (
+                <LoaderCircle className="animate-spin motion-reduce:animate-none" />
+              ) : message ? (
+                <RefreshCcw />
+              ) : (
+                <MessageSquareText />
+              )}
+              {message ? "تلاش دوباره" : "ثبت تجربه خرید"}
+            </Button>
+          </div>
         </CardHeader>
         {message ? (
           <CardContent>
