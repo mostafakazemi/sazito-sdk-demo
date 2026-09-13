@@ -203,11 +203,11 @@ details[open] > .appearance-panel {
   place-items: center;
   width: clamp(3rem, 5vw, 7rem);
   aspect-ratio: 1;
-  border: 1px solid color-mix(in srgb, currentColor 30%, transparent);
+  border: 1px solid color-mix(in srgb, currentColor 18%, transparent);
   border-radius: 24%;
   background: linear-gradient(135deg, color-mix(in srgb, var(--card) 85%, transparent), color-mix(in srgb, currentColor 14%, transparent));
-  box-shadow: 0 12px 30px color-mix(in srgb, currentColor 12%, transparent);
-  opacity: 0.65;
+  box-shadow: 0 12px 30px color-mix(in srgb, currentColor 7%, transparent);
+  opacity: 0.28;
   animation: storefront-object-drift 6s ease-in-out infinite alternate;
 }
 
@@ -223,7 +223,7 @@ details[open] > .appearance-panel {
 }
 
 @media (max-width: 640px) {
-  .store-backdrop > span { opacity: 0.3; }
+  .store-backdrop > span { opacity: 0.16; }
 }
 
 @keyframes storefront-float {
