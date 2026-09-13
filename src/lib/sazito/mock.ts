@@ -424,7 +424,10 @@ export function mockSazitoResponse(
   if (pathname.startsWith("/api/v1/orders/")) {
     const orderId = Number(pathname.split("/").pop());
     const order = orders.orders.find((item) => item.id === orderId);
-    if (!order || request.searchParams.get("identifier") !== order.orderIdentifier) {
+    const identifier =
+      request.searchParams.get("order_identifier") ??
+      request.searchParams.get("identifier");
+    if (!order || identifier !== order.orderIdentifier) {
       return jsonResult({ message: "Order not found" }, 404);
     }
     return jsonResult(clone(order));

@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { Inbox, LoaderCircle, RefreshCcw } from "lucide-react";
+import { ClipboardList, Inbox, LoaderCircle, RefreshCcw } from "lucide-react";
 import type { Order } from "@sazito/client-sdk";
 
 import { useAccount } from "@/components/account/account-provider";
@@ -9,7 +9,7 @@ import { AccountGate, AccountShell } from "@/components/account/account-shell";
 import { OrderCard } from "@/components/account/order-card";
 import { useCommerce } from "@/components/commerce/commerce-provider";
 import { Button } from "@/components/ui/button";
-import { accountErrorMessage } from "@/lib/sazito/account";
+import { accountErrorMessage, orderItemCount } from "@/lib/sazito/account";
 
 function OrdersList() {
   const { client } = useCommerce();
@@ -135,9 +135,29 @@ function OrdersList() {
   }
 
   const hasMore = orders.length < totalCount;
+  const visibleItemCount = orders.reduce(
+    (total, order) => total + orderItemCount(order),
+    0,
+  );
 
   return (
     <>
+      <div className="mb-5 flex flex-col gap-4 rounded-3xl border border-border/70 bg-card p-4 shadow-[0_12px_40px_-32px_rgba(31,42,36,0.5)] sm:flex-row sm:items-center sm:justify-between sm:p-5">
+        <div className="flex items-center gap-3">
+          <span className="flex size-11 shrink-0 items-center justify-center rounded-2xl bg-secondary text-primary">
+            <ClipboardList className="size-5" />
+          </span>
+          <div>
+            <p className="font-black">سفارش‌های اخیر</p>
+            <p className="mt-1 text-xs text-muted-foreground">
+              {totalCount.toLocaleString("fa-IR")} سفارش در حساب شما
+            </p>
+          </div>
+        </div>
+        <p className="text-xs text-muted-foreground sm:text-left">
+          {visibleItemCount.toLocaleString("fa-IR")} کالا در این فهرست
+        </p>
+      </div>
       <div className="grid gap-4 xl:grid-cols-2">
         {orders.map((order) => (
           <OrderCard key={order.id} order={order} />
