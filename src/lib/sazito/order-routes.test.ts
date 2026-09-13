@@ -11,7 +11,7 @@ describe("host order detail routes", () => {
 
   it("encodes both credentials without adding query parameters", () => {
     const url = new URL(orderDetailsHref({ id: "123/4", orderIdentifier: "token+/&?=#" }), "https://theme.example.com");
-    expect(url.pathname).toBe("/account/orders/123%2F4");
+    expect(url.pathname).toBe("/orders/123%2F4");
     expect([...url.searchParams]).toEqual([["identifier", "token+/&?=#"]]);
   });
 

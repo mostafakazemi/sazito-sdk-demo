@@ -4,5 +4,5 @@ import type { CheckoutOrder } from "@sazito/client-sdk";
 export function orderDetailsHref(
   order: Pick<CheckoutOrder, "id" | "orderIdentifier">,
 ): string {
-  return `/account/orders/${encodeURIComponent(String(order.id))}?identifier=${encodeURIComponent(order.orderIdentifier)}`;
+  return `/orders/${encodeURIComponent(String(order.id))}?identifier=${encodeURIComponent(order.orderIdentifier)}`;
 }
