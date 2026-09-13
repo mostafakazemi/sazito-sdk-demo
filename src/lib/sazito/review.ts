@@ -151,6 +151,7 @@ export function buildProductReviewInput(
   attachmentsServeKeys: string[] = [],
 ): ProductReviewInput {
   return {
+    ...item,
     commentId,
     productId: item.productId,
     productVariantId: item.productVariantId,

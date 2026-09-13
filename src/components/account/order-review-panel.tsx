@@ -34,11 +34,9 @@ import {
   buildProductReviewInput,
   emptyProductReviewDraft,
   feedbackItemKey,
-  hasProductReviewContent,
   MAX_REVIEW_IMAGES,
   readPendingOrderReview,
   validateReviewImageSelection,
-  validateOrderReview,
   type FeedbackSeed,
   type PendingOrderReview,
   type ProductReviewDraft,
@@ -46,6 +44,7 @@ import {
 import { cn } from "@/lib/utils";
 
 type ReviewPhase = "idle" | "loading" | "ready" | "complete";
+type ReviewStep = "order" | "product";
 
 const inputClassName =
   "w-full rounded-2xl border border-border/80 bg-background px-4 py-3 text-sm outline-none transition-[border-color,box-shadow] placeholder:text-muted-foreground focus:border-primary focus:ring-2 focus:ring-ring/25 disabled:cursor-not-allowed disabled:opacity-60";
@@ -97,6 +96,8 @@ export function OrderReviewPanel({ order }: { order: Order }) {
   const { client } = useCommerce();
   const { logout } = useAccount();
   const [phase, setPhase] = React.useState<ReviewPhase>("idle");
+  const [step, setStep] = React.useState<ReviewStep>("order");
+  const [activeProductIndex, setActiveProductIndex] = React.useState(0);
   const [seed, setSeed] = React.useState<FeedbackSeed | null>(null);
   const [orderRate, setOrderRate] = React.useState(0);
   const [drafts, setDrafts] = React.useState<Record<string, ProductReviewDraft>>(
@@ -162,6 +163,17 @@ export function OrderReviewPanel({ order }: { order: Order }) {
           ]),
         ),
       );
+      const firstPendingProductIndex = response.data.items.findIndex(
+        (item, index) =>
+          !savedPending?.submittedItemKeys.includes(feedbackItemKey(item, index)),
+      );
+      if (savedPending && firstPendingProductIndex === -1) {
+        window.sessionStorage.removeItem(storageKey);
+        setPhase("complete");
+        return;
+      }
+      setActiveProductIndex(Math.max(firstPendingProductIndex, 0));
+      setStep(savedPending ? "product" : "order");
       setPhase("ready");
     } catch {
       setPhase("idle");
@@ -181,36 +193,27 @@ export function OrderReviewPanel({ order }: { order: Order }) {
     [],
   );
 
-  const submit = (event: React.SubmitEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    if (!seed) return;
+  const completeReview = React.useCallback(() => {
+    window.sessionStorage.removeItem(storageKey);
+    setPending(null);
+    setPhase("complete");
+  }, [storageKey]);
 
-    const entries = seed.items.map((item, index) => {
-      const key = feedbackItemKey(item, index);
-      return { key, item, draft: drafts[key] ?? emptyProductReviewDraft() };
-    });
-    const validation = validateOrderReview(
-      pending ? 5 : orderRate,
-      entries.map(({ key, draft }) => ({ key, draft })),
-    );
-
-    setOrderError(validation.orderError);
-    setProductErrors(validation.productErrors);
-    setMessage(null);
-
+  const submitOrderRating = () => {
     if (
-      validation.orderError ||
-      Object.keys(validation.productErrors).length
+      !seed ||
+      !Number.isInteger(orderRate) ||
+      orderRate < 1 ||
+      orderRate > 5
     ) {
+      setOrderError("امتیاز کلی سفارش را انتخاب کنید.");
       return;
     }
 
+    setMessage(null);
     startSubmitting(async () => {
-      let currentPending = pending;
-
       try {
-        if (!currentPending) {
-          const ratingResponse = await client.feedbacks.createOrderRating(
+        const ratingResponse = await client.feedbacks.createOrderRating(
             {
               orderId: seed.orderId,
               orderIdentifier: seed.orderIdentifier,
@@ -219,7 +222,7 @@ export function OrderReviewPanel({ order }: { order: Order }) {
             { cache: false },
           );
 
-          if (ratingResponse.error || !ratingResponse.data?.id) {
+        if (ratingResponse.error || !ratingResponse.data?.id) {
             if (isSazitoAuthenticationError(ratingResponse.error)) {
               logout();
               return;
@@ -234,28 +237,57 @@ export function OrderReviewPanel({ order }: { order: Order }) {
                 : "شناسه امتیاز ثبت‌شده از فروشگاه دریافت نشد.",
             );
             return;
-          }
-
-          currentPending = {
-            commentId: ratingResponse.data.id,
-            submittedItemKeys: [],
-            uploadedAttachmentServeKeys: {},
-          };
-          setPending(currentPending);
-          savePendingReview(storageKey, currentPending);
         }
 
-        const submittedKeys = new Set(currentPending.submittedItemKeys);
-        const activeEntries = entries.filter(
-          ({ key, draft }) =>
-            hasProductReviewContent(draft) && !submittedKeys.has(key),
-        );
+        const nextPending = {
+          commentId: ratingResponse.data.id,
+          submittedItemKeys: [],
+          uploadedAttachmentServeKeys: {},
+        };
+        setPending(nextPending);
+        savePendingReview(storageKey, nextPending);
+        if (seed.items.length) {
+          setActiveProductIndex(0);
+          setStep("product");
+        } else {
+          completeReview();
+        }
+      } catch {
+        setMessage(sazitoConnectionErrorMessage());
+      }
+    });
+  };
 
-        for (const { key, item, draft } of activeEntries) {
-          let attachmentServeKeys: string[] =
-            currentPending.uploadedAttachmentServeKeys[key] ?? [];
+  const submitProductReview = () => {
+    if (!seed || !pending) return;
 
-          if (draft.attachments.length && !attachmentServeKeys.length) {
+    const item = seed.items[activeProductIndex];
+    if (!item) {
+      completeReview();
+      return;
+    }
+    const key = feedbackItemKey(item, activeProductIndex);
+    const draft = drafts[key] ?? emptyProductReviewDraft();
+    if (
+      !Number.isInteger(draft.productRate) ||
+      draft.productRate < 1 ||
+      draft.productRate > 5
+    ) {
+      setProductErrors((current) => ({
+        ...current,
+        [key]: "برای این محصول امتیاز انتخاب کنید.",
+      }));
+      return;
+    }
+
+    setMessage(null);
+    startSubmitting(async () => {
+      let currentPending = pending;
+      try {
+        let attachmentServeKeys: string[] =
+          currentPending.uploadedAttachmentServeKeys[key] ?? [];
+
+        if (draft.attachments.length && !attachmentServeKeys.length) {
             const uploadResponse = await client.feedbacks.uploadReviewImages(
               draft.attachments.map(({ file }) => ({
                 file,
@@ -301,9 +333,9 @@ export function OrderReviewPanel({ order }: { order: Order }) {
             };
             setPending(currentPending);
             savePendingReview(storageKey, currentPending);
-          }
+        }
 
-          const response = await client.feedbacks.submitProductReview(
+        const response = await client.feedbacks.submitProductReview(
             buildProductReviewInput(
               item,
               currentPending.commentId,
@@ -313,7 +345,7 @@ export function OrderReviewPanel({ order }: { order: Order }) {
             { cache: false },
           );
 
-          if (response.error) {
+        if (response.error) {
             if (isSazitoAuthenticationError(response.error)) {
               logout();
               return;
@@ -326,24 +358,40 @@ export function OrderReviewPanel({ order }: { order: Order }) {
               ),
             );
             return;
-          }
-
-          submittedKeys.add(key);
-          currentPending = {
-            ...currentPending,
-            submittedItemKeys: [...submittedKeys],
-          };
-          setPending(currentPending);
-          savePendingReview(storageKey, currentPending);
         }
 
-        window.sessionStorage.removeItem(storageKey);
-        setPending(null);
-        setPhase("complete");
+        const submittedKeys = new Set(currentPending.submittedItemKeys);
+        submittedKeys.add(key);
+        currentPending = {
+          ...currentPending,
+          submittedItemKeys: [...submittedKeys],
+        };
+        setPending(currentPending);
+        savePendingReview(storageKey, currentPending);
+
+        const nextProductIndex = seed.items.findIndex(
+          (nextItem, index) =>
+            index > activeProductIndex &&
+            !submittedKeys.has(feedbackItemKey(nextItem, index)),
+        );
+        if (nextProductIndex === -1) {
+          completeReview();
+        } else {
+          setActiveProductIndex(nextProductIndex);
+        }
       } catch {
         setMessage(sazitoConnectionErrorMessage());
       }
     });
+  };
+
+  const submit = (event: React.SubmitEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    if (step === "order") {
+      submitOrderRating();
+    } else {
+      submitProductReview();
+    }
   };
 
   if (phase === "complete") {
@@ -416,22 +464,30 @@ export function OrderReviewPanel({ order }: { order: Order }) {
           ثبت تجربه خرید
         </CardTitle>
         <CardDescription className="leading-7">
-          امتیاز کلی سفارش الزامی است؛ ثبت دیدگاه برای هر محصول اختیاری است.
+          {step === "order"
+            ? "ابتدا به تجربه کلی این سفارش امتیاز دهید."
+            : `دیدگاه محصول ${(activeProductIndex + 1).toLocaleString("fa-IR")} از ${seed.items.length.toLocaleString("fa-IR")} را ثبت کنید.`}
         </CardDescription>
+        <div className="mt-2 flex items-center gap-2" aria-label="مراحل ثبت تجربه">
+          <Badge variant={step === "order" ? "default" : "secondary"}>
+            ۱. امتیاز سفارش
+          </Badge>
+          <Badge variant={step === "product" ? "default" : "outline"}>
+            ۲. دیدگاه محصولات
+          </Badge>
+        </div>
       </CardHeader>
       <CardContent>
         <form className="grid gap-6" onSubmit={submit} noValidate>
           <fieldset className="grid gap-6" disabled={isSubmitting}>
-            <section className="rounded-3xl bg-secondary/60 p-5" aria-labelledby="order-rating-title">
+            {step === "order" ? (
+              <section
+                className="rounded-3xl bg-secondary/60 p-5"
+                aria-labelledby="order-rating-title"
+              >
               <h3 id="order-rating-title" className="font-black">
                 امتیاز کلی به سفارش
               </h3>
-              {pending ? (
-                <p className="mt-3 flex items-center gap-2 text-sm text-primary">
-                  <CheckCircle2 className="size-4" />
-                  امتیاز سفارش ذخیره شده؛ ارسال دیدگاه‌های باقی‌مانده را ادامه دهید.
-                </p>
-              ) : (
                 <div className="mt-3">
                   <StarRating
                     label="امتیاز کلی سفارش"
@@ -448,23 +504,23 @@ export function OrderReviewPanel({ order }: { order: Order }) {
                     </p>
                   ) : null}
                 </div>
-              )}
-            </section>
+              </section>
+            ) : null}
 
-            {seed.items.length ? (
+            {step === "product" && seed.items.length ? (
               <section aria-labelledby="product-reviews-title">
                 <h3 id="product-reviews-title" className="font-black">
                   دیدگاه محصولات
                 </h3>
                 <p className="mt-1 text-xs leading-6 text-muted-foreground">
-                  فقط محصولاتی را که می‌خواهید درباره‌شان بنویسید باز کنید.
+                  نظر هر محصول جداگانه ارسال می‌شود و بعد به محصول بعدی می‌روید.
                 </p>
                 <div className="mt-4 grid gap-3">
                   {seed.items.map((item, index) => {
+                    if (index !== activeProductIndex) return null;
+
                     const key = feedbackItemKey(item, index);
                     const draft = drafts[key] ?? emptyProductReviewDraft();
-                    const alreadySubmitted =
-                      pending?.submittedItemKeys.includes(key) ?? false;
                     const attachmentsUploaded = Boolean(
                       pending?.uploadedAttachmentServeKeys[key]?.length,
                     );
@@ -472,6 +528,7 @@ export function OrderReviewPanel({ order }: { order: Order }) {
                     return (
                       <details
                         key={key}
+                        open
                         className="group rounded-3xl border bg-background/65 open:bg-card"
                       >
                         <summary className="flex cursor-pointer list-none items-center justify-between gap-3 rounded-3xl p-4 outline-none focus-visible:ring-2 focus-visible:ring-ring [&::-webkit-details-marker]:hidden">
@@ -480,26 +537,14 @@ export function OrderReviewPanel({ order }: { order: Order }) {
                               {item.productName || "محصول سفارش"}
                             </strong>
                             <span className="mt-1 block text-xs text-muted-foreground">
-                              ثبت دیدگاه اختیاری
+                              محصول {(index + 1).toLocaleString("fa-IR")} از{" "}
+                              {seed.items.length.toLocaleString("fa-IR")}
                             </span>
                           </span>
-                          {alreadySubmitted ? (
-                            <Badge variant="secondary">
-                              <CheckCircle2 /> ارسال شد
-                            </Badge>
-                          ) : (
-                            <span className="text-xs font-bold text-primary group-open:hidden">
-                              باز کردن
-                            </span>
-                          )}
+                          <Badge variant="outline">در حال تکمیل</Badge>
                         </summary>
 
-                        {alreadySubmitted ? (
-                          <p className="border-t px-4 py-5 text-sm text-primary">
-                            دیدگاه این محصول با موفقیت ارسال شده است.
-                          </p>
-                        ) : (
-                          <div className="grid gap-5 border-t p-4 sm:p-5">
+                        <div className="grid gap-5 border-t p-4 sm:p-5">
                             <div>
                               <p className="mb-2 text-sm font-bold">امتیاز محصول</p>
                               <StarRating
@@ -689,8 +734,7 @@ export function OrderReviewPanel({ order }: { order: Order }) {
                                 {productErrors[key]}
                               </p>
                             ) : null}
-                          </div>
-                        )}
+                        </div>
                       </details>
                     );
                   })}
@@ -711,7 +755,11 @@ export function OrderReviewPanel({ order }: { order: Order }) {
             ) : (
               <Send />
             )}
-            ارسال تجربه
+            {step === "order"
+              ? "ثبت امتیاز و ادامه"
+              : activeProductIndex === seed.items.length - 1
+                ? "ثبت نهایی"
+                : "ثبت و محصول بعدی"}
           </Button>
         </form>
       </CardContent>
