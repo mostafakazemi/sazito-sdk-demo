@@ -107,6 +107,57 @@ describe("Sazito mock endpoint coverage", () => {
     expect(response?.body).toMatchObject({ page: 2, pageSize: 3 });
   });
 
+  it("supports the SDK public order detail contract", async () => {
+    process.env.SAZITO_USE_MOCKS = "true";
+    const client = createSazitoClient({
+      domain: "mock-store.sazito.com",
+      customFetchApi: createMockSazitoFetch(),
+      cache: { orders: { enabled: false } },
+    });
+
+    const response = await client.orders.get(101, "سفارش-نمونه-۱");
+
+    expect(response.error).toBeUndefined();
+    expect(response.data).toMatchObject({
+      id: 101,
+      orderIdentifier: "سفارش-نمونه-۱",
+      invoice: {
+        invoiceItems: [{ id: 1001, name: "کفش نمونه" }],
+      },
+    });
+
+    const wireResponse = mockSazitoResponse({
+      pathname: "/api/v1/orders/101",
+      searchParams: new URLSearchParams({ order_identifier: "سفارش-نمونه-۱" }),
+      method: "GET",
+    });
+    expect(wireResponse?.body).toMatchObject({
+      invoice: {
+        shipping_address: {
+          first_name: "کاربر",
+          postal_code: "1111111111",
+          city: { region_id: 1 },
+        },
+      },
+    });
+  });
+
+  it("returns order items and addresses through the SDK list contract", async () => {
+    process.env.SAZITO_USE_MOCKS = "true";
+    const client = createSazitoClient({
+      domain: "mock-store.sazito.com",
+      customFetchApi: createMockSazitoFetch(),
+      cache: { orders: { enabled: false } },
+    });
+
+    const response = await client.orders.list({ pageNumber: 1, pageSize: 10 });
+
+    expect(response.error).toBeUndefined();
+    expect(response.data?.orders).toHaveLength(2);
+    expect(response.data?.orders[0]?.invoice.invoiceItems).toHaveLength(1);
+    expect(response.data?.orders[0]?.invoice.invoiceItems[0]?.name).toBe("کفش نمونه");
+  });
+
   it("uses different semantic images for generated products", () => {
     process.env.SAZITO_USE_MOCKS = "true";
 

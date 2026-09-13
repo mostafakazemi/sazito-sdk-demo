@@ -2,12 +2,14 @@
 
 import * as React from "react";
 import Link from "next/link";
+import Image from "next/image";
 import {
   ArrowRight,
   Box,
+  CheckCircle2,
   LoaderCircle,
-  PackageOpen,
   RefreshCcw,
+  ShoppingBag,
 } from "lucide-react";
 import type { Order } from "@sazito/client-sdk";
 
@@ -19,9 +21,9 @@ import { StoreLink } from "@/components/store/store-link";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Separator } from "@/components/ui/separator";
 import {
   accountErrorMessage,
-  orderItemCount,
   orderItems,
   orderTotal,
 } from "@/lib/sazito/account";
@@ -102,9 +104,13 @@ function OrderDetail({ orderId, orderIdentifier }: OrderDetailProps) {
 
   if (isLoading) {
     return (
-      <div className="flex min-h-64 items-center justify-center gap-3 rounded-4xl border bg-card text-sm text-muted-foreground">
-        <LoaderCircle className="size-5 animate-spin motion-reduce:animate-none" />
-        در حال دریافت جزئیات سفارش…
+      <div className="grid gap-4" role="status" aria-label="در حال دریافت جزئیات سفارش">
+        <div className="h-36 animate-pulse rounded-4xl border bg-card" />
+        <div className="h-72 animate-pulse rounded-4xl border bg-card" />
+        <div className="flex items-center justify-center gap-3 text-sm text-muted-foreground">
+          <LoaderCircle className="size-5 animate-spin motion-reduce:animate-none" />
+          در حال دریافت جزئیات سفارش…
+        </div>
       </div>
     );
   }
@@ -129,72 +135,75 @@ function OrderDetail({ orderId, orderIdentifier }: OrderDetailProps) {
   }
 
   const items = orderItems(order);
+  const invoice = order.invoice;
+  const itemTotal = orderTotal(order);
+  const finalTotal = typeof invoice.finalTotal === "number" ? invoice.finalTotal : itemTotal;
+  const discountTotal = typeof invoice.discountTotal === "number" ? invoice.discountTotal : 0;
+  const shippingTotal = typeof invoice.shippingTotal === "number" ? invoice.shippingTotal : 0;
+  const vat = typeof invoice.vat === "number" ? invoice.vat : 0;
 
   return (
     <div className="grid gap-5">
-      <Card>
-        <CardHeader className="flex-row flex-wrap items-center justify-between gap-4">
-          <div>
-            <Badge variant="secondary">
-              <PackageOpen className="size-3.5" />
-              {orderItemCount(order).toLocaleString("fa-IR")} کالا
+      <Card className="overflow-hidden border-primary/15 bg-gradient-to-br from-card via-card to-secondary/40">
+        <CardContent className="relative p-5 sm:p-7">
+          <div className="absolute -left-10 -top-12 size-36 rounded-full bg-primary/10 blur-3xl" />
+          <div className="relative">
+            <Badge className="gap-2 bg-primary/10 text-primary hover:bg-primary/10">
+              <CheckCircle2 className="size-4" />
+              سفارش ثبت‌شده
             </Badge>
-            <CardTitle className="mt-3 text-xl">
+            <CardTitle className="mt-4 text-2xl sm:text-3xl">
               سفارش شماره {order.orderNumber || order.id.toLocaleString("fa-IR")}
             </CardTitle>
-          </div>
-          <div className="text-left">
-            <p className="text-xs text-muted-foreground">جمع اقلام</p>
-            <p className="mt-1 text-xl font-black text-primary">
-              {formatPrice(orderTotal(order))}
+            <p className="mt-2 text-sm text-muted-foreground">
+              خلاصه اقلام و مبلغ نهایی سفارش شما
             </p>
           </div>
-        </CardHeader>
+        </CardContent>
       </Card>
 
-      <div className="grid gap-3">
-        {items.map((item) => {
-          const target = item.url
-            ? normalizeStoreHref(item.url)
-            : { href: "/", external: false };
-
-          return (
-            <Card key={item.id}>
-              <CardContent className="flex flex-col gap-4 p-5 sm:flex-row sm:items-center">
-                <span className="flex size-14 shrink-0 items-center justify-center rounded-2xl bg-secondary text-primary">
-                  <Box className="size-6" />
-                </span>
-                <div className="min-w-0 flex-1">
-                  <StoreLink
-                    item={{
-                      ...target,
-                      label: item.name || "محصول سفارش",
-                    }}
-                    className="font-black outline-none hover:text-primary focus-visible:ring-2 focus-visible:ring-ring"
-                  />
-                  <p className="mt-1 text-sm text-muted-foreground">
-                    {item.quantity.toLocaleString("fa-IR")} عدد ×{" "}
-                    {formatPrice(item.unitPrice)}
-                  </p>
-                  {item.attributes.length ? (
-                    <p className="mt-2 text-xs leading-6 text-muted-foreground">
-                      {item.attributes
-                        .map((attribute) => {
-                          const value =
-                            typeof attribute.value === "string"
-                              ? attribute.value
-                              : attribute.value.value;
-                          return `${attribute.name}: ${value}`;
-                        })
-                        .join("، ")}
-                    </p>
-                  ) : null}
+      <div className="grid items-start gap-5 lg:grid-cols-[minmax(0,1fr)_19rem]">
+        <Card>
+          <CardHeader className="flex-row items-center justify-between gap-3 border-b border-border/70 px-5 py-5 sm:px-6">
+            <div>
+              <CardTitle className="text-lg">اقلام سفارش</CardTitle>
+              <p className="mt-1 text-xs text-muted-foreground">محصولات انتخاب‌شده برای این سفارش</p>
+            </div>
+            <ShoppingBag className="size-5 text-primary" />
+          </CardHeader>
+          <CardContent className="p-0">
+            {items.length ? items.map((item, index) => {
+              const target = item.url ? normalizeStoreHref(item.url) : { href: "/", external: false };
+              return (
+                <div key={item.id} className={`flex flex-col gap-4 p-5 sm:flex-row sm:items-center sm:p-6 ${index ? "border-t border-border/70" : ""}`}>
+                  <div className="relative flex size-20 shrink-0 items-center justify-center overflow-hidden rounded-2xl border bg-secondary text-primary">
+                    {item.image?.url ? (
+                      <Image src={item.image.url} alt={item.name || "محصول سفارش"} fill sizes="80px" className="object-cover" />
+                    ) : <Box className="size-7" />}
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <StoreLink item={{ ...target, label: item.name || "محصول سفارش" }} className="font-black outline-none hover:text-primary focus-visible:ring-2 focus-visible:ring-ring" />
+                    <p className="mt-1 text-sm text-muted-foreground">{item.quantity.toLocaleString("fa-IR")} عدد × {formatPrice(item.unitPrice)}</p>
+                    {item.attributes.length ? <p className="mt-2 text-xs leading-6 text-muted-foreground">{item.attributes.map((attribute) => { const value = typeof attribute.value === "string" ? attribute.value : attribute.value.value; return `${attribute.name}: ${value}`; }).join("، ")}</p> : null}
+                  </div>
+                  <strong className="shrink-0 text-base">{formatPrice(item.lineTotal)}</strong>
                 </div>
-                <strong className="shrink-0">{formatPrice(item.lineTotal)}</strong>
-              </CardContent>
-            </Card>
-          );
-        })}
+              );
+            }) : <p className="p-8 text-center text-sm text-muted-foreground">برای این سفارش کالایی ثبت نشده است.</p>}
+          </CardContent>
+        </Card>
+
+        <Card className="lg:sticky lg:top-24">
+          <CardHeader className="px-5 pb-3 pt-5"><CardTitle className="text-lg">خلاصه پرداخت</CardTitle></CardHeader>
+          <CardContent className="space-y-4 px-5 pb-5">
+            <div className="flex justify-between gap-4 text-sm"><span className="text-muted-foreground">جمع اقلام</span><span>{formatPrice(itemTotal)}</span></div>
+            {discountTotal > 0 ? <div className="flex justify-between gap-4 text-sm text-primary"><span>تخفیف</span><span>- {formatPrice(discountTotal)}</span></div> : null}
+            {shippingTotal > 0 ? <div className="flex justify-between gap-4 text-sm"><span className="text-muted-foreground">هزینه ارسال</span><span>{formatPrice(shippingTotal)}</span></div> : null}
+            {vat > 0 ? <div className="flex justify-between gap-4 text-sm"><span className="text-muted-foreground">مالیات</span><span>{formatPrice(vat)}</span></div> : null}
+            <Separator />
+            <div className="flex items-end justify-between gap-4"><span className="font-bold">مبلغ نهایی</span><span className="text-xl font-black text-primary">{formatPrice(finalTotal)}</span></div>
+          </CardContent>
+        </Card>
       </div>
 
       {status === "authenticated" ? <OrderReviewPanel order={order} /> : null}

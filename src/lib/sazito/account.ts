@@ -41,9 +41,14 @@ export function accountErrorMessage(
 }
 
 export function orderItems(order: Order): InvoiceItem[] {
-  return Array.isArray(order.invoice?.invoiceItems)
-    ? order.invoice.invoiceItems
-    : [];
+  if (!Array.isArray(order.invoice?.invoiceItems)) return [];
+
+  const seenItemIds = new Set<string | number>();
+  return order.invoice.invoiceItems.filter((item) => {
+    if (seenItemIds.has(item.id)) return false;
+    seenItemIds.add(item.id);
+    return true;
+  });
 }
 
 export function orderItemCount(order: Order) {

@@ -73,6 +73,16 @@ describe("account presentation", () => {
     expect(orderTotal(order())).toBe(320_000);
   });
 
+  it("ignores duplicate invoice lines returned with the same id", () => {
+    const duplicateOrder = order();
+    duplicateOrder.invoice.invoiceItems.push({
+      ...duplicateOrder.invoice.invoiceItems[0],
+    });
+
+    expect(orderItemCount(duplicateOrder)).toBe(3);
+    expect(orderTotal(duplicateOrder)).toBe(320_000);
+  });
+
   it("normalizes authentication and network errors", () => {
     expect(
       accountErrorMessage({

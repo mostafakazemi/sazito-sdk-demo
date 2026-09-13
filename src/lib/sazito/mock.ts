@@ -202,6 +202,40 @@ function addressFixture(id = 1) {
   return address;
 }
 
+function orderWireFixture(order: JsonObject) {
+  const wireOrder = clone(order) as JsonObject;
+  const wireInvoice = wireOrder.invoice as JsonObject | undefined;
+
+  if (!wireInvoice) return wireOrder;
+
+  if (Array.isArray(wireInvoice.invoiceItems)) {
+    wireInvoice.items = wireInvoice.invoiceItems;
+    delete wireInvoice.invoiceItems;
+  }
+
+  const address = addressFixture();
+  wireInvoice.shipping_address = {
+    identifier: address.identifier,
+    first_name: address.firstName,
+    last_name: address.lastName,
+    mobile_phone: address.mobilePhone,
+    email: address.email,
+    region: address.region,
+    city: {
+      ...address.city,
+      region_id: address.city.regionId,
+    },
+    address: address.address,
+    postal_code: address.postalCode,
+    description: address.description,
+    latitude: address.city.latitude,
+    longitude: address.city.longitude,
+    user_set_coordinates_before: address.userSetCoordinatesBefore,
+  };
+
+  return wireOrder;
+}
+
 function eventFixture(id = 1) {
   const event = clone(events.items[0]);
   event.id = id;
@@ -421,6 +455,13 @@ export function mockSazitoResponse(
 
   if (pathname === "/api/v1/users/wallet/balance") return jsonResult(clone(walletBalance));
   if (pathname === "/api/v1/wallet/transactions") return jsonResult(staticFixtures[pathname]);
+  if (pathname === "/api/v1/orders") {
+    const orderList = clone(orders) as JsonObject;
+    orderList.orders = Array.isArray(orderList.orders)
+      ? orderList.orders.map((order) => orderWireFixture(order as JsonObject))
+      : [];
+    return jsonResult(orderList);
+  }
   if (pathname.startsWith("/api/v1/orders/")) {
     const orderId = Number(pathname.split("/").pop());
     const order = orders.orders.find((item) => item.id === orderId);
@@ -430,7 +471,7 @@ export function mockSazitoResponse(
     if (!order || identifier !== order.orderIdentifier) {
       return jsonResult({ message: "Order not found" }, 404);
     }
-    return jsonResult(clone(order));
+    return jsonResult(orderWireFixture(order as unknown as JsonObject));
   }
   if (pathname.startsWith("/api/v1/users/") || pathname.startsWith("/api/v1/sessions/")) {
     if (pathname.endsWith("/current")) return jsonResult(clone(user));
