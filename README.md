@@ -178,3 +178,15 @@ pnpm build
 ```
 
 SEO discovery files are served at `/robots.txt` and `/sitemap.xml`.
+
+## Checkout order detail route
+
+Checkout and order-history links share `orderDetailsHref` in
+`src/lib/sazito/order-routes.ts`. Checkout passes it as `getOrderDetailsUrl`.
+The host route is `/account/orders/{id}?identifier={orderIdentifier}`;
+the detail page supplies both values to `client.orders.get` and permits guest
+access through the complete link. Order history and review controls retain
+their account requirements. Missing credentials are rejected before fetching.
+
+This integration uses the published `@sazito/client-sdk@1.2.35` and
+`@sazito/checkout@0.4.26` packages, pinned in `package.json` and `pnpm-lock.yaml`.

@@ -181,7 +181,7 @@ describe(`Sazito Client SDK live contract (${storeDomain})`, () => {
     }
   });
 
-  it("does not expose customer, order, wallet, or booking data anonymously", async () => {
+  it("does not expose private data anonymously or order details with a mismatched identifier", async () => {
     const [
       currentUser,
       orders,
@@ -192,7 +192,7 @@ describe(`Sazito Client SDK live contract (${storeDomain})`, () => {
     ] = await Promise.all([
       client.users.getCurrentUser({ cache: false }),
       client.orders.list({ pageNumber: 1, pageSize: 1 }, { cache: false }),
-      client.orders.get(1, { cache: false }),
+      client.orders.get(1, "invalid-order-identifier", { cache: false }),
       client.wallet.getBalance({ cache: false }),
       client.wallet.listTransactions(
         { pageNumber: 1, pageSize: 1 },

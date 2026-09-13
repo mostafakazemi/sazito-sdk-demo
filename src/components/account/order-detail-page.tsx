@@ -2,7 +2,6 @@
 
 import * as React from "react";
 import Link from "next/link";
-import { useParams } from "next/navigation";
 import {
   ArrowRight,
   Box,
@@ -13,7 +12,7 @@ import {
 import type { Order } from "@sazito/client-sdk";
 
 import { useAccount } from "@/components/account/account-provider";
-import { AccountGate, AccountShell } from "@/components/account/account-shell";
+import { AccountShell } from "@/components/account/account-shell";
 import { OrderReviewPanel } from "@/components/account/order-review-panel";
 import { useCommerce } from "@/components/commerce/commerce-provider";
 import { StoreLink } from "@/components/store/store-link";
@@ -31,19 +30,24 @@ import {
   normalizeStoreHref,
 } from "@/lib/sazito/presenters";
 
-function OrderDetail() {
-  const params = useParams<{ id: string }>();
-  const orderId = Number(params.id);
+interface OrderDetailProps {
+  orderId: number;
+  orderIdentifier: string;
+}
+
+function OrderDetail({ orderId, orderIdentifier }: OrderDetailProps) {
   const { client } = useCommerce();
-  const { logout } = useAccount();
+  const { status } = useAccount();
+  const backHref = status === "authenticated" ? "/account/orders" : "/";
+  const backLabel = status === "authenticated" ? "بازگشت به سفارش‌ها" : "بازگشت به فروشگاه";
   const [order, setOrder] = React.useState<Order | null>(null);
   const [isLoading, setIsLoading] = React.useState(true);
   const [error, setError] = React.useState<string | null>(null);
 
   const loadOrder = React.useCallback(
     async (signal?: AbortSignal) => {
-      if (!Number.isInteger(orderId) || orderId <= 0) {
-        setError("شناسه سفارش معتبر نیست.");
+      if (!Number.isSafeInteger(orderId) || orderId <= 0 || !orderIdentifier.trim()) {
+        setError("لینک سفارش معتبر نیست. از لینک کامل جزئیات سفارش استفاده کنید.");
         setIsLoading(false);
         return;
       }
@@ -52,7 +56,7 @@ function OrderDetail() {
       setError(null);
 
       try {
-        const response = await client.orders.get(orderId, {
+        const response = await client.orders.get(orderId, orderIdentifier, {
           cache: false,
           signal,
         });
@@ -60,16 +64,10 @@ function OrderDetail() {
         if (signal?.aborted) return;
 
         if (response.error || !response.data) {
-          if (
-            response.error?.status === 401 ||
-            response.error?.status === 403
-          ) {
-            logout();
-            return;
-          }
-
           setError(
-            response.error
+            response.error?.status === 401 || response.error?.status === 403 || response.error?.status === 404
+              ? "سفارش پیدا نشد یا لینک دسترسی معتبر نیست."
+              : response.error
               ? accountErrorMessage(
                   response.error,
                   "جزئیات سفارش از فروشگاه دریافت نشد.",
@@ -88,7 +86,7 @@ function OrderDetail() {
         if (!signal?.aborted) setIsLoading(false);
       }
     },
-    [client, logout, orderId],
+    [client, orderId, orderIdentifier],
   );
 
   React.useEffect(() => {
@@ -123,7 +121,7 @@ function OrderDetail() {
             تلاش دوباره
           </Button>
           <Button asChild variant="outline">
-            <Link href="/account/orders">بازگشت به سفارش‌ها</Link>
+            <Link href={backHref}>{backLabel}</Link>
           </Button>
         </div>
       </div>
@@ -199,28 +197,37 @@ function OrderDetail() {
         })}
       </div>
 
-      <OrderReviewPanel order={order} />
+      {status === "authenticated" ? <OrderReviewPanel order={order} /> : null}
 
       <Link
-        href="/account/orders"
+        href={backHref}
         className="inline-flex w-fit items-center gap-2 rounded-xl text-sm font-bold text-primary outline-none hover:underline focus-visible:ring-2 focus-visible:ring-ring"
       >
         <ArrowRight className="size-4" />
-        بازگشت به سفارش‌ها
+        {backLabel}
       </Link>
     </div>
   );
 }
 
-export function OrderDetailPage() {
-  return (
-    <AccountGate>
+export function OrderDetailPage(props: OrderDetailProps) {
+  const { status } = useAccount();
+
+  if (status === "authenticated") {
+    return (
       <AccountShell
         title="جزئیات سفارش"
         description="اقلام ثبت‌شده در این سفارش سازیتو"
       >
-        <OrderDetail />
+        <OrderDetail {...props} />
       </AccountShell>
-    </AccountGate>
+    );
+  }
+
+  return (
+    <section>
+      <h1 className="mb-6 text-2xl font-black sm:text-3xl">جزئیات سفارش</h1>
+      <OrderDetail {...props} />
+    </section>
   );
 }

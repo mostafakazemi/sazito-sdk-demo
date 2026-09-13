@@ -9,6 +9,7 @@ import {
 import type { CheckoutConfig } from "@sazito/checkout/core";
 
 import { useCommerce } from "@/components/commerce/commerce-provider";
+import { orderDetailsHref } from "@/lib/sazito/order-routes";
 
 const checkoutTheme = {
   accent: "#2F6B57",
@@ -44,6 +45,7 @@ function CheckoutStateBridge() {
     <SazitoCheckout
       theme={checkoutTheme}
       continueShoppingUrl="/"
+      getOrderDetailsUrl={orderDetailsHref}
       className="store-checkout"
       emptyCart={{
         title: "سبد خرید شما خالی است",
