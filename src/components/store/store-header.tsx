@@ -29,7 +29,7 @@ function Brand({ store }: { store: StoreChrome }) {
       aria-label="صفحه اصلی"
     >
       {store.logoUrl ? (
-        <span className="relative block h-11 w-14 shrink-0 overflow-hidden rounded-2xl border border-border/80 bg-white shadow-sm transition-[border-color,box-shadow,transform] group-hover:-translate-y-0.5 group-hover:border-primary/30 group-hover:shadow-md sm:h-13 sm:w-18">
+        <span className="relative block h-10 w-13 shrink-0 overflow-hidden rounded-2xl border border-border/80 bg-white shadow-sm transition-[border-color,box-shadow,transform] group-hover:-translate-y-0.5 group-hover:border-primary/30 group-hover:shadow-md sm:h-13 sm:w-18">
           <Image
             src={store.logoUrl}
             alt={store.name}
@@ -40,7 +40,7 @@ function Brand({ store }: { store: StoreChrome }) {
           />
         </span>
       ) : (
-        <span className="flex size-11 shrink-0 items-center justify-center rounded-2xl bg-primary text-primary-foreground shadow-sm transition-transform group-hover:-translate-y-0.5 sm:size-13">
+        <span className="flex size-10 shrink-0 items-center justify-center rounded-2xl bg-primary text-primary-foreground shadow-sm transition-transform group-hover:-translate-y-0.5 sm:size-13">
           <PackageOpen className="size-5" />
         </span>
       )}
@@ -60,7 +60,7 @@ export function StoreHeader({ store }: { store: StoreChrome }) {
 
   return (
     <header className="sticky top-0 z-40 border-b border-border/70 bg-card/88 shadow-[0_8px_28px_-24px_rgba(31,42,36,0.7)] backdrop-blur-xl">
-      <div className="site-container flex h-18 items-center gap-3 sm:h-20 lg:gap-5">
+      <div className="site-container flex h-18 min-w-0 items-center gap-1 sm:h-20 sm:gap-3 lg:gap-5">
         <Brand store={store} />
 
         <nav
@@ -72,7 +72,7 @@ export function StoreHeader({ store }: { store: StoreChrome }) {
           </div>
         </nav>
 
-        <div className="mr-auto flex shrink-0 items-center gap-1.5 sm:gap-2 xl:mr-0">
+        <div className="mr-auto flex shrink-0 items-center gap-1 sm:gap-2 xl:mr-0">
           {store.searchEnabled ? <StoreSearch /> : null}
           <AppearanceControls />
           <AccountButton />
@@ -84,7 +84,7 @@ export function StoreHeader({ store }: { store: StoreChrome }) {
             <Button
               variant="outline"
               size="icon"
-              className="rounded-full border-border/80 bg-card shadow-sm xl:hidden"
+              className="size-9 rounded-full border-border/80 bg-card shadow-sm sm:size-10 xl:hidden"
               aria-label="باز کردن منو"
             >
               <Menu />

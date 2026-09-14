@@ -66,23 +66,23 @@ export function AccountShell({
   const { user, logout, notice, clearNotice } = useAccount();
 
   return (
-    <div className="grid gap-6 lg:grid-cols-[16rem_minmax(0,1fr)]">
-      <aside className="h-fit rounded-4xl border bg-card p-4 shadow-[0_16px_50px_-34px_rgba(31,42,36,0.45)] lg:sticky lg:top-24">
-        <div className="flex items-center gap-3 rounded-2xl bg-secondary/70 p-3">
-          <span className="flex size-11 shrink-0 items-center justify-center rounded-2xl bg-primary text-primary-foreground">
+    <div className="grid gap-4 lg:gap-6 lg:grid-cols-[16rem_minmax(0,1fr)]">
+      <aside className="h-fit rounded-4xl border bg-card p-2 shadow-[0_16px_50px_-34px_rgba(31,42,36,0.45)] sm:p-3 lg:sticky lg:top-24 lg:p-4">
+        <div className="flex items-center gap-2 rounded-2xl bg-secondary/70 p-2 lg:gap-3 lg:p-3">
+          <span className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-primary text-primary-foreground lg:size-11 lg:rounded-2xl">
             <UserRound className="size-5" />
           </span>
           <div className="min-w-0">
-            <p className="truncate text-sm font-black">
+            <p className="truncate text-xs font-black lg:text-sm">
               {accountDisplayName(user)}
             </p>
-            <p className="mt-0.5 truncate text-xs text-muted-foreground">
+            <p className="mt-0.5 hidden truncate text-xs text-muted-foreground lg:block">
               {user?.email || user?.mobilePhone || "مشتری فروشگاه"}
             </p>
           </div>
         </div>
 
-        <nav className="mt-3 overflow-x-auto" aria-label="حساب کاربری">
+        <nav className="mt-2 overflow-x-auto lg:mt-3" aria-label="حساب کاربری">
           <ul className="flex gap-1 lg:grid">
             {navigation.map((item) => {
               const active =
@@ -97,7 +97,7 @@ export function AccountShell({
                     href={item.href}
                     aria-current={active ? "page" : undefined}
                     className={cn(
-                      "flex items-center gap-2 rounded-2xl px-4 py-3 text-sm font-bold outline-none transition-colors hover:bg-secondary/60 focus-visible:ring-2 focus-visible:ring-ring",
+                      "flex items-center gap-1.5 rounded-2xl px-3 py-2 text-xs font-bold outline-none transition-colors hover:bg-secondary/60 focus-visible:ring-2 focus-visible:ring-ring lg:gap-2 lg:px-4 lg:py-3 lg:text-sm",
                       active && "bg-secondary text-primary",
                     )}
                   >
@@ -113,17 +113,17 @@ export function AccountShell({
         <Button
           type="button"
           variant="ghost"
-          className="mt-3 w-full justify-start text-danger hover:bg-danger/10 hover:text-danger"
+          className="mt-2 h-9 w-full justify-center px-2 text-xs text-danger hover:bg-danger/10 hover:text-danger lg:mt-3 lg:h-auto lg:justify-start lg:px-4 lg:py-3 lg:text-sm"
           onClick={logout}
         >
           <LogOut />
-          خروج از حساب
+          <span className="hidden lg:inline">خروج از حساب</span>
         </Button>
       </aside>
 
       <section className="min-w-0">
-        <header className="mb-6">
-          <h1 className="text-2xl font-black sm:text-3xl">{title}</h1>
+        <header className="mb-4 lg:mb-6">
+          <h1 className="text-xl font-black sm:text-2xl lg:text-3xl">{title}</h1>
           <p className="mt-2 text-sm leading-7 text-muted-foreground">
             {description}
           </p>

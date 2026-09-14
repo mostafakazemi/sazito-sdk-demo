@@ -21,7 +21,7 @@ export function AccountButton() {
             ? `حساب ${accountDisplayName(user)}`
             : "ورود به حساب کاربری"
       }
-      className="inline-flex h-11 max-w-40 items-center gap-2 rounded-full border border-border/80 bg-card px-3 text-sm font-bold shadow-sm outline-none transition-[border-color,background-color,box-shadow] hover:border-primary/40 hover:bg-secondary hover:shadow-md focus-visible:ring-2 focus-visible:ring-ring"
+      className="inline-flex h-9 max-w-40 items-center gap-2 rounded-full border border-border/80 bg-card px-2.5 text-sm font-bold shadow-sm outline-none transition-[border-color,background-color,box-shadow] hover:border-primary/40 hover:bg-secondary hover:shadow-md focus-visible:ring-2 focus-visible:ring-ring sm:h-11 sm:px-3"
     >
       {isLoading ? (
         <LoaderCircle className="size-5 animate-spin text-muted-foreground motion-reduce:animate-none" />
