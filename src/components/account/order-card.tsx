@@ -11,7 +11,7 @@ import {
   orderTotal,
 } from "@/lib/sazito/account";
 import { orderDetailsHref } from "@/lib/sazito/order-routes";
-import { formatNumber, formatPrice } from "@/lib/sazito/presenters";
+import { attributeValue, formatNumber, formatPrice } from "@/lib/sazito/presenters";
 
 export function OrderCard({ order }: { order: Order }) {
   const items = orderItems(order);
@@ -42,44 +42,46 @@ export function OrderCard({ order }: { order: Order }) {
         </div>
       </CardHeader>
       <CardContent className="p-5 sm:p-6">
-        <div className="flex items-center gap-2">
-          {items.slice(0, 4).map((item) => (
-            <span
-              key={item.id}
-              className="relative flex size-14 shrink-0 items-center justify-center overflow-hidden rounded-2xl border border-border/70 bg-secondary text-primary shadow-sm"
-              title={item.name || "محصول سفارش"}
-            >
-              {item.image?.url ? (
-                <Image
-                  src={item.image.url}
-                  alt={item.name || "محصول سفارش"}
-                  fill
-                  sizes="56px"
-                  className="object-cover"
-                />
-              ) : (
-                <Box className="size-5" />
-              )}
-            </span>
-          ))}
-          {items.length > 4 ? (
-            <span className="flex size-14 shrink-0 items-center justify-center rounded-2xl border border-dashed border-border bg-background text-xs font-bold text-muted-foreground">
-              +{formatNumber(items.length - 4)}
-            </span>
-          ) : null}
-        </div>
-
-        <div className="mt-5 space-y-2 text-sm text-muted-foreground">
+        <div className="space-y-2.5 text-sm text-muted-foreground">
           {items.slice(0, 2).map((item) => (
-            <div key={item.id} className="flex items-center justify-between gap-3">
-              <span className="truncate">{item.name || "محصول سفارش"}</span>
-              <span className="shrink-0 text-xs">
+            <div key={item.id} className="flex items-center gap-3 rounded-2xl border border-border/70 bg-secondary/30 p-3">
+              <div className="relative flex size-12 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-border/70 bg-secondary text-primary">
+                {item.image?.url ? (
+                  <Image
+                    src={item.image.url}
+                    alt={item.name || "محصول سفارش"}
+                    fill
+                    sizes="48px"
+                    className="object-cover"
+                  />
+                ) : (
+                  <Box className="size-5" />
+                )}
+              </div>
+              <div className="min-w-0 flex-1">
+                <span className="min-w-0 truncate font-bold text-foreground">
+                  {item.name || "محصول سفارش"}
+                </span>
+                {item.attributes.length ? (
+                  <div className="mt-1.5 flex flex-wrap gap-1.5">
+                  {item.attributes.map((attribute) => (
+                    <span
+                      key={`${item.id}-${attribute.name}`}
+                      className="rounded-full bg-card px-2 py-0.5 text-[0.6875rem]"
+                    >
+                      {attribute.name}: {attributeValue(attribute)}
+                    </span>
+                  ))}
+                  </div>
+                ) : null}
+              </div>
+              <span className="shrink-0 rounded-full bg-card px-2 py-1 text-[0.6875rem] font-bold">
                 {formatNumber(item.quantity)} عدد
               </span>
             </div>
           ))}
           {items.length > 2 ? (
-            <p className="text-xs text-muted-foreground">
+            <p className="px-1 text-xs text-muted-foreground">
               و {formatNumber(items.length - 2)} مورد دیگر
             </p>
           ) : null}
