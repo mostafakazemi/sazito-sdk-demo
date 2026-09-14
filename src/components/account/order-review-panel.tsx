@@ -4,6 +4,7 @@ import * as React from "react";
 import type { Order } from "@sazito/client-sdk";
 import {
   CheckCircle2,
+  CircleAlert,
   ImagePlus,
   LoaderCircle,
   MessageSquareText,
@@ -47,6 +48,7 @@ import { formatNumber } from "@/lib/sazito/presenters";
 
 type ReviewPhase = "idle" | "loading" | "ready" | "complete";
 type ReviewStep = "order" | "product";
+type AttachmentStatus = "uploading" | "uploaded" | "failed";
 
 const inputClassName =
   "w-full rounded-2xl border border-border/80 bg-background px-4 py-3 text-sm outline-none transition-[border-color,box-shadow] placeholder:text-muted-foreground focus:border-primary focus:ring-2 focus:ring-ring/25 disabled:cursor-not-allowed disabled:opacity-60";
@@ -136,6 +138,9 @@ export function OrderReviewPanel({ order }: { order: Order }) {
   const [uploadingAttachmentKeys, setUploadingAttachmentKeys] = React.useState<
     Record<string, boolean>
   >({});
+  const [attachmentStatuses, setAttachmentStatuses] = React.useState<
+    Record<string, AttachmentStatus>
+  >({});
   const [isSubmitting, startSubmitting] = React.useTransition();
   const storageKey = `sazito-order-review:${order.orderIdentifier}`;
 
@@ -221,13 +226,23 @@ export function OrderReviewPanel({ order }: { order: Order }) {
   );
 
   const uploadReviewAttachments = React.useCallback(
-    async (item: FeedbackSeedItem, key: string, files: File[]) => {
+    async (
+      item: FeedbackSeedItem,
+      key: string,
+      attachments: ProductReviewDraft["attachments"],
+    ) => {
       setUploadingAttachmentKeys((current) => ({ ...current, [key]: true }));
+      setAttachmentStatuses((current) => ({
+        ...current,
+        ...Object.fromEntries(
+          attachments.map(({ id }) => [id, "uploading" as AttachmentStatus]),
+        ),
+      }));
       setMessage(null);
 
       try {
         const responses = await Promise.all(
-          files.map((file) =>
+          attachments.map(({ file }) =>
             client.feedbacks.uploadReviewImages(
               [{ file, name: file.name, alt: item.productName }],
               { cache: false },
@@ -235,6 +250,18 @@ export function OrderReviewPanel({ order }: { order: Order }) {
           ),
         );
         const response = responses.find((candidate) => candidate.error) ?? responses[0];
+        const uploadedKeys = responses.map((candidate) =>
+          candidate.data?.images?.[0]?.serveKey?.trim() ?? "",
+        );
+        setAttachmentStatuses((current) => ({
+          ...current,
+          ...Object.fromEntries(
+            attachments.map(({ id }, index) => [
+              id,
+              uploadedKeys[index] ? "uploaded" : "failed",
+            ]),
+          ),
+        }));
 
         if (response?.error || responses.some((candidate) => !candidate.data)) {
           if (isSazitoAuthenticationError(response.error)) {
@@ -257,7 +284,7 @@ export function OrderReviewPanel({ order }: { order: Order }) {
           .flatMap((candidate) => candidate.data?.images ?? [])
           .map((image) => image.serveKey.trim())
           .filter(Boolean);
-        if (attachmentServeKeys.length !== files.length) {
+        if (attachmentServeKeys.length !== attachments.length) {
           setMessage(
             `بارگذاری همه تصویرهای دیدگاه «${item.productName}» کامل نشد. دوباره تلاش کنید.`,
           );
@@ -815,7 +842,7 @@ export function OrderReviewPanel({ order }: { order: Order }) {
                                       void uploadReviewAttachments(
                                         item,
                                         key,
-                                        selection.files,
+                                        attachments,
                                       );
                                     }}
                                   />
@@ -832,11 +859,38 @@ export function OrderReviewPanel({ order }: { order: Order }) {
                               {draft.attachments.length ? (
                                 <ul className="flex flex-wrap gap-3" aria-label="تصویرهای انتخاب‌شده">
                                   {draft.attachments.map((attachment) => (
+                                    (() => {
+                                      const status =
+                                        attachmentStatuses[attachment.id] ??
+                                        (attachmentsUploaded ? "uploaded" : "failed");
+                                      return (
                                     <li
                                       key={attachment.id}
-                                      className="group relative size-24 overflow-hidden rounded-2xl border bg-card"
+                                      className={cn(
+                                        "group relative size-24 overflow-hidden rounded-2xl border bg-card",
+                                        status === "failed" && "border-danger/50",
+                                      )}
                                     >
                                       <ReviewAttachmentPreview file={attachment.file} />
+                                      {status === "uploading" ? (
+                                        <span className="absolute inset-0 flex items-center justify-center bg-background/55">
+                                          <LoaderCircle className="size-6 animate-spin text-primary motion-reduce:animate-none" />
+                                        </span>
+                                      ) : null}
+                                      {status === "failed" ? (
+                                        <span
+                                          className="absolute inset-x-0 bottom-0 flex items-center justify-center gap-1 bg-danger/85 px-1 py-1 text-[0.625rem] font-bold text-danger-foreground"
+                                          title="بارگذاری ناموفق"
+                                        >
+                                          <CircleAlert className="size-3" />
+                                          ناموفق
+                                        </span>
+                                      ) : null}
+                                      {status === "uploaded" ? (
+                                        <span className="absolute bottom-1 left-1 flex size-5 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-sm">
+                                          <CheckCircle2 className="size-3" />
+                                        </span>
+                                      ) : null}
                                       <button
                                         type="button"
                                         className="absolute right-2 top-2 flex size-8 items-center justify-center rounded-full bg-background/90 text-danger shadow-sm outline-none transition-transform hover:scale-105 hover:bg-danger/10 focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-50"
@@ -865,6 +919,8 @@ export function OrderReviewPanel({ order }: { order: Order }) {
                                         <Trash2 className="size-4" />
                                       </button>
                                     </li>
+                                      );
+                                    })()
                                   ))}
                                 </ul>
                               ) : null}
