@@ -38,6 +38,7 @@ import {
   readPendingOrderReview,
   validateReviewImageSelection,
   type FeedbackSeed,
+  type FeedbackSeedItem,
   type PendingOrderReview,
   type ProductReviewDraft,
 } from "@/lib/sazito/review";
@@ -93,6 +94,28 @@ function savePendingReview(key: string, pending: PendingOrderReview) {
   window.sessionStorage.setItem(key, JSON.stringify(pending));
 }
 
+function ReviewAttachmentPreview({ file }: { file: File }) {
+  const [previewUrl, setPreviewUrl] = React.useState<string | null>(null);
+
+  React.useEffect(() => {
+    const url = URL.createObjectURL(file);
+    // Blob URLs must be created in the browser, not during server rendering.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setPreviewUrl(url);
+    return () => URL.revokeObjectURL(url);
+  }, [file]);
+
+  return previewUrl ? (
+    <img
+      src={previewUrl}
+      alt=""
+      className="size-24 object-cover ring-1 ring-border/70"
+    />
+  ) : (
+    <span className="block size-24 bg-secondary/60" aria-hidden="true" />
+  );
+}
+
 export function OrderReviewPanel({ order }: { order: Order }) {
   const { client } = useCommerce();
   const { logout } = useAccount();
@@ -110,6 +133,9 @@ export function OrderReviewPanel({ order }: { order: Order }) {
     Record<string, string>
   >({});
   const [message, setMessage] = React.useState<string | null>(null);
+  const [uploadingAttachmentKeys, setUploadingAttachmentKeys] = React.useState<
+    Record<string, boolean>
+  >({});
   const [isSubmitting, startSubmitting] = React.useTransition();
   const storageKey = `sazito-order-review:${order.orderIdentifier}`;
 
@@ -192,6 +218,78 @@ export function OrderReviewPanel({ order }: { order: Order }) {
       setMessage(null);
     },
     [],
+  );
+
+  const uploadReviewAttachments = React.useCallback(
+    async (item: FeedbackSeedItem, key: string, files: File[]) => {
+      setUploadingAttachmentKeys((current) => ({ ...current, [key]: true }));
+      setMessage(null);
+
+      try {
+        const responses = await Promise.all(
+          files.map((file) =>
+            client.feedbacks.uploadReviewImages(
+              [{ file, name: file.name, alt: item.productName }],
+              { cache: false },
+            ),
+          ),
+        );
+        const response = responses.find((candidate) => candidate.error) ?? responses[0];
+
+        if (response?.error || responses.some((candidate) => !candidate.data)) {
+          if (isSazitoAuthenticationError(response.error)) {
+            logout();
+            return;
+          }
+
+          setMessage(
+            response.error
+              ? sazitoErrorMessage(
+                  response.error,
+                  `تصویرهای دیدگاه «${item.productName}» بارگذاری نشدند.`,
+                )
+              : `پاسخ بارگذاری تصویرهای «${item.productName}» کامل نبود.`,
+          );
+          return;
+        }
+
+        const attachmentServeKeys = responses
+          .flatMap((candidate) => candidate.data?.images ?? [])
+          .map((image) => image.serveKey.trim())
+          .filter(Boolean);
+        if (attachmentServeKeys.length !== files.length) {
+          setMessage(
+            `بارگذاری همه تصویرهای دیدگاه «${item.productName}» کامل نشد. دوباره تلاش کنید.`,
+          );
+          return;
+        }
+
+        setPending((current) => {
+          if (!current) return current;
+
+          const nextPending = {
+            ...current,
+            uploadedAttachmentServeKeys: {
+              ...current.uploadedAttachmentServeKeys,
+              [key]: [
+                ...(current.uploadedAttachmentServeKeys[key] ?? []),
+                ...attachmentServeKeys,
+              ],
+            },
+          };
+          savePendingReview(storageKey, nextPending);
+          return nextPending;
+        });
+      } catch {
+        setMessage(sazitoConnectionErrorMessage());
+      } finally {
+        setUploadingAttachmentKeys((current) => ({
+          ...current,
+          [key]: false,
+        }));
+      }
+    },
+    [client, logout, storageKey],
   );
 
   const completeReview = React.useCallback(() => {
@@ -289,16 +387,22 @@ export function OrderReviewPanel({ order }: { order: Order }) {
           currentPending.uploadedAttachmentServeKeys[key] ?? [];
 
         if (draft.attachments.length && !attachmentServeKeys.length) {
-            const uploadResponse = await client.feedbacks.uploadReviewImages(
-              draft.attachments.map(({ file }) => ({
-                file,
-                name: file.name,
-                alt: item.productName,
-              })),
-              { cache: false },
+            const uploadResponses = await Promise.all(
+              draft.attachments.map(({ file }) =>
+                client.feedbacks.uploadReviewImages(
+                  [{ file, name: file.name, alt: item.productName }],
+                  { cache: false },
+                ),
+              ),
             );
+            const uploadResponse =
+              uploadResponses.find((candidate) => candidate.error) ??
+              uploadResponses[0];
 
-            if (uploadResponse.error || !uploadResponse.data) {
+            if (
+              uploadResponse?.error ||
+              uploadResponses.some((candidate) => !candidate.data)
+            ) {
               if (isSazitoAuthenticationError(uploadResponse.error)) {
                 logout();
                 return;
@@ -315,7 +419,8 @@ export function OrderReviewPanel({ order }: { order: Order }) {
               return;
             }
 
-            attachmentServeKeys = uploadResponse.data.images
+            attachmentServeKeys = uploadResponses
+              .flatMap((candidate) => candidate.data?.images ?? [])
               .map((image) => image.serveKey.trim())
               .filter(Boolean);
             if (attachmentServeKeys.length !== draft.attachments.length) {
@@ -542,6 +647,9 @@ export function OrderReviewPanel({ order }: { order: Order }) {
                     const attachmentsUploaded = Boolean(
                       pending?.uploadedAttachmentServeKeys[key]?.length,
                     );
+                    const isUploadingAttachments = Boolean(
+                      uploadingAttachmentKeys[key],
+                    );
 
                     return (
                       <details
@@ -662,18 +770,24 @@ export function OrderReviewPanel({ order }: { order: Order }) {
                                 <label
                                   className={cn(
                                     "inline-flex h-10 cursor-pointer items-center gap-2 rounded-xl border bg-card px-3 text-xs font-bold outline-none transition-colors hover:bg-accent focus-within:ring-2 focus-within:ring-ring",
-                                    attachmentsUploaded &&
+                                    isUploadingAttachments &&
                                       "pointer-events-none opacity-60",
                                   )}
                                 >
-                                  <ImagePlus className="size-4" />
-                                  انتخاب تصویر
+                                  {isUploadingAttachments ? (
+                                    <LoaderCircle className="size-4 animate-spin motion-reduce:animate-none" />
+                                  ) : (
+                                    <ImagePlus className="size-4" />
+                                  )}
+                                  {isUploadingAttachments
+                                    ? "در حال بارگذاری…"
+                                    : "انتخاب تصویر"}
                                   <input
                                     type="file"
                                     multiple
                                     accept="image/jpeg,image/png,image/webp"
                                     className="sr-only"
-                                    disabled={attachmentsUploaded}
+                                    disabled={isUploadingAttachments}
                                     onChange={(event) => {
                                       const selection = validateReviewImageSelection(
                                         draft.attachments.length,
@@ -689,15 +803,20 @@ export function OrderReviewPanel({ order }: { order: Order }) {
                                         return;
                                       }
 
+                                      const attachments = selection.files.map(
+                                        (file, fileIndex) => ({
+                                          id: `${file.name}:${file.size}:${file.lastModified}:${fileIndex}`,
+                                          file,
+                                        }),
+                                      );
                                       updateDraft(key, {
-                                        attachments: [
-                                          ...draft.attachments,
-                                          ...selection.files.map((file, fileIndex) => ({
-                                            id: `${file.name}:${file.size}:${file.lastModified}:${fileIndex}`,
-                                            file,
-                                          })),
-                                        ],
+                                        attachments: [...draft.attachments, ...attachments],
                                       });
+                                      void uploadReviewAttachments(
+                                        item,
+                                        key,
+                                        selection.files,
+                                      );
                                     }}
                                   />
                                 </label>
@@ -711,33 +830,37 @@ export function OrderReviewPanel({ order }: { order: Order }) {
                               ) : null}
 
                               {draft.attachments.length ? (
-                                <ul className="grid gap-2" aria-label="تصویرهای انتخاب‌شده">
+                                <ul className="flex flex-wrap gap-3" aria-label="تصویرهای انتخاب‌شده">
                                   {draft.attachments.map((attachment) => (
                                     <li
                                       key={attachment.id}
-                                      className="flex items-center gap-3 rounded-xl bg-card px-3 py-2 text-xs"
+                                      className="group relative size-24 overflow-hidden rounded-2xl border bg-card"
                                     >
-                                      <ImagePlus className="size-4 shrink-0 text-primary" />
-                                      <span className="min-w-0 flex-1 truncate" dir="ltr">
-                                        {attachment.file.name}
-                                      </span>
-                                      <span className="shrink-0 text-muted-foreground">
-                                        {formatNumber(attachment.file.size / 1024 / 1024, {
-                                          maximumFractionDigits: 1,
-                                        })} MB
-                                      </span>
+                                      <ReviewAttachmentPreview file={attachment.file} />
                                       <button
                                         type="button"
-                                        className="flex size-8 shrink-0 items-center justify-center rounded-lg text-danger outline-none hover:bg-danger/10 focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-50"
+                                        className="absolute right-2 top-2 flex size-8 items-center justify-center rounded-full bg-background/90 text-danger shadow-sm outline-none transition-transform hover:scale-105 hover:bg-danger/10 focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-50"
                                         aria-label={`حذف ${attachment.file.name}`}
-                                        disabled={attachmentsUploaded}
-                                        onClick={() =>
+                                        disabled={isUploadingAttachments}
+                                        onClick={() => {
                                           updateDraft(key, {
                                             attachments: draft.attachments.filter(
                                               (current) => current.id !== attachment.id,
                                             ),
-                                          })
-                                        }
+                                          });
+                                          setPending((current) => {
+                                            if (!current) return current;
+                                            const nextPending = {
+                                              ...current,
+                                              uploadedAttachmentServeKeys: {
+                                                ...current.uploadedAttachmentServeKeys,
+                                                [key]: [],
+                                              },
+                                            };
+                                            savePendingReview(storageKey, nextPending);
+                                            return nextPending;
+                                          });
+                                        }}
                                       >
                                         <Trash2 className="size-4" />
                                       </button>
@@ -767,7 +890,12 @@ export function OrderReviewPanel({ order }: { order: Order }) {
             </p>
           ) : null}
 
-          <Button type="submit" size="lg" className="sm:w-fit" disabled={isSubmitting}>
+          <Button
+            type="submit"
+            size="lg"
+            className="sm:w-fit"
+            disabled={isSubmitting || Object.values(uploadingAttachmentKeys).some(Boolean)}
+          >
             {isSubmitting ? (
               <LoaderCircle className="animate-spin motion-reduce:animate-none" />
             ) : (

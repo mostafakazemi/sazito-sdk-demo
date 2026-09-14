@@ -17,6 +17,7 @@ const FORWARDED_REQUEST_HEADERS = [
 ];
 
 const SAZITO_API_ORIGIN = "http://api.sazito.com:8080";
+const REVIEW_UPLOAD_PATH = "/api/v1/service/filemanager/uploads/public/tajrobe";
 
 async function proxySazitoRequest(request: Request, context: ProxyContext) {
   const { path } = await context.params;
@@ -32,8 +33,10 @@ async function proxySazitoRequest(request: Request, context: ProxyContext) {
   }
 
   const incomingUrl = new URL(request.url);
+  const pathname = `/${path.join("/")}`;
+  const isReviewUpload = pathname === REVIEW_UPLOAD_PATH;
   const mockResponse = mockSazitoResponse({
-    pathname: `/${path.join("/")}`,
+    pathname,
     searchParams: incomingUrl.searchParams,
     method: request.method,
   });
@@ -59,12 +62,53 @@ async function proxySazitoRequest(request: Request, context: ProxyContext) {
   const hasBody = request.method !== "GET" && request.method !== "HEAD";
 
   try {
+    let body: BodyInit | ArrayBuffer | undefined;
+    if (hasBody && isReviewUpload) {
+      const incomingForm = await request.formData();
+      const file = incomingForm.get("images[][file]");
+      if (!(file instanceof File)) {
+        return NextResponse.json(
+          { error: { type: "validation", message: "Review image file is required." } },
+          { status: 400 },
+        );
+      }
+
+      const uploadForm = new FormData();
+      uploadForm.append("file", file, file.name);
+      body = uploadForm;
+      headers.delete("content-type");
+      headers.delete("content-length");
+    } else {
+      body = hasBody ? await request.arrayBuffer() : undefined;
+    }
+
     const response = await fetch(targetUrl, {
       method: request.method,
       headers,
-      body: hasBody ? await request.arrayBuffer() : undefined,
+      body,
       cache: "no-store",
     });
+    if (isReviewUpload && response.headers.get("content-type")?.includes("application/json")) {
+      const responseBody = await response.json();
+      const result =
+        responseBody && typeof responseBody === "object" && "result" in responseBody
+          ? responseBody.result
+          : responseBody;
+      if (result && typeof result === "object" && "file" in result && !("images" in result)) {
+        const normalizedResult = { ...result, images: [result.file] };
+        delete normalizedResult.file;
+        if (responseBody && typeof responseBody === "object" && "result" in responseBody) {
+          responseBody.result = normalizedResult;
+        } else {
+          responseBody.images = normalizedResult.images;
+          delete responseBody.file;
+        }
+      }
+      return NextResponse.json(responseBody, {
+        status: response.status,
+        headers: { "Cache-Control": "no-store" },
+      });
+    }
     const responseHeaders = new Headers();
     const contentType = response.headers.get("content-type");
     if (contentType) responseHeaders.set("content-type", contentType);

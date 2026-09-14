@@ -41,6 +41,7 @@ const endpointCases = [
   "/api/v1/scheduler/availabilities",
   "/api/v1/dynamic_form/1",
   "/api/v1/images",
+  "/api/v1/service/filemanager/uploads/public/tajrobe",
   "/api/v1/visits/add",
   "/api/v1/pinch",
 ] as const;
@@ -105,6 +106,27 @@ describe("Sazito mock endpoint coverage", () => {
     });
 
     expect(response?.body).toMatchObject({ page: 2, pageSize: 3 });
+  });
+
+  it("supports review image uploads through the SDK contract", async () => {
+    process.env.SAZITO_USE_MOCKS = "true";
+    const client = createSazitoClient({
+      domain: "mock-store.sazito.com",
+      customFetchApi: createMockSazitoFetch(),
+      cache: { orders: { enabled: false } },
+    });
+
+    const response = await client.feedbacks.uploadReviewImages([
+      {
+        file: new Blob(["mock-image"], { type: "image/webp" }),
+        name: "review.webp",
+        alt: "تصویر دیدگاه",
+      },
+    ]);
+
+    expect(response.error).toBeUndefined();
+    expect(response.data?.images).toHaveLength(1);
+    expect(response.data?.images[0]?.serveKey).toBe("کلید-فایل-نمونه");
   });
 
   it("supports the SDK public order detail contract", async () => {
