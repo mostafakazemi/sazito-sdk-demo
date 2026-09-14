@@ -7,7 +7,6 @@ import {
   ArrowRight,
   Box,
   CheckCircle2,
-  LoaderCircle,
   RefreshCcw,
   ShoppingBag,
 } from "lucide-react";
@@ -16,6 +15,7 @@ import type { Order } from "@sazito/client-sdk";
 import { useAccount } from "@/components/account/account-provider";
 import { AccountShell } from "@/components/account/account-shell";
 import { OrderReviewPanel } from "@/components/account/order-review-panel";
+import { OrderDetailContentLoading } from "@/components/account/orders-loading";
 import { useCommerce } from "@/components/commerce/commerce-provider";
 import { StoreLink } from "@/components/store/store-link";
 import { Badge } from "@/components/ui/badge";
@@ -104,16 +104,7 @@ function OrderDetail({ orderId, orderIdentifier }: OrderDetailProps) {
   }, [loadOrder]);
 
   if (isLoading) {
-    return (
-      <div className="grid gap-4" role="status" aria-label="در حال دریافت جزئیات سفارش">
-        <div className="h-36 animate-pulse rounded-4xl border bg-card" />
-        <div className="h-72 animate-pulse rounded-4xl border bg-card" />
-        <div className="flex items-center justify-center gap-3 text-sm text-muted-foreground">
-          <LoaderCircle className="size-5 animate-spin motion-reduce:animate-none" />
-          در حال دریافت جزئیات سفارش…
-        </div>
-      </div>
-    );
+    return <OrderDetailContentLoading />;
   }
 
   if (error || !order) {

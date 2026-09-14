@@ -7,6 +7,7 @@ import type { Order } from "@sazito/client-sdk";
 import { useAccount } from "@/components/account/account-provider";
 import { AccountGate, AccountShell } from "@/components/account/account-shell";
 import { OrderCard } from "@/components/account/order-card";
+import { OrdersListLoading } from "@/components/account/orders-loading";
 import { useCommerce } from "@/components/commerce/commerce-provider";
 import { Button } from "@/components/ui/button";
 import { accountErrorMessage, orderItemCount } from "@/lib/sazito/account";
@@ -91,15 +92,7 @@ function OrdersList() {
   }, [loadPage]);
 
   if (isLoading) {
-    return (
-      <div
-        className="flex min-h-64 items-center justify-center gap-3 rounded-4xl border bg-card text-sm text-muted-foreground"
-        role="status"
-      >
-        <LoaderCircle className="size-5 animate-spin motion-reduce:animate-none" />
-        در حال دریافت سفارش‌ها…
-      </div>
-    );
+    return <OrdersListLoading />;
   }
 
   if (error) {
