@@ -7,6 +7,7 @@ import {
   type CatalogSearchParams,
 } from "@/lib/sazito/catalog";
 import { cn } from "@/lib/utils";
+import { formatNumber } from "@/lib/sazito/presenters";
 
 export function CatalogPagination({
   pathname,
@@ -46,7 +47,7 @@ export function CatalogPagination({
             number === page && "border-primary bg-primary text-primary-foreground",
           )}
         >
-          {number.toLocaleString("fa-IR")}
+          {formatNumber(number)}
         </Link>
       ))}
       <Link

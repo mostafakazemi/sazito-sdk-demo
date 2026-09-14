@@ -28,7 +28,7 @@ import {
   bookingStatusLabel,
   formatBookingDateTime,
 } from "@/lib/sazito/booking";
-import { formatPrice } from "@/lib/sazito/presenters";
+import { formatNumber, formatPrice } from "@/lib/sazito/presenters";
 import { cn } from "@/lib/utils";
 
 type BookingsResponse = Awaited<
@@ -55,7 +55,7 @@ function BookingCard({ booking }: { booking: BookingItem }) {
             {bookingStatusLabel(booking.status)}
           </Badge>
           <CardTitle className="mt-3 truncate">
-            {event?.title || `رزرو شماره ${booking.id.toLocaleString("fa-IR")}`}
+            {event?.title || `رزرو شماره ${formatNumber(booking.id)}`}
           </CardTitle>
         </div>
         <span className="flex size-11 shrink-0 items-center justify-center rounded-2xl bg-secondary text-primary">
@@ -228,7 +228,7 @@ function BookingsList() {
   return (
     <>
       <p className="mb-4 text-sm text-muted-foreground" role="status">
-        {total.toLocaleString("fa-IR")} رزرو در حساب شما
+        {formatNumber(total)} رزرو در حساب شما
       </p>
       <div className="grid gap-4 xl:grid-cols-2">
         {bookings.map((booking) => (

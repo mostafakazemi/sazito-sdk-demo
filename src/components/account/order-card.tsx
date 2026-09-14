@@ -11,7 +11,7 @@ import {
   orderTotal,
 } from "@/lib/sazito/account";
 import { orderDetailsHref } from "@/lib/sazito/order-routes";
-import { formatPrice } from "@/lib/sazito/presenters";
+import { formatNumber, formatPrice } from "@/lib/sazito/presenters";
 
 export function OrderCard({ order }: { order: Order }) {
   const items = orderItems(order);
@@ -27,11 +27,11 @@ export function OrderCard({ order }: { order: Order }) {
               سفارش ثبت‌شده
             </Badge>
             <span className="text-xs text-muted-foreground">
-              {itemCount.toLocaleString("fa-IR")} کالا
+              {formatNumber(itemCount)} کالا
             </span>
           </div>
           <CardTitle className="mt-3 truncate text-base sm:text-lg">
-            سفارش شماره {order.orderNumber || order.id.toLocaleString("fa-IR")}
+            سفارش شماره {order.orderNumber || formatNumber(order.id)}
           </CardTitle>
         </div>
         <div className="shrink-0 text-left">
@@ -64,7 +64,7 @@ export function OrderCard({ order }: { order: Order }) {
           ))}
           {items.length > 4 ? (
             <span className="flex size-14 shrink-0 items-center justify-center rounded-2xl border border-dashed border-border bg-background text-xs font-bold text-muted-foreground">
-              +{(items.length - 4).toLocaleString("fa-IR")}
+              +{formatNumber(items.length - 4)}
             </span>
           ) : null}
         </div>
@@ -74,13 +74,13 @@ export function OrderCard({ order }: { order: Order }) {
             <div key={item.id} className="flex items-center justify-between gap-3">
               <span className="truncate">{item.name || "محصول سفارش"}</span>
               <span className="shrink-0 text-xs">
-                {item.quantity.toLocaleString("fa-IR")} عدد
+                {formatNumber(item.quantity)} عدد
               </span>
             </div>
           ))}
           {items.length > 2 ? (
             <p className="text-xs text-muted-foreground">
-              و {(items.length - 2).toLocaleString("fa-IR")} مورد دیگر
+              و {formatNumber(items.length - 2)} مورد دیگر
             </p>
           ) : null}
         </div>

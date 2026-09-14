@@ -23,6 +23,9 @@ import type {
 
 const FALLBACK_STORE_NAME = "فروشگاه سازیتو";
 const FALLBACK_STORE_DESCRIPTION = "انتخابی ساده و مطمئن برای خرید آنلاین";
+export const PERSIAN_LOCALE = "fa-IR";
+export const DEFAULT_LOCALE = PERSIAN_LOCALE;
+export const DEFAULT_CALENDAR_LOCALE = `${DEFAULT_LOCALE}-u-ca-persian`;
 const SEO_ATTRIBUTE_NAMES = new Set([
   "description",
   "metatitle",
@@ -683,16 +686,24 @@ export function toHomePageData(input: {
 }
 
 export function formatPrice(value: number) {
-  return `${new Intl.NumberFormat("fa-IR", {
+  return `${formatNumber(value)} تومان`;
+}
+
+export function formatNumber(
+  value: number,
+  options: Intl.NumberFormatOptions = {},
+) {
+  return new Intl.NumberFormat(DEFAULT_LOCALE, {
     maximumFractionDigits: 0,
-  }).format(value)} تومان`;
+    ...options,
+  }).format(value);
 }
 
 export function formatPersianDate(value: string) {
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) return "";
 
-  return new Intl.DateTimeFormat("fa-IR-u-ca-persian", {
+  return new Intl.DateTimeFormat(DEFAULT_CALENDAR_LOCALE, {
     year: "numeric",
     month: "long",
     day: "numeric",

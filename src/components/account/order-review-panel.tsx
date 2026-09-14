@@ -42,6 +42,7 @@ import {
   type ProductReviewDraft,
 } from "@/lib/sazito/review";
 import { cn } from "@/lib/utils";
+import { formatNumber } from "@/lib/sazito/presenters";
 
 type ReviewPhase = "idle" | "loading" | "ready" | "complete";
 type ReviewStep = "order" | "product";
@@ -61,14 +62,14 @@ function StarRating({
   disabled?: boolean;
 }) {
   return (
-    <div className="flex flex-wrap items-center gap-1" role="radiogroup" aria-label={label}>
+      <div className="flex flex-wrap items-center gap-1" role="radiogroup" aria-label={label}>
       {Array.from({ length: 5 }, (_, index) => index + 1).map((rating) => (
         <button
           key={rating}
           type="button"
           role="radio"
           aria-checked={value === rating}
-          aria-label={`${rating.toLocaleString("fa-IR")} از ۵ ستاره`}
+          aria-label={`${formatNumber(rating)} از ۵ ستاره`}
           disabled={disabled}
           className="flex size-10 items-center justify-center rounded-xl text-border outline-none transition-[color,background-color,transform] hover:scale-105 hover:bg-accent hover:text-highlight focus-visible:ring-2 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-60 motion-reduce:transform-none"
           onClick={() => onChange(rating)}
@@ -82,7 +83,7 @@ function StarRating({
         </button>
       ))}
       <span className="mr-2 text-xs text-muted-foreground" aria-live="polite">
-        {value ? `${value.toLocaleString("fa-IR")} از ۵` : "انتخاب نشده"}
+        {value ? `${formatNumber(value)} از ۵` : "انتخاب نشده"}
       </span>
     </div>
   );
@@ -483,7 +484,7 @@ export function OrderReviewPanel({ order }: { order: Order }) {
         <CardDescription className="leading-7">
           {step === "order"
             ? "ابتدا به تجربه کلی این سفارش امتیاز دهید."
-            : `دیدگاه محصول ${(activeProductIndex + 1).toLocaleString("fa-IR")} از ${seed.items.length.toLocaleString("fa-IR")} را ثبت کنید.`}
+            : `دیدگاه محصول ${formatNumber(activeProductIndex + 1)} از ${formatNumber(seed.items.length)} را ثبت کنید.`}
         </CardDescription>
         <div className="mt-2 flex items-center gap-2" aria-label="مراحل ثبت تجربه">
           <Badge variant={step === "order" ? "default" : "secondary"}>
@@ -554,8 +555,8 @@ export function OrderReviewPanel({ order }: { order: Order }) {
                               {item.productName || "محصول سفارش"}
                             </strong>
                             <span className="mt-1 block text-xs text-muted-foreground">
-                              محصول {(index + 1).toLocaleString("fa-IR")} از{" "}
-                              {seed.items.length.toLocaleString("fa-IR")}
+                              محصول {formatNumber(index + 1)} از{" "}
+                              {formatNumber(seed.items.length)}
                             </span>
                           </span>
                           <Badge variant="outline">در حال تکمیل</Badge>
@@ -655,7 +656,7 @@ export function OrderReviewPanel({ order }: { order: Order }) {
                                     تصویرهای دیدگاه
                                   </p>
                                   <p className="mt-1 text-xs leading-6 text-muted-foreground">
-                                    حداکثر {MAX_REVIEW_IMAGES.toLocaleString("fa-IR")} تصویر JPG، PNG یا WebP؛ هر فایل تا ۵ مگابایت
+                                    حداکثر {formatNumber(MAX_REVIEW_IMAGES)} تصویر JPG، PNG یا WebP؛ هر فایل تا ۵ مگابایت
                                   </p>
                                 </div>
                                 <label
@@ -721,7 +722,7 @@ export function OrderReviewPanel({ order }: { order: Order }) {
                                         {attachment.file.name}
                                       </span>
                                       <span className="shrink-0 text-muted-foreground">
-                                        {(attachment.file.size / 1024 / 1024).toLocaleString("fa-IR", {
+                                        {formatNumber(attachment.file.size / 1024 / 1024, {
                                           maximumFractionDigits: 1,
                                         })} MB
                                       </span>

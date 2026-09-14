@@ -24,7 +24,7 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet";
 import { Separator } from "@/components/ui/separator";
-import { formatPrice, normalizeStoreHref } from "@/lib/sazito/presenters";
+import { formatNumber, formatPrice, normalizeStoreHref } from "@/lib/sazito/presenters";
 
 export function CartButton() {
   const {
@@ -38,7 +38,7 @@ export function CartButton() {
     removeItem,
   } = useCommerce();
   const [error, setError] = React.useState<string | null>(null);
-  const count = itemCount.toLocaleString("fa-IR");
+  const count = formatNumber(itemCount);
 
   return (
     <Sheet open={isCartOpen} onOpenChange={setCartOpen}>
@@ -174,7 +174,7 @@ export function CartButton() {
                     <div className="mt-3 flex items-center justify-between">
                       <div className="flex items-center rounded-xl border bg-card p-0.5">
                         <button type="button" onClick={() => void mutate("decrease")} disabled={isMutating || item.quantity <= minimum} aria-label="کم کردن تعداد" className="flex size-8 items-center justify-center rounded-lg hover:bg-secondary disabled:opacity-30"><Minus className="size-3.5" /></button>
-                        <span className="min-w-9 text-center text-sm font-black">{item.quantity.toLocaleString("fa-IR")}</span>
+                        <span className="min-w-9 text-center text-sm font-black">{formatNumber(item.quantity)}</span>
                         <button type="button" onClick={() => void mutate("increase")} disabled={isMutating || (maximum !== null && item.quantity >= maximum)} aria-label="زیاد کردن تعداد" className="flex size-8 items-center justify-center rounded-lg hover:bg-secondary disabled:opacity-30"><Plus className="size-3.5" /></button>
                       </div>
                       <span className="text-xs text-muted-foreground">هر واحد {formatPrice(item.unitPrice)}</span>

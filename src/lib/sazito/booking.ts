@@ -1,4 +1,5 @@
 import { sazitoErrorMessage, type SazitoError } from "./error";
+import { DEFAULT_CALENDAR_LOCALE } from "./presenters";
 
 export type BookingStatus = "pending" | "confirmed" | "cancelled";
 
@@ -21,7 +22,7 @@ export function formatBookingDateTime(value?: string) {
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) return "";
 
-  return new Intl.DateTimeFormat("fa-IR-u-ca-persian", {
+  return new Intl.DateTimeFormat(DEFAULT_CALENDAR_LOCALE, {
     year: "numeric",
     month: "long",
     day: "numeric",

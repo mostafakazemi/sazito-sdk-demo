@@ -2,6 +2,7 @@ import { ArrowLeft, Compass, Shapes, Sparkles } from "lucide-react";
 import Link from "next/link";
 
 import type { CategoryView } from "@/lib/sazito/types";
+import { formatNumber } from "@/lib/sazito/presenters";
 
 export function CategoryStrip({ categories }: { categories: CategoryView[] }) {
   if (!categories.length) return null;
@@ -24,7 +25,7 @@ export function CategoryStrip({ categories }: { categories: CategoryView[] }) {
           </p>
         </div>
         <span className="hidden rounded-full border border-border bg-card px-3 py-1.5 text-xs font-bold text-muted-foreground sm:inline-flex">
-          {new Intl.NumberFormat("fa-IR").format(categories.length)} دسته
+          {formatNumber(categories.length)} دسته
         </span>
       </div>
 
@@ -54,7 +55,7 @@ export function CategoryStrip({ categories }: { categories: CategoryView[] }) {
                 </span>
                 {category.count !== null ? (
                   <span className="rounded-full bg-muted px-2.5 py-1 text-[11px] font-bold text-muted-foreground">
-                    {new Intl.NumberFormat("fa-IR").format(category.count)} محصول
+                    {formatNumber(category.count)} محصول
                   </span>
                 ) : null}
               </span>

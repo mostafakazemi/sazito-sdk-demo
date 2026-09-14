@@ -10,6 +10,7 @@ import { OrderCard } from "@/components/account/order-card";
 import { useCommerce } from "@/components/commerce/commerce-provider";
 import { Button } from "@/components/ui/button";
 import { accountErrorMessage, orderItemCount } from "@/lib/sazito/account";
+import { formatNumber } from "@/lib/sazito/presenters";
 
 function OrdersList() {
   const { client } = useCommerce();
@@ -150,12 +151,12 @@ function OrdersList() {
           <div>
             <p className="font-black">سفارش‌های اخیر</p>
             <p className="mt-1 text-xs text-muted-foreground">
-              {totalCount.toLocaleString("fa-IR")} سفارش در حساب شما
+              {formatNumber(totalCount)} سفارش در حساب شما
             </p>
           </div>
         </div>
         <p className="text-xs text-muted-foreground sm:text-left">
-          {visibleItemCount.toLocaleString("fa-IR")} کالا در این فهرست
+          {formatNumber(visibleItemCount)} کالا در این فهرست
         </p>
       </div>
       <div className="grid gap-4 xl:grid-cols-2">

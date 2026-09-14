@@ -2,7 +2,7 @@ import { CheckCircle2, Star, ThumbsDown, ThumbsUp } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
-import { formatPersianDate } from "@/lib/sazito/presenters";
+import { formatNumber, formatPersianDate } from "@/lib/sazito/presenters";
 import type { ProductReviewSummary } from "@/lib/sazito/types";
 
 function Stars({ value }: { value: number }) {
@@ -37,16 +37,16 @@ export function ProductReviews({ reviews }: { reviews: ProductReviewSummary | nu
           <p className="text-sm font-bold text-primary">تجربه خریداران</p>
           <h2 id="reviews-title" className="mt-2 text-2xl font-black">دیدگاه‌های محصول</h2>
           <p className="mt-2 text-sm text-muted-foreground">
-            {new Intl.NumberFormat("fa-IR").format(reviews.count)} دیدگاه ثبت شده
+            {formatNumber(reviews.count)} دیدگاه ثبت شده
           </p>
         </div>
         <div className="flex items-center gap-4 rounded-2xl bg-card px-5 py-4">
-          <strong className="text-3xl font-black">{new Intl.NumberFormat("fa-IR", { maximumFractionDigits: 1 }).format(reviews.average)}</strong>
+          <strong className="text-3xl font-black">{formatNumber(reviews.average, { maximumFractionDigits: 1 })}</strong>
           <div>
             <Stars value={reviews.average} />
             {reviews.recommendedPercentage !== null ? (
               <p className="mt-1 text-xs text-muted-foreground">
-                ٪{new Intl.NumberFormat("fa-IR").format(reviews.recommendedPercentage)} پیشنهاد کرده‌اند
+                ٪{formatNumber(reviews.recommendedPercentage)} پیشنهاد کرده‌اند
               </p>
             ) : null}
           </div>

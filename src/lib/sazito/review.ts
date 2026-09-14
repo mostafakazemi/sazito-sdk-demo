@@ -1,5 +1,7 @@
 import type { SazitoClient } from "@sazito/client-sdk";
 
+import { formatNumber } from "./presenters";
+
 export type FeedbackSeed = NonNullable<
   Awaited<ReturnType<SazitoClient["feedbacks"]["getSeed"]>>["data"]
 >;
@@ -64,7 +66,7 @@ export function validateReviewImageSelection<T extends ReviewImageFile>(
   if (currentCount + files.length > MAX_REVIEW_IMAGES) {
     return {
       files: [],
-      error: `برای هر محصول حداکثر ${MAX_REVIEW_IMAGES.toLocaleString("fa-IR")} تصویر انتخاب کنید.`,
+      error: `برای هر محصول حداکثر ${formatNumber(MAX_REVIEW_IMAGES)} تصویر انتخاب کنید.`,
     };
   }
 

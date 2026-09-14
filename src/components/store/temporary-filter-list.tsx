@@ -4,6 +4,7 @@ import * as React from "react";
 import { Check, ChevronDown } from "lucide-react";
 
 import { cn } from "@/lib/utils";
+import { formatNumber } from "@/lib/sazito/presenters";
 
 type TemporaryFilterOption = {
   label: string;
@@ -39,7 +40,7 @@ export function TemporaryFilterList({
         <span className="font-bold">{label}</span>
         <span className="mr-auto text-[11px] text-muted-foreground">
           {selected.length
-            ? `${selected.length.toLocaleString("fa-IR")} انتخاب`
+            ? `${formatNumber(selected.length)} انتخاب`
             : "چندانتخابی"}
         </span>
         <ChevronDown

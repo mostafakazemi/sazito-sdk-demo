@@ -8,7 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { buildContentListJsonLd } from "@/lib/seo";
 import { getBlogIndexData } from "@/lib/sazito/data";
-import { formatPersianDate } from "@/lib/sazito/presenters";
+import { formatNumber, formatPersianDate } from "@/lib/sazito/presenters";
 
 export const metadata: Metadata = {
   title: "وبلاگ",
@@ -36,7 +36,7 @@ export default async function BlogPage() {
             وبلاگ فروشگاه
           </Badge>
           <span className="text-sm text-muted-foreground">
-            {data.total.toLocaleString("fa-IR")} نوشته
+            {formatNumber(data.total)} نوشته
           </span>
         </div>
         <h1 className="mt-4 text-3xl font-black sm:text-4xl">تازه‌های فروشگاه</h1>

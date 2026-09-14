@@ -30,7 +30,7 @@ import {
   type DynamicFormValues,
   type DynamicFormView,
 } from "@/lib/sazito/dynamic-form";
-import { formatPrice } from "@/lib/sazito/presenters";
+import { formatNumber, formatPrice } from "@/lib/sazito/presenters";
 import { sazitoErrorMessage } from "@/lib/sazito/error";
 import type { ProductVariantView } from "@/lib/sazito/types";
 import { cn } from "@/lib/utils";
@@ -488,7 +488,7 @@ export function VariantSelector({
               <Minus className="size-4" />
             </button>
             <span className="min-w-10 text-center font-black" aria-live="polite">
-              {quantity.toLocaleString("fa-IR")}
+              {formatNumber(quantity)}
             </span>
             <button
               type="button"

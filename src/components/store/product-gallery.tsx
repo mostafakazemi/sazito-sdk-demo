@@ -12,6 +12,7 @@ import {
   CarouselPrevious,
 } from "@/components/ui/carousel";
 import type { ProductImageView } from "@/lib/sazito/types";
+import { formatNumber } from "@/lib/sazito/presenters";
 import { cn } from "@/lib/utils";
 
 export function ProductGallery({
@@ -80,7 +81,7 @@ export function ProductGallery({
               key={image.id}
               type="button"
               onClick={() => api?.scrollTo(index)}
-              aria-label={`نمایش تصویر ${new Intl.NumberFormat("fa-IR").format(index + 1)}`}
+              aria-label={`نمایش تصویر ${formatNumber(index + 1)}`}
               aria-current={selected === index}
               className={cn(
                 "relative size-18 shrink-0 overflow-hidden rounded-xl border bg-card outline-none transition-colors focus-visible:ring-2 focus-visible:ring-ring",

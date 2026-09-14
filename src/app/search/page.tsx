@@ -13,6 +13,7 @@ import {
   type CatalogSearchParams,
 } from "@/lib/sazito/catalog";
 import { getCatalogCategories, getSearchPageData } from "@/lib/sazito/data";
+import { formatNumber } from "@/lib/sazito/presenters";
 
 export const metadata: Metadata = {
   title: "جست‌وجوی محصولات",
@@ -56,7 +57,7 @@ export default async function SearchPage({
           </Form>
           {categories.length ? (
             <p className="mt-6 text-xs text-muted-foreground">
-              جست‌وجو در {categories.length.toLocaleString("fa-IR")} دسته‌بندی فعال
+              جست‌وجو در {formatNumber(categories.length)} دسته‌بندی فعال
             </p>
           ) : null}
         </div>
@@ -82,7 +83,7 @@ export default async function SearchPage({
         <p className="text-sm font-bold text-highlight">نتایج جست‌وجو</p>
         <h1 className="mt-2 text-3xl font-black sm:text-4xl">«{query}»</h1>
         <p className="mt-3 text-sm text-muted-foreground">
-          {data.products.total.toLocaleString("fa-IR")} محصول پیدا شد
+          {formatNumber(data.products.total)} محصول پیدا شد
         </p>
       </header>
 

@@ -28,6 +28,7 @@ import {
   orderTotal,
 } from "@/lib/sazito/account";
 import {
+  formatNumber,
   formatPrice,
   normalizeStoreHref,
 } from "@/lib/sazito/presenters";
@@ -156,7 +157,7 @@ function OrderDetail({ orderId, orderIdentifier }: OrderDetailProps) {
               <span className="text-xs font-bold text-muted-foreground">جزئیات خرید</span>
             </div>
             <CardTitle className="mt-3 text-xl leading-tight sm:text-2xl">
-              سفارش شماره <span className="text-primary">{order.orderNumber || order.id.toLocaleString("fa-IR")}</span>
+              سفارش شماره <span className="text-primary">{order.orderNumber || formatNumber(order.id)}</span>
             </CardTitle>
             <p className="mt-2 max-w-xl text-xs leading-6 text-muted-foreground sm:text-sm">
               اقلام سفارش، وضعیت و خلاصه پرداخت را در این بخش مشاهده می‌کنید.
@@ -192,7 +193,7 @@ function OrderDetail({ orderId, orderIdentifier }: OrderDetailProps) {
                   </div>
                   <div className="min-w-0 flex-1">
                     <StoreLink item={{ ...target, label: item.name || "محصول سفارش" }} className="font-black outline-none hover:text-primary focus-visible:ring-2 focus-visible:ring-ring" />
-                    <p className="mt-1 text-xs text-muted-foreground">{item.quantity.toLocaleString("fa-IR")} عدد × {formatPrice(item.unitPrice)}</p>
+                    <p className="mt-1 text-xs text-muted-foreground">{formatNumber(item.quantity)} عدد × {formatPrice(item.unitPrice)}</p>
                     {item.attributes.length ? <p className="mt-1 text-[0.6875rem] leading-5 text-muted-foreground">{item.attributes.map((attribute) => { const value = typeof attribute.value === "string" ? attribute.value : attribute.value.value; return `${attribute.name}: ${value}`; }).join("، ")}</p> : null}
                   </div>
                   <strong className="shrink-0 text-sm">{formatPrice(item.lineTotal)}</strong>

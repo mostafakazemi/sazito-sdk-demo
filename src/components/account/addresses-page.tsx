@@ -41,6 +41,7 @@ import {
   sazitoErrorMessage,
 } from "@/lib/sazito/error";
 import { cn } from "@/lib/utils";
+import { formatNumber } from "@/lib/sazito/presenters";
 
 type RegionsData = NonNullable<
   Awaited<ReturnType<SazitoClient["regions"]["list"]>>["data"]
@@ -356,7 +357,7 @@ function AddressesContent() {
               نشانی‌های ذخیره‌شده
             </h2>
             <p className="mt-1 text-xs text-muted-foreground">
-              {addresses.length.toLocaleString("fa-IR")} نشانی
+              {formatNumber(addresses.length)} نشانی
             </p>
           </div>
         </div>

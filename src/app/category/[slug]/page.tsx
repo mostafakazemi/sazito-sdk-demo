@@ -20,6 +20,7 @@ import {
 } from "@/lib/seo";
 import { sazitoStoreOrigin } from "@/lib/sazito/client";
 import { getCategoryPageData, getResolvedCategory } from "@/lib/sazito/data";
+import { formatNumber } from "@/lib/sazito/presenters";
 
 type CategoryPageProps = {
   params: Promise<{ slug: string }>;
@@ -84,7 +85,7 @@ export default async function CategoryPage({ params, searchParams }: CategoryPag
         <div className="flex flex-wrap items-center gap-3">
           <Badge variant="secondary"><FolderOpen />دسته‌بندی</Badge>
           <span className="text-sm text-muted-foreground">
-            {data.products.total.toLocaleString("fa-IR")} محصول
+            {formatNumber(data.products.total)} محصول
           </span>
         </div>
         <h1 className="mt-4 text-3xl font-black sm:text-4xl">{data.category.name}</h1>
