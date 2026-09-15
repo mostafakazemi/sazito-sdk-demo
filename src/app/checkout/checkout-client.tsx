@@ -11,20 +11,25 @@ import type { CheckoutConfig } from "@sazito/checkout/core";
 import { useCommerce } from "@/components/commerce/commerce-provider";
 import { orderDetailsHref } from "@/lib/sazito/order-routes";
 
+// Every value points at a storefront CSS token, so the checkout follows the
+// site's light/dark preference (data-theme on <html>) without extra JS.
 const checkoutTheme = {
-  accent: "#2F6B57",
-  accentForeground: "#FFFFFF",
-  accentSoft: "#E5EEE8",
-  background: "#F7F3EC",
-  foreground: "#1F2A24",
-  muted: "#EDE6DC",
-  mutedForeground: "#6F746F",
-  border: "#DED5C8",
-  card: "#FFFDF8",
-  summaryBackground: "#F1EBE2",
-  danger: "#B54747",
-  success: "#2F6B57",
-  successForeground: "#FFFFFF",
+  accent: "var(--primary)",
+  accentForeground: "var(--primary-foreground)",
+  accentSoft: "var(--secondary)",
+  background: "var(--background)",
+  foreground: "var(--foreground)",
+  muted: "var(--muted)",
+  mutedForeground: "var(--muted-foreground)",
+  border: "var(--border)",
+  card: "var(--card)",
+  summaryBackground: "var(--checkout-summary-bg)",
+  danger: "var(--danger)",
+  success: "var(--primary)",
+  successForeground: "var(--primary-foreground)",
+  logoBackground: "var(--checkout-logo-bg)",
+  shippingNeutral: "var(--checkout-shipping-neutral)",
+  shippingNeutralForeground: "var(--checkout-shipping-neutral-foreground)",
   radius: 18,
   fontFamily: "var(--font-ui)",
 } satisfies NonNullable<CheckoutConfig["theme"]>;

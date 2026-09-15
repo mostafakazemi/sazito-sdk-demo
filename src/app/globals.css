@@ -49,6 +49,10 @@
   --danger: #b54747;
   --radius: 1.125rem;
   --radius-card: 1.5rem;
+  --checkout-summary-bg: #f1ebe2;
+  --checkout-logo-bg: #ffffff;
+  --checkout-shipping-neutral: #ede6dc;
+  --checkout-shipping-neutral-foreground: #4f5a53;
 }
 
 :root[data-theme="dark"] {
@@ -69,6 +73,10 @@
   --border: #39443e;
   --ring: #7ec8a9;
   --danger: #f08b8b;
+  --checkout-summary-bg: #1b2320;
+  --checkout-logo-bg: #f3f0e9;
+  --checkout-shipping-neutral: #2d3833;
+  --checkout-shipping-neutral-foreground: #d5ded8;
 }
 
 @theme inline {
