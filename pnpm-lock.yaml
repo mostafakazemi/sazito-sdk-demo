@@ -24,8 +24,8 @@ importers:
         specifier: ^1.3.3
         version: 1.3.3(@types/react@19.2.18)(react@19.2.8)
       '@sazito/checkout':
-        specifier: 0.4.30
-        version: 0.4.30(@sazito/client-sdk@1.2.43)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
+        specifier: 0.4.31
+        version: 0.4.31(@sazito/client-sdk@1.2.43)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
       '@sazito/client-sdk':
         specifier: 1.2.43
         version: 1.2.43
@@ -781,8 +781,8 @@ packages:
   '@rtsao/scc@1.1.0':
     resolution: {integrity: sha512-zt6OdqaDoOnJ1ZYsCYGt9YmWzDXl4vQdKTyJev62gFhRGKdx7mcT54V9KIjg+d2wi9EXsPvAPKe7i7WjfVWB8g==}
 
-  '@sazito/checkout@0.4.30':
-    resolution: {integrity: sha512-9MVK5JBlifeMaGDtzUTT4MpWwq3mcnBsd3MfU1EgRkFMzuxtU73xnTgI0RrYy2q6BJdckhYbu6BAVosE9FxR3g==}
+  '@sazito/checkout@0.4.31':
+    resolution: {integrity: sha512-dsg/OH3+1H5gIKlHm98x9ELY4MriBtPSzp1/aSA4RGl4RQVr7IFZ04kOOr6YAYSU6ItGPDNDEF8OdmPPNWQPkA==}
     engines: {node: '>=18'}
     peerDependencies:
       '@sazito/client-sdk': ^1.2.28
@@ -3302,7 +3302,7 @@ snapshots:
 
   '@rtsao/scc@1.1.0': {}
 
-  '@sazito/checkout@0.4.30(@sazito/client-sdk@1.2.43)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)':
+  '@sazito/checkout@0.4.31(@sazito/client-sdk@1.2.43)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)':
     dependencies:
       '@sazito/client-sdk': 1.2.43
       react: 19.2.8
