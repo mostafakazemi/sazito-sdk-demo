@@ -52,6 +52,18 @@ const inputClassName =
   "h-12 w-full rounded-2xl border border-border/80 bg-background px-4 text-sm outline-none transition-[border-color,box-shadow] placeholder:text-muted-foreground focus:border-primary focus:ring-2 focus:ring-ring/25 disabled:cursor-not-allowed disabled:opacity-60";
 
 const persianDigits = ["۰", "۱", "۲", "۳", "۴", "۵", "۶", "۷", "۸", "۹"];
+const PREFERRED_REGION_NAME = "تهران";
+const PREFERRED_CITY_NAME = "تهران";
+
+function prioritizeLocation<T extends { name: string }>(
+  locations: readonly T[],
+  preferredName: string,
+) {
+  return [...locations].sort(
+    (left, right) =>
+      Number(right.name === preferredName) - Number(left.name === preferredName),
+  );
+}
 
 function toPersianDigits(value: string) {
   return value.replace(/\d/g, (digit) => persianDigits[Number(digit)]);
@@ -251,6 +263,14 @@ function AddressesContent() {
   const selectedRegion = React.useMemo(
     () => regions.find((region) => String(region.id) === regionId),
     [regionId, regions],
+  );
+  const orderedRegions = React.useMemo(
+    () => prioritizeLocation(regions, PREFERRED_REGION_NAME),
+    [regions],
+  );
+  const orderedCities = React.useMemo(
+    () => prioritizeLocation(selectedRegion?.cities ?? [], PREFERRED_CITY_NAME),
+    [selectedRegion],
   );
 
   const submit = (event: React.SubmitEvent<HTMLFormElement>) => {
@@ -526,7 +546,7 @@ function AddressesContent() {
                       {...fieldAccessibility("regionId", formErrors.regionId)}
                     >
                       <option value="">انتخاب استان</option>
-                      {regions.map((region) => (
+                      {orderedRegions.map((region) => (
                         <option key={region.id} value={region.id}>
                           {region.name}
                         </option>
@@ -561,7 +581,7 @@ function AddressesContent() {
                       {...fieldAccessibility("cityId", formErrors.cityId)}
                     >
                       <option value="">انتخاب شهر</option>
-                      {selectedRegion?.cities.map((city) => (
+                      {orderedCities.map((city) => (
                         <option key={city.id} value={city.id}>
                           {city.name}
                         </option>
