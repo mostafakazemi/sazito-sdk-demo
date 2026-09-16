@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import type { Product, ProductVariant } from "@sazito/client-sdk";
 
 import {
+  attributeColor,
   attributeValue,
   formatPrice,
   isVariantAvailable,
@@ -293,6 +294,87 @@ describe("product presentation", () => {
         value: { value: "سبز", extra: "#2f6b57", fieldType: "color" },
       }),
     ).toBe("سبز");
+  });
+
+  describe("attributeColor", () => {
+    it("returns the hex payload when fieldType is color", () => {
+      expect(
+        attributeColor({
+          name: "رنگ",
+          value: { value: "سبز", extra: "#bae0b3", fieldType: "color" },
+        }),
+      ).toBe("#bae0b3");
+    });
+
+    it("trims whitespace and accepts non-hex CSS color functions", () => {
+      expect(
+        attributeColor({
+          name: "رنگ",
+          value: { value: "قرمز", extra: " rgb(200, 30, 30) ", fieldType: "Color" },
+        }),
+      ).toBe("rgb(200, 30, 30)");
+    });
+
+    it("rejects extra values on non-color fields even when they look like colors", () => {
+      expect(
+        attributeColor({
+          name: "کد",
+          value: { value: "A1", extra: "#ff0000", fieldType: "text" },
+        }),
+      ).toBeNull();
+    });
+
+    it("accepts legacy color payloads without fieldType only when well-formed", () => {
+      expect(
+        attributeColor({ name: "رنگ", value: { value: "آبی", extra: "#00f" } }),
+      ).toBe("#00f");
+      expect(
+        attributeColor({
+          name: "رنگ",
+          value: { value: "آبی", extra: "blue-ish", fieldType: "color" },
+        }),
+      ).toBeNull();
+    });
+
+    it("returns null for plain string attributes and missing extras", () => {
+      expect(attributeColor({ name: "سایز", value: "L" })).toBeNull();
+      expect(
+        attributeColor({ name: "رنگ", value: { value: "سبز", fieldType: "color" } }),
+      ).toBeNull();
+    });
+  });
+
+  it("exposes normalized color data on variant attribute views", () => {
+    const detail = toProductDetail(
+      56,
+      product({
+        variants: [
+          variant({
+            attributes: [
+              {
+                name: "رنگ",
+                value: { value: " نقره ای", extra: "#7f8089", fieldType: "color" },
+              },
+              { name: "سایز", value: "M" },
+            ],
+          }),
+        ],
+      }),
+      "https://testmosi.sazito.com",
+      [],
+    );
+
+    expect(detail.variants[0].attributes).toEqual([
+      {
+        name: "رنگ",
+        value: "نقره ای",
+        extra: "#7f8089",
+        fieldType: "color",
+        color: "#7f8089",
+      },
+      { name: "سایز", value: "M", extra: undefined, fieldType: undefined, color: null },
+    ]);
+    expect(detail.variants[0].label).toBe("نقره ای، M");
   });
 
   it("preserves zero prices and exposes missing-image fallbacks", () => {

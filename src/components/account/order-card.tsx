@@ -3,6 +3,7 @@ import Image from "next/image";
 import { ArrowLeft, Box, PackageCheck } from "lucide-react";
 import type { Order } from "@sazito/client-sdk";
 
+import { AttributeSwatch } from "@/components/store/attribute-swatch";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
@@ -11,7 +12,12 @@ import {
   orderTotal,
 } from "@/lib/sazito/account";
 import { orderDetailsHref } from "@/lib/sazito/order-routes";
-import { attributeValue, formatNumber, formatPrice } from "@/lib/sazito/presenters";
+import {
+  attributeColor,
+  attributeValue,
+  formatNumber,
+  formatPrice,
+} from "@/lib/sazito/presenters";
 
 export function OrderCard({ order }: { order: Order }) {
   const items = orderItems(order);
@@ -64,14 +70,20 @@ export function OrderCard({ order }: { order: Order }) {
                 </span>
                 {item.attributes.length ? (
                   <div className="mt-1.5 flex flex-wrap gap-1.5">
-                  {item.attributes.map((attribute) => (
-                    <span
-                      key={`${item.id}-${attribute.name}`}
-                      className="rounded-full bg-card px-2 py-0.5 text-[0.6875rem]"
-                    >
-                      {attribute.name}: {attributeValue(attribute)}
-                    </span>
-                  ))}
+                  {item.attributes.map((attribute) => {
+                    const swatch = attributeColor(attribute);
+                    return (
+                      <span
+                        key={`${item.id}-${attribute.name}`}
+                        className="inline-flex items-center gap-1.5 rounded-full bg-card px-2 py-0.5 text-[0.6875rem]"
+                      >
+                        {swatch ? (
+                          <AttributeSwatch color={swatch} className="size-2.5" />
+                        ) : null}
+                        {attribute.name}: {attributeValue(attribute).trim()}
+                      </span>
+                    );
+                  })}
                   </div>
                 ) : null}
               </div>

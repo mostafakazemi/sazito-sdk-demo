@@ -145,6 +145,41 @@ function attributeExtra(attribute: ProductAttribute) {
   return typeof attribute.value === "string" ? undefined : attribute.value.extra;
 }
 
+export function attributeFieldType(attribute: ProductAttribute) {
+  if (typeof attribute.value === "string") {
+    return undefined;
+  }
+
+  const fieldType = attribute.value.fieldType?.trim().toLowerCase();
+  return fieldType || undefined;
+}
+
+const CSS_COLOR_LITERAL =
+  /^(#(?:[0-9a-f]{3,4}|[0-9a-f]{6}|[0-9a-f]{8})|(?:rgb|hsl)a?\([^)]*\)|(?:oklch|oklab|lab|lch|color)\([^)]*\))$/i;
+
+/**
+ * Returns the CSS color carried by a color attribute, or `null`.
+ *
+ * The SDK stores the swatch payload in `extra` when `fieldType` is
+ * `'color'`. Attributes typed as anything else never produce a swatch,
+ * even if `extra` happens to look like a color. When `fieldType` is
+ * absent (older store data) the value is accepted only if `extra` is a
+ * well-formed color literal.
+ */
+export function attributeColor(attribute: ProductAttribute): string | null {
+  const extra = attributeExtra(attribute)?.trim();
+  if (!extra) {
+    return null;
+  }
+
+  const fieldType = attributeFieldType(attribute);
+  if (fieldType !== undefined && fieldType !== "color") {
+    return null;
+  }
+
+  return CSS_COLOR_LITERAL.test(extra) ? extra : null;
+}
+
 export function normalizeStoreHref(
   url: string,
   storeOrigin = "https://testmosi.sazito.com",
@@ -395,8 +430,10 @@ function toVariant(
 ): ProductVariantView {
   const attributes = variant.attributes.map((attribute) => ({
     name: attribute.name,
-    value: attributeValue(attribute),
+    value: attributeValue(attribute).trim(),
     extra: attributeExtra(attribute),
+    fieldType: attributeFieldType(attribute),
+    color: attributeColor(attribute),
   }));
   const label = attributes.length
     ? attributes.map((attribute) => attribute.value).join("، ")

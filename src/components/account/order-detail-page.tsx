@@ -17,6 +17,7 @@ import { AccountShell } from "@/components/account/account-shell";
 import { OrderReviewPanel } from "@/components/account/order-review-panel";
 import { OrderDetailContentLoading } from "@/components/account/orders-loading";
 import { useCommerce } from "@/components/commerce/commerce-provider";
+import { AttributeSwatch } from "@/components/store/attribute-swatch";
 import { StoreLink } from "@/components/store/store-link";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -28,6 +29,8 @@ import {
   orderTotal,
 } from "@/lib/sazito/account";
 import {
+  attributeColor,
+  attributeValue,
   formatNumber,
   formatPrice,
   normalizeStoreHref,
@@ -63,6 +66,8 @@ function OrderDetail({ orderId, orderIdentifier }: OrderDetailProps) {
           cache: false,
           signal,
         });
+
+        console.log(response);
 
         if (signal?.aborted) return;
 
@@ -185,7 +190,19 @@ function OrderDetail({ orderId, orderIdentifier }: OrderDetailProps) {
                   <div className="min-w-0 flex-1">
                     <StoreLink item={{ ...target, label: item.name || "محصول سفارش" }} className="font-black outline-none hover:text-primary focus-visible:ring-2 focus-visible:ring-ring" />
                     <p className="mt-1 text-xs text-muted-foreground">{formatNumber(item.quantity)} عدد × {formatPrice(item.unitPrice)}</p>
-                    {item.attributes.length ? <p className="mt-1 text-[0.6875rem] leading-5 text-muted-foreground">{item.attributes.map((attribute) => { const value = typeof attribute.value === "string" ? attribute.value : attribute.value.value; return `${attribute.name}: ${value}`; }).join("، ")}</p> : null}
+                    {item.attributes.length ? (
+                      <ul className="mt-1.5 flex flex-wrap gap-x-3 gap-y-1 text-[0.6875rem] leading-5 text-muted-foreground">
+                        {item.attributes.map((attribute) => {
+                          const swatch = attributeColor(attribute);
+                          return (
+                            <li key={`${item.id}-${attribute.name}`} className="inline-flex items-center gap-1.5">
+                              {swatch ? <AttributeSwatch color={swatch} className="size-2.5" /> : null}
+                              {attribute.name}: {attributeValue(attribute).trim()}
+                            </li>
+                          );
+                        })}
+                      </ul>
+                    ) : null}
                   </div>
                   <strong className="shrink-0 text-sm">{formatPrice(item.lineTotal)}</strong>
                 </div>

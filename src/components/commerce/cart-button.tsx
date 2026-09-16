@@ -24,7 +24,14 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet";
 import { Separator } from "@/components/ui/separator";
-import { formatNumber, formatPrice, normalizeStoreHref } from "@/lib/sazito/presenters";
+import { AttributeSwatch } from "@/components/store/attribute-swatch";
+import {
+  attributeColor,
+  attributeValue,
+  formatNumber,
+  formatPrice,
+  normalizeStoreHref,
+} from "@/lib/sazito/presenters";
 
 export function CartButton() {
   const {
@@ -137,16 +144,8 @@ export function CartButton() {
                         {item.product.attributes?.length ? (
                           <div className="mt-2 flex flex-wrap gap-1.5">
                             {item.product.attributes.map((attribute) => {
-                              const rawValue = attribute.value;
-                              const value =
-                                typeof rawValue === "string" ? rawValue : rawValue.value;
-                              const apiColor =
-                                typeof rawValue === "string" ? undefined : rawValue.extra;
-                              const swatch =
-                                typeof apiColor === "string" &&
-                                /^(#[0-9a-f]{3,8}|rgba?\([^)]*\)|hsla?\([^)]*\))$/i.test(apiColor.trim())
-                                  ? apiColor.trim()
-                                  : null;
+                              const value = attributeValue(attribute).trim();
+                              const swatch = attributeColor(attribute);
 
                               return (
                                 <span
@@ -154,11 +153,7 @@ export function CartButton() {
                                   className="inline-flex items-center gap-1.5 rounded-full border border-border/70 bg-secondary/60 px-2 py-1 text-[0.6875rem] font-bold text-muted-foreground"
                                 >
                                   {swatch ? (
-                                    <span
-                                      aria-hidden="true"
-                                      className="size-2.5 rounded-full border border-black/10"
-                                      style={{ backgroundColor: swatch }}
-                                    />
+                                    <AttributeSwatch color={swatch} className="size-2.5" />
                                   ) : null}
                                   {attribute.name}: {value}
                                 </span>

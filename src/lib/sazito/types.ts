@@ -54,13 +54,25 @@ export interface ProductPriceView {
   discounted: boolean;
 }
 
+export interface ProductVariantAttributeView {
+  name: string;
+  /** Human-readable label, whitespace-trimmed. */
+  value: string;
+  /** Raw SDK payload (`ProductAttributeValueObject.extra`), untouched. */
+  extra?: string;
+  /** Normalized SDK `fieldType` (e.g. `"color"`), lower-cased. */
+  fieldType?: string;
+  /** Validated CSS color when `fieldType` is `color`; otherwise `null`. */
+  color: string | null;
+}
+
 export interface ProductVariantView {
   id: number;
   label: string;
   sku: string | null;
   available: boolean;
   price: ProductPriceView;
-  attributes: Array<{ name: string; value: string; extra?: string }>;
+  attributes: ProductVariantAttributeView[];
   imageId: number | null;
   minQuantity: number;
   maxQuantity: number | null;

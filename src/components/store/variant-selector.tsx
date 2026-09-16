@@ -18,6 +18,7 @@ import {
 } from "lucide-react";
 
 import { useCommerce } from "@/components/commerce/commerce-provider";
+import { AttributeSwatch } from "@/components/store/attribute-swatch";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
@@ -376,13 +377,15 @@ export function VariantSelector({
                 )}
               >
                 {variant.id === selected.id ? <Check className="size-4" /> : null}
-                {variant.attributes[0]?.extra ? (
-                  <span
-                    className="size-4 rounded-full border"
-                    style={{ background: variant.attributes[0].extra }}
-                    aria-hidden="true"
-                  />
-                ) : null}
+                {variant.attributes.map((attribute) =>
+                  attribute.color ? (
+                    <AttributeSwatch
+                      key={`${variant.id}-${attribute.name}`}
+                      color={attribute.color}
+                      className="size-4"
+                    />
+                  ) : null,
+                )}
                 {variant.label}
               </button>
             ))}
