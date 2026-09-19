@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { Laptop, Moon, RotateCcw, Sun, Type, X } from "lucide-react";
+import { Laptop, Moon, RotateCcw, SlidersHorizontal, Sun, X } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 
@@ -124,7 +124,7 @@ export function AppearanceControls() {
       onToggle={(event) => setIsOpen(event.currentTarget.open)}
     >
       <summary className="flex size-9 cursor-pointer list-none items-center justify-center rounded-full border border-border/80 bg-card text-foreground shadow-sm outline-none transition-colors hover:border-primary/40 hover:bg-accent focus-visible:ring-2 focus-visible:ring-ring sm:size-10 [&::-webkit-details-marker]:hidden">
-        <Type className="size-4" aria-hidden="true" />
+        <SlidersHorizontal className="size-4" aria-hidden="true" />
         <span className="sr-only">تنظیمات نمایش</span>
       </summary>
       <div

@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { Command } from "lucide-react";
+import { Keyboard } from "lucide-react";
 import { useRouter } from "next/navigation";
 
 type Shortcut = {
@@ -262,7 +262,7 @@ export function ShortcutButton() {
       aria-keyshortcuts="?"
       className="hidden size-9 items-center justify-center rounded-full border border-border/80 bg-card text-foreground shadow-sm outline-none transition-colors hover:border-primary/40 hover:bg-accent focus-visible:ring-2 focus-visible:ring-ring lg:inline-flex lg:size-10"
     >
-      <Command className="size-5" />
+      <Keyboard className="size-5" />
     </button>
   );
 }
