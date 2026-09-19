@@ -5,6 +5,7 @@ import Link from "next/link";
 import {
   Check,
   CheckCircle2,
+  ChevronDown,
   CircleOff,
   Info,
   LoaderCircle,
@@ -108,21 +109,34 @@ function DynamicField({
     return (
       <div className="grid gap-2">
         {labelElement}
-        <select
-          id={id}
-          value={typeof value === "string" ? value : ""}
-          onChange={(event) => onChange(event.target.value)}
-          disabled={disabled}
-          required={field.required}
-          aria-invalid={Boolean(error)}
-          aria-describedby={describedBy}
-          className={fieldClass}
-        >
-          <option value="">انتخاب کنید</option>
-          {field.inputOptions.map((option) => (
-            <option key={`${option.value}-${option.label}`} value={option.value}>{option.label}</option>
-          ))}
-        </select>
+        <div className="relative">
+          <select
+            id={id}
+            dir="rtl"
+            value={typeof value === "string" ? value : ""}
+            onChange={(event) => onChange(event.target.value)}
+            disabled={disabled}
+            required={field.required}
+            aria-invalid={Boolean(error)}
+            aria-describedby={describedBy}
+            className={cn(
+              fieldClass,
+              "appearance-none pl-10 pr-3 text-right disabled:cursor-not-allowed disabled:opacity-60",
+              error && "border-danger/60 focus:border-danger",
+            )}
+          >
+            <option value="">انتخاب کنید</option>
+            {field.inputOptions.map((option) => (
+              <option key={`${option.value}-${option.label}`} value={option.value}>
+                {option.label}
+              </option>
+            ))}
+          </select>
+          <ChevronDown
+            aria-hidden="true"
+            className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground"
+          />
+        </div>
         {error ? <p id={describedBy} className="text-xs text-danger">{error}</p> : null}
       </div>
     );
