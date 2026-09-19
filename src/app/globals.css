@@ -246,16 +246,20 @@ details[open] > .appearance-panel {
 }
 
 .metro-bar-viewport {
+  --metro-shift: -50%;
   container-type: inline-size;
   width: 100%;
+  height: 4rem;
   overflow: hidden;
+  background: var(--secondary);
+  animation: metro-bar-scroll 20s linear infinite;
 }
 
 .metro-bar-track {
   display: flex;
   width: max-content;
   direction: ltr;
-  animation: metro-bar-scroll 20s linear infinite;
+  transform: translateX(var(--metro-shift));
 }
 
 .metro-bar-group {
@@ -264,7 +268,7 @@ details[open] > .appearance-panel {
   width: max-content;
   min-width: 100cqw;
   flex: 0 0 auto;
-  min-height: 3.25rem;
+  min-height: 4rem;
   align-items: center;
   justify-content: space-around;
   gap: var(--metro-gap);
@@ -284,12 +288,18 @@ details[open] > .appearance-panel {
 }
 
 @keyframes metro-bar-scroll {
-  from { transform: translateX(-50%); }
-  to { transform: translateX(0); }
+  from { --metro-shift: -50%; }
+  to { --metro-shift: 0%; }
 }
 
-.metro-bar:hover .metro-bar-track,
-.metro-bar:focus-within .metro-bar-track {
+@property --metro-shift {
+  syntax: "<percentage>";
+  inherits: true;
+  initial-value: -50%;
+}
+
+.metro-bar:hover .metro-bar-viewport,
+.metro-bar:focus-within .metro-bar-viewport {
   animation-play-state: paused;
 }
 
