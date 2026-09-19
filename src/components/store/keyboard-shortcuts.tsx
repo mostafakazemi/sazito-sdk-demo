@@ -10,16 +10,20 @@ type Shortcut = {
   label: string;
 };
 
-const shortcuts: Shortcut[] = [
-  { action: "search", keys: "/  or  Ctrl/Cmd + K", label: "باز کردن جست‌وجو" },
-  { action: "home", keys: "G → H", label: "رفتن به صفحه اصلی" },
-  { action: "cart", keys: "G → C", label: "باز کردن سبد خرید" },
-  { action: "orders", keys: "G → O", label: "رفتن به سفارش‌ها" },
-  { action: "bookings", keys: "G → R", label: "رفتن به رزروها" },
-  { action: "addresses", keys: "G → A", label: "رفتن به نشانی‌ها" },
-  { action: "profile", keys: "G → P", label: "رفتن به پروفایل" },
-  { action: "help", keys: "?", label: "نمایش میان‌برها" },
-];
+function getShortcuts(isMac: boolean): Shortcut[] {
+  const modifier = isMac ? "⌘" : "Ctrl";
+
+  return [
+    { action: "search", keys: `/  or  ${modifier} + K`, label: "باز کردن جست‌وجو" },
+    { action: "home", keys: "G → H", label: "رفتن به صفحه اصلی" },
+    { action: "cart", keys: "G → C", label: "باز کردن سبد خرید" },
+    { action: "orders", keys: "G → O", label: "رفتن به سفارش‌ها" },
+    { action: "bookings", keys: "G → R", label: "رفتن به رزروها" },
+    { action: "addresses", keys: "G → A", label: "رفتن به نشانی‌ها" },
+    { action: "profile", keys: "G → P", label: "رفتن به پروفایل" },
+    { action: "help", keys: "?", label: "نمایش میان‌برها" },
+  ];
+}
 
 function isEditableTarget(target: EventTarget | null) {
   if (!(target instanceof HTMLElement)) return false;
@@ -31,11 +35,29 @@ function isEditableTarget(target: EventTarget | null) {
   );
 }
 
+function getIsMac() {
+  if (typeof navigator === "undefined") return false;
+
+  const navigatorWithPlatform = navigator as Navigator & {
+    userAgentData?: { platform?: string };
+  };
+  const platform =
+    navigatorWithPlatform.userAgentData?.platform ||
+    navigator.platform ||
+    navigator.userAgent;
+
+  return /Mac|iPhone|iPad|iPod/i.test(platform);
+}
+
+const subscribeToPlatform = () => () => {};
+
 export function KeyboardShortcuts() {
   const router = useRouter();
   const [helpOpen, setHelpOpen] = React.useState(false);
   const pendingKey = React.useRef(false);
   const pendingTimer = React.useRef<number | null>(null);
+  const isMac = React.useSyncExternalStore(subscribeToPlatform, getIsMac, () => false);
+  const shortcuts = React.useMemo(() => getShortcuts(isMac), [isMac]);
 
   const runShortcut = React.useCallback((action: Shortcut["action"]) => {
     const routes: Partial<Record<Shortcut["action"], string>> = {
