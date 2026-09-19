@@ -67,8 +67,6 @@ function OrderDetail({ orderId, orderIdentifier }: OrderDetailProps) {
           signal,
         });
 
-        console.log(response);
-
         if (signal?.aborted) return;
 
         if (response.error || !response.data) {
