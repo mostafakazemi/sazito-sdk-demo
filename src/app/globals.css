@@ -240,6 +240,59 @@ details[open] > .appearance-panel {
 }
 
 .hero-mesh { isolation: isolate; }
+
+.metro-bar {
+  overflow: hidden;
+}
+
+.metro-bar-viewport {
+  container-type: inline-size;
+  width: 100%;
+  overflow: hidden;
+}
+
+.metro-bar-track {
+  display: flex;
+  width: max-content;
+  direction: ltr;
+  animation: metro-bar-scroll 20s linear infinite;
+}
+
+.metro-bar-group {
+  --metro-gap: clamp(2rem, 3vw, 3.5rem);
+  display: flex;
+  width: max-content;
+  min-width: 100cqw;
+  flex: 0 0 auto;
+  min-height: 3.25rem;
+  align-items: center;
+  justify-content: space-around;
+  gap: var(--metro-gap);
+  /* Half-gaps join into one full gap at the repeated-copy seam. */
+  padding-inline: calc(var(--metro-gap) / 2);
+}
+
+.metro-bar-item {
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  direction: rtl;
+}
+
+.metro-bar-separator {
+  flex: 0 0 auto;
+}
+
+@keyframes metro-bar-scroll {
+  from { transform: translateX(-50%); }
+  to { transform: translateX(0); }
+}
+
+.metro-bar:hover .metro-bar-track,
+.metro-bar:focus-within .metro-bar-track {
+  animation-play-state: paused;
+}
+
 .hero-spotlight {
   position: absolute;
   pointer-events: none;
@@ -635,6 +688,10 @@ details[open] > .appearance-panel {
 @media (prefers-reduced-motion: reduce) {
   html {
     scroll-behavior: auto;
+  }
+
+  .metro-bar-track {
+    animation: none;
   }
 
   *,
