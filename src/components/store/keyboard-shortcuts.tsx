@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { Keyboard } from "lucide-react";
+import { Command } from "lucide-react";
 import { useRouter } from "next/navigation";
 
 type Shortcut = {
@@ -54,10 +54,29 @@ const subscribeToPlatform = () => () => {};
 export function KeyboardShortcuts() {
   const router = useRouter();
   const [helpOpen, setHelpOpen] = React.useState(false);
+  const [sequenceHintOpen, setSequenceHintOpen] = React.useState(false);
   const pendingKey = React.useRef(false);
   const pendingTimer = React.useRef<number | null>(null);
+  const noticeTimer = React.useRef<number | null>(null);
   const isMac = React.useSyncExternalStore(subscribeToPlatform, getIsMac, () => false);
   const shortcuts = React.useMemo(() => getShortcuts(isMac), [isMac]);
+
+  const clearSequenceHint = React.useCallback(() => {
+    setSequenceHintOpen(false);
+    if (noticeTimer.current !== null) {
+      window.clearTimeout(noticeTimer.current);
+      noticeTimer.current = null;
+    }
+  }, []);
+
+  const showSequenceHint = React.useCallback((duration = 900) => {
+    setSequenceHintOpen(true);
+    if (noticeTimer.current !== null) window.clearTimeout(noticeTimer.current);
+    noticeTimer.current = window.setTimeout(() => {
+      setSequenceHintOpen(false);
+      noticeTimer.current = null;
+    }, duration);
+  }, []);
 
   const runShortcut = React.useCallback((action: Shortcut["action"]) => {
     const routes: Partial<Record<Shortcut["action"], string>> = {
@@ -123,12 +142,15 @@ export function KeyboardShortcuts() {
 
         if (key === "c") {
           event.preventDefault();
+          clearSequenceHint();
           runShortcut("cart");
         } else if (actions[key]) {
           event.preventDefault();
+          clearSequenceHint();
           runShortcut(actions[key]);
         } else if (key === "s") {
           event.preventDefault();
+          clearSequenceHint();
           runShortcut("search");
         }
 
@@ -139,6 +161,7 @@ export function KeyboardShortcuts() {
       if (!event.ctrlKey && !event.metaKey && !event.altKey && event.key.toLowerCase() === "g") {
         event.preventDefault();
         pendingKey.current = true;
+        showSequenceHint();
         pendingTimer.current = window.setTimeout(clearPending, 900);
         return;
       }
@@ -154,7 +177,7 @@ export function KeyboardShortcuts() {
       document.removeEventListener("keydown", handleKeyDown);
       clearPending();
     };
-  }, [runShortcut]);
+  }, [clearSequenceHint, runShortcut, showSequenceHint]);
 
   React.useEffect(() => {
     const openHelp = () => setHelpOpen(true);
@@ -162,57 +185,71 @@ export function KeyboardShortcuts() {
     return () => window.removeEventListener("sazito:open-shortcuts", openHelp);
   }, []);
 
-  if (!helpOpen) return null;
-
   return (
-    <div
-      className="fixed inset-0 z-[100] grid place-items-center bg-foreground/25 p-4 backdrop-blur-sm"
-      role="presentation"
-      onClick={() => setHelpOpen(false)}
-    >
-      <section
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby="keyboard-shortcuts-title"
-        className="w-full max-w-md rounded-3xl border border-border bg-card p-5 text-card-foreground shadow-2xl sm:p-6"
-        onClick={(event) => event.stopPropagation()}
-      >
-        <div className="flex items-start justify-between gap-4">
-          <div>
-            <p className="text-sm font-bold text-primary">دسترسی سریع</p>
-            <h2 id="keyboard-shortcuts-title" className="mt-1 text-xl font-black">میان‌برهای صفحه‌کلید</h2>
-          </div>
-          <button
-            type="button"
-            onClick={() => setHelpOpen(false)}
-            className="rounded-xl px-3 py-1.5 text-sm font-bold text-muted-foreground outline-none hover:bg-secondary hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring"
-            aria-label="بستن میان‌برها"
+    <>
+      {helpOpen ? (
+        <div
+          className="fixed inset-0 z-[100] grid place-items-center bg-foreground/25 p-4 backdrop-blur-sm"
+          role="presentation"
+          onClick={() => setHelpOpen(false)}
+        >
+          <section
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="keyboard-shortcuts-title"
+            className="w-full max-w-md rounded-3xl border border-border bg-card p-5 text-card-foreground shadow-2xl sm:p-6"
+            onClick={(event) => event.stopPropagation()}
           >
-            Esc
-          </button>
-        </div>
-        <ul className="mt-5 divide-y divide-border/70 rounded-2xl border border-border/70 bg-background/45 px-2">
-          {shortcuts.map((shortcut) => (
-            <li key={shortcut.keys}>
+            <div className="flex items-start justify-between gap-4">
+            <div>
+              <p id="keyboard-shortcuts-title" className="text-base font-black text-primary">دسترسی سریع</p>
+            </div>
               <button
                 type="button"
-                dir="rtl"
-                onClick={() => {
-                  runShortcut(shortcut.action);
-                  if (shortcut.action !== "help") setHelpOpen(false);
-                }}
-                className="group flex w-full items-center justify-between gap-4 rounded-lg px-2.5 py-2.5 text-right text-sm outline-none transition-colors hover:text-primary focus-visible:ring-2 focus-visible:ring-ring"
+                onClick={() => setHelpOpen(false)}
+                className="rounded-xl px-3 py-1.5 text-sm font-bold text-muted-foreground outline-none hover:bg-secondary hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring"
+                aria-label="بستن میان‌برها"
               >
-                <span className="text-muted-foreground transition-colors group-hover:text-primary">{shortcut.label}</span>
-                <kbd dir="ltr" className="shrink-0 rounded-lg bg-secondary px-2 py-1 text-xs font-bold text-secondary-foreground transition-colors group-hover:bg-primary/10 group-hover:text-primary">
-                  {shortcut.keys}
-                </kbd>
+                Esc
               </button>
-            </li>
-          ))}
-        </ul>
-      </section>
-    </div>
+            </div>
+            <ul className="mt-5 divide-y divide-border/70 rounded-2xl border border-border/70 bg-background/45 px-2">
+              {shortcuts.map((shortcut) => (
+                <li key={shortcut.keys}>
+                  <button
+                    type="button"
+                    dir="rtl"
+                    onClick={() => {
+                      runShortcut(shortcut.action);
+                      if (shortcut.action !== "help") setHelpOpen(false);
+                    }}
+                    className="group flex w-full items-center justify-between gap-4 rounded-lg px-2.5 py-2.5 text-right text-sm outline-none transition-colors hover:text-primary focus-visible:ring-2 focus-visible:ring-ring"
+                  >
+                    <span className="text-muted-foreground transition-colors group-hover:text-primary">{shortcut.label}</span>
+                    <kbd dir="ltr" className="shrink-0 rounded-lg bg-secondary px-2 py-1 text-xs font-bold text-secondary-foreground transition-colors group-hover:bg-primary/10 group-hover:text-primary">
+                      {shortcut.keys}
+                    </kbd>
+                  </button>
+                </li>
+              ))}
+            </ul>
+          </section>
+        </div>
+      ) : null}
+      {sequenceHintOpen ? (
+        <div
+          role="status"
+          aria-live="polite"
+          dir="rtl"
+          className="pointer-events-none fixed bottom-5 left-1/2 z-[110] flex -translate-x-1/2 items-center gap-2 rounded-full border border-primary/20 bg-card px-4 py-2.5 text-sm font-bold text-foreground shadow-lg"
+        >
+          <span>کلید بعدی را انتخاب کنید</span>
+          <kbd dir="ltr" className="rounded-lg bg-secondary px-2 py-1 text-xs text-secondary-foreground">
+            G →
+          </kbd>
+        </div>
+      ) : null}
+    </>
   );
 }
 
@@ -225,7 +262,7 @@ export function ShortcutButton() {
       aria-keyshortcuts="?"
       className="hidden size-9 items-center justify-center rounded-full border border-border/80 bg-card text-foreground shadow-sm outline-none transition-colors hover:border-primary/40 hover:bg-accent focus-visible:ring-2 focus-visible:ring-ring lg:inline-flex lg:size-10"
     >
-      <Keyboard className="size-4.5" />
+      <Command className="size-5" />
     </button>
   );
 }
