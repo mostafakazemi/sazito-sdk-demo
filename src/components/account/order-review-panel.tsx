@@ -49,6 +49,7 @@ import { formatNumber } from "@/lib/sazito/presenters";
 type ReviewPhase = "idle" | "loading" | "ready" | "complete";
 type ReviewStep = "order" | "product";
 type AttachmentStatus = "uploading" | "uploaded" | "failed";
+type ReviewEligibility = "checking" | "available" | "submitted" | "error";
 
 const inputClassName =
   "w-full rounded-2xl border border-border/80 bg-background px-4 py-3 text-sm outline-none transition-[border-color,box-shadow] placeholder:text-muted-foreground focus:border-primary focus:ring-2 focus:ring-ring/25 disabled:cursor-not-allowed disabled:opacity-60";
@@ -122,6 +123,9 @@ export function OrderReviewPanel({ order }: { order: Order }) {
   const { client } = useCommerce();
   const { logout } = useAccount();
   const [phase, setPhase] = React.useState<ReviewPhase>("idle");
+  const [eligibility, setEligibility] = React.useState<ReviewEligibility>(
+    "checking",
+  );
   const [step, setStep] = React.useState<ReviewStep>("order");
   const [activeProductIndex, setActiveProductIndex] = React.useState(0);
   const [seed, setSeed] = React.useState<FeedbackSeed | null>(null);
@@ -144,13 +148,14 @@ export function OrderReviewPanel({ order }: { order: Order }) {
   const [isSubmitting, startSubmitting] = React.useTransition();
   const storageKey = `sazito-order-review:${order.orderIdentifier}`;
 
-  const loadSeed = React.useCallback(async () => {
+  const loadSeed = React.useCallback(async (reveal = true) => {
     if (!order.orderIdentifier?.trim()) {
+      setEligibility("error");
       setMessage("شناسه بازخورد این سفارش از فروشگاه دریافت نشد.");
       return;
     }
 
-    setPhase("loading");
+    if (reveal) setPhase("loading");
     setMessage(null);
 
     try {
@@ -165,6 +170,7 @@ export function OrderReviewPanel({ order }: { order: Order }) {
         }
 
         setPhase("idle");
+        setEligibility("error");
         setMessage(
           response.error
             ? sazitoErrorMessage(
@@ -181,7 +187,14 @@ export function OrderReviewPanel({ order }: { order: Order }) {
       );
 
       if (response.data.hasCommentAlready && !savedPending) {
+        setEligibility("submitted");
         setPhase("complete");
+        return;
+      }
+
+      setEligibility("available");
+      if (!reveal) {
+        setPhase("idle");
         return;
       }
 
@@ -209,9 +222,18 @@ export function OrderReviewPanel({ order }: { order: Order }) {
       setPhase("ready");
     } catch {
       setPhase("idle");
+      setEligibility("error");
       setMessage(sazitoConnectionErrorMessage());
     }
   }, [client, logout, order.orderIdentifier, storageKey]);
+
+  React.useEffect(() => {
+    const frame = window.requestAnimationFrame(() => {
+      void loadSeed(false);
+    });
+
+    return () => window.cancelAnimationFrame(frame);
+  }, [loadSeed]);
 
   const updateDraft = React.useCallback(
     (key: string, patch: Partial<ProductReviewDraft>) => {
@@ -526,6 +548,10 @@ export function OrderReviewPanel({ order }: { order: Order }) {
       submitProductReview();
     }
   };
+
+  if (eligibility === "checking" || eligibility === "submitted") {
+    return null;
+  }
 
   if (phase === "complete") {
     return (

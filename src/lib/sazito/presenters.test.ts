@@ -424,6 +424,29 @@ describe("product presentation", () => {
       count: 2,
     });
   });
+
+  it("keeps statistics when the review page is empty", () => {
+    const detail = toProductDetail(
+      17,
+      product(),
+      "https://testmosi.sazito.com",
+      [],
+      { productStatistics: { averageRate: 3.5, total: 2 } },
+      {
+        entities: [],
+        totalCount: 0,
+        averageRate: 0,
+        recommendations: {
+          recommendedPercentage: 0,
+        },
+      },
+    );
+
+    expect(detail.reviews).toMatchObject({
+      average: 3.5,
+      count: 2,
+    });
+  });
 });
 
 describe("content safety", () => {

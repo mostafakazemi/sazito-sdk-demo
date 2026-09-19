@@ -52,6 +52,7 @@ type MockCartState = {
     minBasketLimitViolated: boolean;
   };
 };
+type MockFeedbackState = Set<string>;
 
 const staticFixtures: Record<string, Fixture> = {
   "/api/v2/general/info": generalInfo,
@@ -243,9 +244,10 @@ function eventFixture(id = 1) {
   return event;
 }
 
-function feedbackSeed(orderIdentifier: string) {
+function feedbackSeed(orderIdentifier: string, feedbackState?: MockFeedbackState) {
   const seed = clone(feedbackSeedFixture);
   seed.orderIdentifier = orderIdentifier;
+  seed.hasCommentAlready = feedbackState?.has(orderIdentifier) ?? false;
   return seed;
 }
 
@@ -387,6 +389,7 @@ function mutateMockCart(state: MockCartState, request: MockRequest) {
 export function mockSazitoResponse(
   request: MockRequest,
   cartState?: MockCartState,
+  feedbackState?: MockFeedbackState,
 ): MockResult | null {
   if (!isMockModeEnabled()) return null;
 
@@ -405,15 +408,21 @@ export function mockSazitoResponse(
     } catch {
       // Keep the encoded value so the SDK receives a normal validation error.
     }
-    return jsonResult(feedbackSeed(identifier || "سفارش کفش آریا"));
+    return jsonResult(feedbackSeed(identifier || "سفارش کفش آریا", feedbackState));
   }
-  if (pathname === "/api/v1/feedbacks/comments") return jsonResult({ id: "نظر-کفش-آریا-۱" });
+  if (pathname === "/api/v1/feedbacks/comments") {
+    const body = (request.body ?? {}) as JsonObject;
+    const identifier = body.orderIdentifier ?? body.order_identifier;
+    if (feedbackState && typeof identifier === "string" && identifier.trim()) {
+      feedbackState.add(identifier.trim());
+    }
+    return jsonResult({ id: "نظر-کفش-آریا-۱" });
+  }
   if (pathname === "/api/v1/feedbacks/comments/details") return jsonResult(clone(feedbackReviews));
   if (pathname.startsWith("/api/v1/feedbacks/comments/details/")) {
-    return jsonResult(clone(feedbackReviews));
-  }
-  if (pathname.startsWith("/api/v1/feedbacks/")) {
-    return jsonResult({ id: 1, comment: "نظر درباره کفش پیاده‌روی آریا", status: "approved" });
+    return request.searchParams.get("exclude") === "comments"
+      ? jsonResult(clone(feedbackStatistics))
+      : jsonResult(clone(feedbackReviews));
   }
   if (pathname.startsWith("/api/v2/carts")) {
     const state = cartState ?? createMockCartState();
@@ -523,6 +532,7 @@ function waitForMockResponse(delayMs: number, signal?: AbortSignal | null) {
 
 export function createMockSazitoFetch(options: { delayMs?: number } = {}): typeof fetch {
   const cartState = createMockCartState();
+  const feedbackState: MockFeedbackState = new Set();
   const configuredDelay = options.delayMs ?? Number(
     typeof window === "undefined"
       ? process.env.SAZITO_MOCK_DELAY_MS ?? process.env.NEXT_PUBLIC_SAZITO_MOCK_DELAY_MS ?? 0
@@ -554,6 +564,7 @@ export function createMockSazitoFetch(options: { delayMs?: number } = {}): typeo
         body,
       },
       cartState,
+      feedbackState,
     );
     if (!response) return fetch(input, init);
     return Response.json(response.body, { status: response.status ?? 200, headers: { "Cache-Control": "no-store" } });

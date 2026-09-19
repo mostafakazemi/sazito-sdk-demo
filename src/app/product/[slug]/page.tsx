@@ -5,7 +5,10 @@ import { Box, ChevronLeft, Layers3 } from "lucide-react";
 
 import { JsonLd } from "@/components/seo/json-ld";
 import { ProductGallery } from "@/components/store/product-gallery";
-import { ProductReviews } from "@/components/store/product-reviews";
+import {
+  ProductReviewStats,
+  ProductReviews,
+} from "@/components/store/product-reviews";
 import { ProductSection } from "@/components/store/product-section";
 import { VariantSelector } from "@/components/store/variant-selector";
 import { Badge } from "@/components/ui/badge";
@@ -125,7 +128,10 @@ export default async function ProductPage({ params }: ProductPageProps) {
                 </a>
               ))}
             </div>
-            <h1 className="mt-5 text-3xl leading-[1.5] font-black sm:text-4xl">{product.name}</h1>
+            <div className="mt-5 flex flex-wrap items-center gap-3">
+              <h1 className="text-3xl leading-[1.5] font-black sm:text-4xl">{product.name}</h1>
+              {product.reviews ? <ProductReviewStats reviews={product.reviews} /> : null}
+            </div>
             {product.summary ? <p className="mt-4 line-clamp-3 text-sm leading-8 text-muted-foreground">{product.summary}</p> : null}
             <Separator className="my-7" />
             <VariantSelector variants={product.variants} defaultVariantId={product.defaultVariantId} />

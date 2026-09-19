@@ -189,6 +189,7 @@ describe("Sazito mock endpoint coverage", () => {
 
     const seed = await client.feedbacks.getSeed("سفارش-نمونه-۱");
     expect(seed.error).toBeUndefined();
+    expect(seed.data?.hasCommentAlready).toBe(false);
     expect(seed.data?.items).toHaveLength(1);
 
     const rating = await client.feedbacks.createOrderRating({
@@ -198,6 +199,11 @@ describe("Sazito mock endpoint coverage", () => {
     });
     expect(rating.error).toBeUndefined();
     expect(rating.data?.id).toBe("نظر-کفش-آریا-۱");
+
+    const submittedSeed = await client.feedbacks.getSeed("سفارش-نمونه-۱", {
+      cache: false,
+    });
+    expect(submittedSeed.data?.hasCommentAlready).toBe(true);
 
     const review = await client.feedbacks.submitProductReview({
       commentId: rating.data!.id,
@@ -214,6 +220,31 @@ describe("Sazito mock endpoint coverage", () => {
     ]);
     expect(upload.error).toBeUndefined();
     expect(upload.data?.images[0]?.serveKey).toBe("کلید-فایل-نمونه");
+  });
+
+  it("returns PDP feedback statistics and reviews through the SDK", async () => {
+    process.env.SAZITO_USE_MOCKS = "true";
+    const client = createSazitoClient({
+      domain: "mock-store.sazito.com",
+      customFetchApi: createMockSazitoFetch(),
+      cache: { products: { enabled: false } },
+    });
+
+    const statistics = await client.feedbacks.getProductStatistics("1", {
+      cache: false,
+    });
+    const reviews = await client.feedbacks.getProductReviews(
+      "1",
+      { pageNumber: 1, pageSize: 6 },
+      { cache: false },
+    );
+
+    expect(statistics.error).toBeUndefined();
+    expect(statistics.data?.productStatistics.averageRate).toBe(4.7);
+    expect(statistics.data?.productStatistics.totalCount).toBe(18);
+    expect(reviews.error).toBeUndefined();
+    expect(reviews.data?.entities).toHaveLength(3);
+    expect(reviews.data?.averageRate).toBe(4.7);
   });
 
   it("uses different semantic images for generated products", () => {

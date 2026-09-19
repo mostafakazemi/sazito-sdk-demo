@@ -597,17 +597,25 @@ function toReviews(
   reviews: ReviewCollectionInput | undefined,
 ): ProductReviewSummary | null {
   const stats = statistics?.productStatistics;
-  const count = reviews?.totalCount ?? stats?.totalCount ?? stats?.total ?? 0;
+  const statisticsCount = stats?.totalCount ?? stats?.total ?? 0;
+  const reviewCount = reviews?.totalCount ?? 0;
+  const count = Math.max(reviewCount, statisticsCount);
+  const hasReviewItems = Boolean(reviews?.entities.length);
 
-  if (!count && !reviews?.entities.length) return null;
+  if (!count && !hasReviewItems) return null;
 
   return {
-    average: reviews?.averageRate ?? stats?.averageRate ?? 0,
+    average: hasReviewItems
+      ? reviews?.averageRate ?? stats?.averageRate ?? 0
+      : stats?.averageRate ?? reviews?.averageRate ?? 0,
     count,
-    recommendedPercentage:
-      reviews?.recommendations?.recommendedPercentage ??
-      stats?.recommendations?.recommendedPercentage ??
-      null,
+    recommendedPercentage: hasReviewItems
+      ? reviews?.recommendations?.recommendedPercentage ??
+        stats?.recommendations?.recommendedPercentage ??
+        null
+      : stats?.recommendations?.recommendedPercentage ??
+        reviews?.recommendations?.recommendedPercentage ??
+        null,
     items: (reviews?.entities ?? []).map((review, index) => ({
       id: `${review.metadata?.variantId ?? "review"}-${review.createdAt}-${index}`,
       author: review.isAnonymous

@@ -18,6 +18,21 @@ function Stars({ value }: { value: number }) {
   );
 }
 
+export function ProductReviewStats({ reviews }: { reviews: ProductReviewSummary }) {
+  return (
+    <div className="inline-flex flex-wrap items-center gap-x-3 gap-y-1 rounded-2xl border border-border/70 bg-secondary/60 px-3 py-2 text-xs text-muted-foreground">
+      <strong className="text-lg font-black text-foreground">
+        {formatNumber(reviews.average, { maximumFractionDigits: 1 })}
+      </strong>
+      <Stars value={reviews.average} />
+      <span>{formatNumber(reviews.count)} دیدگاه</span>
+      {reviews.recommendedPercentage !== null ? (
+        <span>٪{formatNumber(reviews.recommendedPercentage)} پیشنهاد کرده‌اند</span>
+      ) : null}
+    </div>
+  );
+}
+
 export function ProductReviews({ reviews }: { reviews: ProductReviewSummary | null }) {
   if (!reviews) {
     return (
@@ -32,25 +47,12 @@ export function ProductReviews({ reviews }: { reviews: ProductReviewSummary | nu
 
   return (
     <section aria-labelledby="reviews-title">
-      <div className="mb-7 flex flex-col gap-5 rounded-4xl bg-secondary p-6 sm:flex-row sm:items-center sm:justify-between sm:p-8">
-        <div>
-          <p className="text-sm font-bold text-primary">تجربه خریداران</p>
-          <h2 id="reviews-title" className="mt-2 text-2xl font-black">دیدگاه‌های محصول</h2>
-          <p className="mt-2 text-sm text-muted-foreground">
-            {formatNumber(reviews.count)} دیدگاه ثبت شده
-          </p>
-        </div>
-        <div className="flex items-center gap-4 rounded-2xl bg-card px-5 py-4">
-          <strong className="text-3xl font-black">{formatNumber(reviews.average, { maximumFractionDigits: 1 })}</strong>
-          <div>
-            <Stars value={reviews.average} />
-            {reviews.recommendedPercentage !== null ? (
-              <p className="mt-1 text-xs text-muted-foreground">
-                ٪{formatNumber(reviews.recommendedPercentage)} پیشنهاد کرده‌اند
-              </p>
-            ) : null}
-          </div>
-        </div>
+      <div className="mb-7 rounded-4xl bg-secondary p-6 sm:p-8">
+        <p className="text-sm font-bold text-primary">تجربه خریداران</p>
+        <h2 id="reviews-title" className="mt-2 text-2xl font-black">دیدگاه‌های محصول</h2>
+        <p className="mt-2 text-sm text-muted-foreground">
+          نظرهای ثبت‌شده خریداران این محصول
+        </p>
       </div>
 
       {reviews.items.length ? (
