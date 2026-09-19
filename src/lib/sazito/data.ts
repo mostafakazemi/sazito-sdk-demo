@@ -455,6 +455,8 @@ export async function getProductPageData(
     getProductReviews(route.entityId),
   ]);
 
+  console.log(reviews)
+
   return toProductDetail(
     route.entityId,
     route.entity,

@@ -1,4 +1,4 @@
-import { CheckCircle2, Star, ThumbsDown, ThumbsUp } from "lucide-react";
+import { CheckCircle2, Star, ThumbsDown, ThumbsUp, XCircle } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
@@ -74,12 +74,29 @@ export function ProductReviews({ reviews }: { reviews: ProductReviewSummary | nu
                   </Badge>
                 ) : null}
                 <p className="mt-4 text-sm leading-7">{review.text}</p>
-                {review.pros.length ? (
-                  <ul className="mt-4 space-y-1 text-xs text-muted-foreground">
-                    {review.pros.map((item) => (
-                      <li key={item} className="flex items-center gap-2"><CheckCircle2 className="size-3.5 text-primary" />{item}</li>
-                    ))}
-                  </ul>
+                {review.pros.length || review.cons.length ? (
+                  <div className="mt-4 grid gap-3 sm:grid-cols-2">
+                    {review.pros.length ? (
+                      <ul className="space-y-1 text-xs text-muted-foreground">
+                        {review.pros.map((item) => (
+                          <li key={`pro-${item}`} className="flex items-center gap-2">
+                            <CheckCircle2 className="size-3.5 shrink-0 text-primary" />
+                            {item}
+                          </li>
+                        ))}
+                      </ul>
+                    ) : null}
+                    {review.cons.length ? (
+                      <ul className="space-y-1 text-xs text-muted-foreground">
+                        {review.cons.map((item) => (
+                          <li key={`con-${item}`} className="flex items-center gap-2">
+                            <XCircle className="size-3.5 shrink-0 text-danger" />
+                            {item}
+                          </li>
+                        ))}
+                      </ul>
+                    ) : null}
+                  </div>
                 ) : null}
               </CardContent>
             </Card>
