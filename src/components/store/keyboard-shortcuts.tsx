@@ -174,15 +174,16 @@ export function KeyboardShortcuts() {
             <li key={shortcut.keys}>
               <button
                 type="button"
+                dir="rtl"
                 onClick={() => {
                   runShortcut(shortcut.action);
                   if (shortcut.action !== "help") setHelpOpen(false);
                 }}
-                className="flex w-full items-center justify-between gap-4 rounded-xl px-2 py-3 text-right text-sm outline-none transition-colors hover:bg-secondary/65 focus-visible:bg-secondary/65 focus-visible:ring-2 focus-visible:ring-ring"
+                className="group flex w-full items-center justify-between gap-4 rounded-lg px-2.5 py-2.5 text-right text-sm outline-none transition-colors hover:text-primary focus-visible:ring-2 focus-visible:ring-ring"
               >
-                <span className="text-muted-foreground">{shortcut.label}</span>
-                <kbd dir="ltr" className="rounded-lg bg-secondary px-2 py-1 text-xs font-bold text-secondary-foreground">
-                {shortcut.keys}
+                <span className="text-muted-foreground transition-colors group-hover:text-primary">{shortcut.label}</span>
+                <kbd dir="ltr" className="shrink-0 rounded-lg bg-secondary px-2 py-1 text-xs font-bold text-secondary-foreground transition-colors group-hover:bg-primary/10 group-hover:text-primary">
+                  {shortcut.keys}
                 </kbd>
               </button>
             </li>
