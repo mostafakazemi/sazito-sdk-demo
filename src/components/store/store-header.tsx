@@ -8,6 +8,7 @@ import { Menu, PackageOpen } from "lucide-react";
 import { AccountButton } from "@/components/account/account-button";
 import { CartButton } from "@/components/commerce/cart-button";
 import { AppearanceControls } from "@/components/store/appearance-controls";
+import { ShortcutButton } from "@/components/store/keyboard-shortcuts";
 import { StoreSearch } from "@/components/store/store-search";
 import { DesktopNavigation, MobileNavigation } from "@/components/store/header-navigation";
 import { Button } from "@/components/ui/button";
@@ -74,6 +75,7 @@ export function StoreHeader({ store }: { store: StoreChrome }) {
 
         <div className="mr-auto flex shrink-0 items-center gap-1 sm:gap-2 xl:mr-0">
           {store.searchEnabled ? <StoreSearch /> : null}
+          <ShortcutButton />
           <AppearanceControls />
           <AccountButton />
           <CartButton />

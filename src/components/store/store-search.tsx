@@ -72,6 +72,12 @@ export function StoreSearch() {
     };
   }, [client, query]);
 
+  React.useEffect(() => {
+    const handleShortcut = () => setOpen(true);
+    window.addEventListener("sazito:open-search", handleShortcut);
+    return () => window.removeEventListener("sazito:open-search", handleShortcut);
+  }, []);
+
   return (
     <Sheet open={open} onOpenChange={setOpen}>
       <SheetTrigger asChild>
@@ -79,6 +85,7 @@ export function StoreSearch() {
           variant="outline"
           className="size-9 rounded-full border-border/80 bg-card p-0 shadow-sm hover:shadow-sm sm:h-11 sm:w-auto sm:px-4"
           aria-label="جست‌وجوی محصولات"
+          aria-keyshortcuts="Control+K"
         >
           <Search />
           <span className="hidden sm:inline">جست‌وجو</span>

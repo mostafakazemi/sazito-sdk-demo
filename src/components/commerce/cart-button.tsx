@@ -47,12 +47,19 @@ export function CartButton() {
   const [error, setError] = React.useState<string | null>(null);
   const count = formatNumber(itemCount);
 
+  React.useEffect(() => {
+    const handleShortcut = () => setCartOpen(true);
+    window.addEventListener("sazito:open-cart", handleShortcut);
+    return () => window.removeEventListener("sazito:open-cart", handleShortcut);
+  }, [setCartOpen]);
+
   return (
     <Sheet open={isCartOpen} onOpenChange={setCartOpen}>
       <SheetTrigger asChild>
         <button
           type="button"
           aria-label={isLoading ? "در حال دریافت سبد خرید" : `سبد خرید؛ ${count} کالا`}
+          aria-keyshortcuts="G C"
           className="relative inline-flex h-9 items-center gap-2 rounded-full border border-border/80 bg-card px-2.5 text-sm font-bold shadow-sm outline-none transition-[border-color,background-color,box-shadow] hover:border-primary/40 hover:bg-secondary hover:shadow-md focus-visible:ring-2 focus-visible:ring-ring sm:h-11 sm:px-3"
         >
           {isLoading ? (

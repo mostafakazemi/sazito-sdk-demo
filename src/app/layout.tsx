@@ -8,6 +8,7 @@ import { CommerceProvider } from "@/components/commerce/commerce-provider";
 import { StoreFooter } from "@/components/store/store-footer";
 import { StoreHeader } from "@/components/store/store-header";
 import { StoreVisitTracker } from "@/components/store/store-visit-tracker";
+import { KeyboardShortcuts } from "@/components/store/keyboard-shortcuts";
 import { storefrontOrigin } from "@/lib/seo";
 import { sazitoStoreDomain } from "@/lib/sazito/client";
 import { getStoreChrome } from "@/lib/sazito/data";
@@ -130,6 +131,7 @@ export default async function RootLayout({
         </div>
         <CommerceProvider domain={sazitoStoreDomain}>
           <AccountProvider>
+            <KeyboardShortcuts />
             <StoreVisitTracker />
             <StoreHeader store={store} />
             <main className="flex-1">{children}</main>
