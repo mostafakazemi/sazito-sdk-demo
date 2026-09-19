@@ -3,6 +3,7 @@ import { AlertTriangle } from "lucide-react";
 
 import { JsonLd } from "@/components/seo/json-ld";
 import { CategoryStrip } from "@/components/store/category-strip";
+import { EditorialCollage } from "@/components/store/editorial-collage";
 import { MetroBar } from "@/components/store/metro-bar";
 import { ProductSection } from "@/components/store/product-section";
 import { StoreHero } from "@/components/store/store-hero";
@@ -59,6 +60,8 @@ export default async function Home() {
       <MetroBar />
 
       <div className="site-container space-y-16 pt-12 sm:space-y-24 sm:pt-18">
+        <EditorialCollage />
+
         {data.hasCatalogError ? (
           <div
             role="alert"
