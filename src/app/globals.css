@@ -333,8 +333,8 @@ details[open] > .appearance-panel {
   gap: clamp(0.6rem, 1.25vw, 1.25rem);
   height: 38rem;
   overflow: hidden;
-  mask-image: linear-gradient(to bottom, transparent, black 12%, black 88%, transparent);
-  -webkit-mask-image: linear-gradient(to bottom, transparent, black 12%, black 88%, transparent);
+  mask-image: linear-gradient(to bottom, transparent 0%, black 8%, black 92%, transparent 100%);
+  -webkit-mask-image: linear-gradient(to bottom, transparent 0%, black 8%, black 92%, transparent 100%);
 }
 
 .editorial-collage-column {
@@ -367,8 +367,6 @@ details[open] > .appearance-panel {
   overflow: hidden;
   background: var(--muted);
   clip-path: polygon(8% 0, 100% 8%, 92% 100%, 0 92%);
-  transform: translateY(var(--collage-tile-offset, 0px));
-  transition: transform 180ms ease-out;
 }
 
 .editorial-collage-tile::after {
@@ -420,7 +418,6 @@ details[open] > .appearance-panel {
 @media (prefers-reduced-motion: reduce) {
   .editorial-collage-copy,
   .editorial-collage-column,
-  .editorial-collage-tile,
   .editorial-collage-tile img {
     transition: none;
   }
@@ -431,10 +428,6 @@ details[open] > .appearance-panel {
   }
 
   .editorial-collage-column {
-    transform: none;
-  }
-
-  .editorial-collage-tile {
     transform: none;
   }
 }

@@ -42,15 +42,37 @@ const COLLAGE_IMAGES = [
     src: "https://images.unsplash.com/photo-1612196808214-b8e1d6145a8c?auto=format&fit=crop&w=1200&q=85",
     alt: "گلدان سرامیکی آذین",
   },
+  {
+    src: "https://images.unsplash.com/photo-1548036328-c9fa89d128fa?auto=format&fit=crop&w=1200&q=85",
+    alt: "کیف چرمی روزانه",
+  },
+  {
+    src: "https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=1200&q=85",
+    alt: "ساعت مچی کلاسیک درسا",
+  },
+  {
+    src: "https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?auto=format&fit=crop&w=1200&q=85",
+    alt: "قهوه‌ساز خانگی باران",
+  },
+  {
+    src: "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?auto=format&fit=crop&w=1200&q=85",
+    alt: "هدفون بی‌سیم آوا",
+  },
+  {
+    src: "https://images.unsplash.com/photo-1586023492125-27b2c045efd7?auto=format&fit=crop&w=1200&q=85",
+    alt: "صندلی راحتی نیکا",
+  },
+  {
+    src: "https://images.unsplash.com/photo-1556228578-0d85b1a4d571?auto=format&fit=crop&w=1200&q=85",
+    alt: "ست مراقبت پوست مهتاب",
+  },
 ] as const;
 
 const COLLAGE_COLUMNS = [
-  [COLLAGE_IMAGES[0], COLLAGE_IMAGES[3], COLLAGE_IMAGES[6]],
-  [COLLAGE_IMAGES[1], COLLAGE_IMAGES[4], COLLAGE_IMAGES[7]],
-  [COLLAGE_IMAGES[2], COLLAGE_IMAGES[5], COLLAGE_IMAGES[8]],
+  [COLLAGE_IMAGES[0], COLLAGE_IMAGES[3], COLLAGE_IMAGES[6], COLLAGE_IMAGES[9], COLLAGE_IMAGES[12]],
+  [COLLAGE_IMAGES[1], COLLAGE_IMAGES[4], COLLAGE_IMAGES[7], COLLAGE_IMAGES[10], COLLAGE_IMAGES[13]],
+  [COLLAGE_IMAGES[2], COLLAGE_IMAGES[5], COLLAGE_IMAGES[8], COLLAGE_IMAGES[11], COLLAGE_IMAGES[14]],
 ] as const;
-
-const COLLAGE_TILE_FACTORS = [0.35, 0.65, 1, -0.45, -0.8, -1.1, 0.55, 0.9, 1.2] as const;
 
 export function EditorialCollage() {
   const sectionRef = React.useRef<HTMLElement>(null);
@@ -79,13 +101,21 @@ export function EditorialCollage() {
       const bounds = section.getBoundingClientRect();
       const viewportCenter = window.innerHeight / 2;
       const distance = (viewportCenter - (bounds.top + bounds.height / 2)) / window.innerHeight;
-      const offset = Math.max(-1, Math.min(1, distance)) * 140;
-      section.style.setProperty("--collage-column-one", `${-48 + offset * 0.55}px`);
-      section.style.setProperty("--collage-column-two", `${24 - offset * 0.9}px`);
-      section.style.setProperty("--collage-column-three", `${-72 + offset * 0.7}px`);
-      section.querySelectorAll<HTMLElement>(".editorial-collage-tile").forEach((tile, index) => {
-        tile.style.setProperty("--collage-tile-offset", `${offset * COLLAGE_TILE_FACTORS[index]}px`);
-      });
+      const tile = section.querySelector<HTMLElement>(".editorial-collage-tile");
+      const column = section.querySelector<HTMLElement>(".editorial-collage-column");
+      const grid = section.querySelector<HTMLElement>(".editorial-collage-grid");
+      const tileHeight = tile?.getBoundingClientRect().height ?? 0;
+      const gap = column ? Number.parseFloat(window.getComputedStyle(column).rowGap) || 0 : 0;
+      const photoStep = tileHeight + gap;
+      const gridHeight = grid?.getBoundingClientRect().height ?? 0;
+      const stackHeight = column?.scrollHeight ?? 0;
+      const safeTravel = Math.max(0, (stackHeight - gridHeight) / 2 - 12);
+      const travel = Math.min(photoStep * 1.25, safeTravel);
+      const baseOffset = (gridHeight - stackHeight) / 2;
+      const offset = Math.max(-1, Math.min(1, distance)) * travel;
+      section.style.setProperty("--collage-column-one", `${baseOffset + offset}px`);
+      section.style.setProperty("--collage-column-two", `${baseOffset - offset}px`);
+      section.style.setProperty("--collage-column-three", `${baseOffset + offset}px`);
     };
     const onScroll = () => {
       if (!frame) frame = window.requestAnimationFrame(updateParallax);
