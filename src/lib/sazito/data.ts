@@ -290,32 +290,6 @@ const getRelatedProducts = unstable_cache(
   sazitoCacheConfig,
 );
 
-const getReviewStatistics = unstable_cache(
-  async (entityId: number) =>
-    unwrapSazitoResponse(
-      await sazitoClient.feedbacks.getProductStatistics(String(entityId), {
-        cache: false,
-      }),
-      "دریافت امتیاز محصول ناموفق بود.",
-    ),
-  sazitoCacheKey("sazito-review-statistics"),
-  sazitoCacheConfig,
-);
-
-const getProductReviews = unstable_cache(
-  async (entityId: number) =>
-    unwrapSazitoResponse(
-      await sazitoClient.feedbacks.getProductReviews(
-        String(entityId),
-        { pageNumber: 1, pageSize: 6 },
-        { cache: false },
-      ),
-      "دریافت دیدگاه‌های محصول ناموفق بود.",
-    ),
-  sazitoCacheKey("sazito-product-reviews"),
-  sazitoCacheConfig,
-);
-
 function valueOf<T>(result: PromiseSettledResult<T>) {
   return result.status === "fulfilled" ? result.value : undefined;
 }
@@ -449,21 +423,15 @@ export async function getProductPageData(
   const route = await getResolvedProduct(slug);
   if (!route) return null;
 
-  const [related, statistics, reviews] = await Promise.allSettled([
+  const [related] = await Promise.allSettled([
     getRelatedProducts(route.entityId),
-    getReviewStatistics(route.entityId),
-    getProductReviews(route.entityId),
   ]);
-
-  console.log(reviews)
 
   return toProductDetail(
     route.entityId,
     route.entity,
     sazitoStoreOrigin,
     valueOf(related)?.items ?? [],
-    valueOf(statistics),
-    valueOf(reviews),
   );
 }
 

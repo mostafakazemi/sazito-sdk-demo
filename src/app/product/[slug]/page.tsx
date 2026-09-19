@@ -6,9 +6,10 @@ import { Box, ChevronLeft, Layers3 } from "lucide-react";
 import { JsonLd } from "@/components/seo/json-ld";
 import { ProductGallery } from "@/components/store/product-gallery";
 import {
-  ProductReviewStats,
-  ProductReviews,
-} from "@/components/store/product-reviews";
+  ProductFeedbackProvider,
+  ProductReviewStatsClient,
+  ProductReviewsClient,
+} from "@/components/store/product-feedback";
 import { ProductSection } from "@/components/store/product-section";
 import { VariantSelector } from "@/components/store/variant-selector";
 import { Badge } from "@/components/ui/badge";
@@ -94,7 +95,8 @@ export default async function ProductPage({ params }: ProductPageProps) {
   ];
 
   return (
-    <div className="site-container space-y-14 py-7 sm:space-y-20 sm:py-10">
+    <ProductFeedbackProvider productId={product.entityId}>
+      <div className="site-container space-y-14 py-7 sm:space-y-20 sm:py-10">
       <JsonLd
         data={[
           buildProductJsonLd(product, store),
@@ -130,7 +132,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
             </div>
             <div className="mt-5 flex flex-wrap items-center gap-3">
               <h1 className="text-3xl leading-[1.5] font-black sm:text-4xl">{product.name}</h1>
-              {product.reviews ? <ProductReviewStats reviews={product.reviews} /> : null}
+              <ProductReviewStatsClient />
             </div>
             {product.summary ? <p className="mt-4 line-clamp-3 text-sm leading-8 text-muted-foreground">{product.summary}</p> : null}
             <Separator className="my-7" />
@@ -167,7 +169,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
         </section>
       ) : null}
 
-      <ProductReviews reviews={product.reviews} />
+      <ProductReviewsClient />
 
       <ProductSection
         title="محصولات مرتبط"
@@ -182,6 +184,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
           <ChevronLeft className="size-4" />
         </Link>
       </div>
-    </div>
+      </div>
+    </ProductFeedbackProvider>
   );
 }
