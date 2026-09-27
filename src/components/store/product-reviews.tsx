@@ -139,6 +139,7 @@ function ReviewImageLightbox({
               fill
               sizes="(max-width: 640px) 92vw, 960px"
               className="object-contain"
+              unoptimized
               priority
               onLoad={() => setLoadedImage(image)}
             />
@@ -278,6 +279,7 @@ export function ProductReviews({ reviews }: { reviews: ProductReviewSummary | nu
                                 fill
                                 sizes="80px"
                                 className="object-cover transition-transform duration-300 group-hover:scale-105"
+                                unoptimized
                               />
                               <span className="absolute inset-0 flex items-center justify-center bg-foreground/0 text-white opacity-0 transition-all group-hover:bg-foreground/35 group-hover:opacity-100">
                                 <Maximize2 className="size-5" />
