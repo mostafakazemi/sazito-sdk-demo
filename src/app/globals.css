@@ -750,10 +750,10 @@ details[open] > .appearance-panel {
 
 @keyframes review-image-swing-next {
   0% {
-    transform: translateX(2.5rem) rotate(1.5deg) scale(0.98);
+    transform: translateX(6rem) rotate(1.8deg) scale(0.97);
   }
   70% {
-    transform: translateX(-0.35rem) rotate(-0.2deg) scale(1.005);
+    transform: translateX(-0.55rem) rotate(-0.25deg) scale(1.008);
   }
   100% {
     transform: translateX(0) rotate(0) scale(1);
@@ -762,10 +762,10 @@ details[open] > .appearance-panel {
 
 @keyframes review-image-swing-previous {
   0% {
-    transform: translateX(-2.5rem) rotate(-1.5deg) scale(0.98);
+    transform: translateX(-6rem) rotate(-1.8deg) scale(0.97);
   }
   70% {
-    transform: translateX(0.35rem) rotate(0.2deg) scale(1.005);
+    transform: translateX(0.55rem) rotate(0.25deg) scale(1.008);
   }
   100% {
     transform: translateX(0) rotate(0) scale(1);
