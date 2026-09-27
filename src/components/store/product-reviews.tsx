@@ -19,6 +19,7 @@ import Image from "next/image";
 
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
+import { reviewImageProxyUrl } from "@/lib/review-image";
 import { formatNumber, formatPersianDate } from "@/lib/sazito/presenters";
 import type { ProductReviewSummary } from "@/lib/sazito/types";
 
@@ -134,12 +135,11 @@ function ReviewImageLightbox({
             className={`absolute inset-0 ${imageLoaded ? `review-image-swing-${lightbox.direction}` : "invisible"}`}
           >
             <Image
-              src={image}
+              src={reviewImageProxyUrl(image)}
               alt={`تصویر ${formatNumber(lightbox.index + 1)} از دیدگاه ${lightbox.author}`}
               fill
               sizes="(max-width: 640px) 92vw, 960px"
               className="object-contain"
-              unoptimized
               priority
               onLoad={() => setLoadedImage(image)}
             />
@@ -274,12 +274,11 @@ export function ProductReviews({ reviews }: { reviews: ProductReviewSummary | nu
                               aria-label={`نمایش تصویر ${formatNumber(index + 1)} از دیدگاه ${review.author}`}
                             >
                               <Image
-                                src={src}
+                                src={reviewImageProxyUrl(src)}
                                 alt={`تصویر ${formatNumber(index + 1)} از دیدگاه ${review.author}`}
                                 fill
                                 sizes="80px"
                                 className="object-cover transition-transform duration-300 group-hover:scale-105"
-                                unoptimized
                               />
                               <span className="absolute inset-0 flex items-center justify-center bg-foreground/0 text-white opacity-0 transition-all group-hover:bg-foreground/35 group-hover:opacity-100">
                                 <Maximize2 className="size-5" />
