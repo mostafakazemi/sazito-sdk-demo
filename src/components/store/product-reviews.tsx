@@ -7,6 +7,7 @@ import {
   ThumbsUp,
   XCircle,
 } from "lucide-react";
+import Image from "next/image";
 
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
@@ -92,6 +93,27 @@ export function ProductReviews({ reviews }: { reviews: ProductReviewSummary | nu
                     <Quote className="absolute left-3 top-3 size-5 text-primary/25" />
                     <p className="pl-5">{review.text}</p>
                   </div>
+                  {review.attachments.length ? (
+                    <div className="flex flex-wrap gap-2" aria-label="تصاویر دیدگاه">
+                      {review.attachments.map((src, index) => (
+                        <a
+                          key={`${src}-${index}`}
+                          href={src}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="relative size-20 overflow-hidden rounded-xl border border-border/80 bg-muted/40 outline-none transition-opacity hover:opacity-85 focus-visible:ring-2 focus-visible:ring-ring"
+                        >
+                          <Image
+                            src={src}
+                            alt={`تصویر ${formatNumber(index + 1)} از دیدگاه ${review.author}`}
+                            fill
+                            sizes="80px"
+                            className="object-cover"
+                          />
+                        </a>
+                      ))}
+                    </div>
+                  ) : null}
                   {review.pros.length || review.cons.length ? (
                     <div className="grid gap-3 sm:grid-cols-2">
                     {review.pros.length ? (

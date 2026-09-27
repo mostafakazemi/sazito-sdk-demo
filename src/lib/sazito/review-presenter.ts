@@ -17,6 +17,7 @@ export interface ReviewCollectionInput {
     cons: string[];
     isAnonymous: boolean;
     metadata?: { variantId?: string };
+    attachments?: Array<{ serveUrl?: string }>;
   }>;
   totalCount: number;
   averageRate: number;
@@ -72,6 +73,9 @@ export function toProductReviewSummary(
             : null,
       pros: review.pros ?? [],
       cons: review.cons ?? [],
+      attachments: (review.attachments ?? [])
+        .map((attachment) => attachment.serveUrl?.trim())
+        .filter((serveUrl): serveUrl is string => Boolean(serveUrl)),
     })),
   };
 }

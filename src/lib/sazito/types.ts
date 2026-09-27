@@ -128,6 +128,7 @@ export interface ProductReviewView {
   recommended: boolean | null;
   pros: string[];
   cons: string[];
+  attachments: string[];
 }
 
 export interface ProductReviewSummary {

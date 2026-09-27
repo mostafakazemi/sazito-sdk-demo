@@ -14,6 +14,7 @@ import {
   toStoreChrome,
   toProductCard,
 } from "./presenters";
+import { toProductReviewSummary } from "./review-presenter";
 import { SazitoDataError, unwrapSazitoResponse } from "./response";
 
 function variant(overrides: Partial<ProductVariant> = {}): ProductVariant {
@@ -249,6 +250,34 @@ describe("product presentation", () => {
   it("formats SDK product prices as Persian toman values", () => {
     expect(formatPrice(399_000)).toBe("۳۹۹٬۰۰۰ تومان");
     expect(formatPrice(0)).toBe("۰ تومان");
+  });
+
+  it("passes review attachment serve URLs to the product review view", () => {
+    const summary = toProductReviewSummary(undefined, {
+      entities: [
+        {
+          productRate: 5,
+          userFirstName: "سارا",
+          userLastName: "احمدی",
+          createdAt: "2026-01-01T00:00:00.000Z",
+          text: "تجربه خوب",
+          recommendationStatus: "RECOMMENDED",
+          pros: [],
+          cons: [],
+          isAnonymous: false,
+          attachments: [
+            { serveUrl: " https://oss.sazito.com/review-image.jpg " },
+            { serveUrl: "" },
+          ],
+        },
+      ],
+      totalCount: 1,
+      averageRate: 5,
+    });
+
+    expect(summary?.items[0]?.attachments).toEqual([
+      "https://oss.sazito.com/review-image.jpg",
+    ]);
   });
 
   it("selects an available variant before an unavailable one", () => {
