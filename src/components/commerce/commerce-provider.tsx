@@ -54,12 +54,9 @@ function createSazitoProxyFetch(domain: string): typeof fetch {
           ? input.href
           : input.url;
     const target = new URL(requestUrl);
+    const proxiedHosts = ["api.sazito.com", "sdk.sazito.com", domain];
 
-    if (
-      target.hostname !== "api.sazito.com" &&
-      target.hostname !== "sdk.sazito.com" &&
-      target.hostname !== domain
-    ) {
+    if (!proxiedHosts.includes(target.hostname)) {
       return fetch(input, init);
     }
 
