@@ -51,8 +51,9 @@ export async function generateMetadata({ params }: ProductPageProps): Promise<Me
   const canonical =
     localStorefrontPath(seo.canonicalHref, sazitoStoreOrigin) ??
     seo.canonicalHref;
-  const image = product.images[0]?.url
-    ? [{ url: product.images[0].url, alt: product.images[0].alt || product.name }]
+  const cover = product.images?.[0];
+  const image = cover?.url
+    ? [{ url: cover.url, alt: cover.alt || product.name }]
     : undefined;
 
   return {

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import type { Product, ProductVariant } from "@sazito/client-sdk";
+import type { Product, ProductListItem, ProductVariant } from "@sazito/client-sdk";
 
 import {
   attributeColor,
@@ -29,8 +29,6 @@ function variant(overrides: Partial<ProductVariant> = {}): ProductVariant {
     maxOrderQuantity: 0,
     minOrderQuantity: 1,
     sortIndex: 0,
-    createdAt: "2026-08-17T00:00:00Z",
-    updatedAt: "2026-08-17T00:00:00Z",
     ...overrides,
   };
 }
@@ -46,8 +44,6 @@ function product(overrides: Partial<Product> = {}): Product {
     images: [],
     variants: [variant()],
     categories: [],
-    createdAt: "2026-08-17T00:00:00Z",
-    updatedAt: "2026-08-17T00:00:00Z",
     ...overrides,
   };
 }
@@ -280,14 +276,53 @@ describe("product presentation", () => {
     ]);
   });
 
+  it("renders slim list cards without detail-only fields", () => {
+    const item: ProductListItem = {
+      id: 17,
+      name: "Test product",
+      url: "/product/test",
+      enabled: true,
+      productType: "",
+      imageCount: 4,
+      images: null,
+      variants: [variant()],
+    };
+
+    expect(toProductCard(item)).toMatchObject({
+      id: 17,
+      image: null,
+      category: null,
+      variantId: 1,
+      available: true,
+      canQuickAdd: true,
+    });
+    expect(toProductCard({ ...item, variants: null })).toMatchObject({
+      variantId: null,
+      price: null,
+      available: false,
+      canQuickAdd: false,
+    });
+  });
+
+  it("renders nullable detail collections without altering the SDK response", () => {
+    const source = product({ images: null, variants: null, categories: null });
+
+    expect(toProductDetail(17, source, "https://testmosi.sazito.com", [])).toMatchObject({
+      images: [],
+      variants: [],
+      categories: [],
+      defaultVariantId: null,
+    });
+    expect(source).toMatchObject({ images: null, variants: null, categories: null });
+  });
+
   it("selects an available variant before an unavailable one", () => {
     const unavailable = variant({
       id: 1,
       isStockManaged: true,
       stockQuantity: 0,
-      isAvailable: false,
     });
-    const available = variant({ id: 2, isAvailable: true });
+    const available = variant({ id: 2, isStockManaged: true, stockQuantity: 3 });
 
     expect(selectDefaultVariant([unavailable, available])?.id).toBe(2);
     expect(isVariantAvailable(unavailable)).toBe(false);

@@ -2,7 +2,7 @@ import "server-only";
 
 import { unstable_cache } from "next/cache";
 import type {
-  Product,
+  ProductListItem,
   ProductEntityRoute,
   ProductCategoryEntityRoute,
   ProductSort,
@@ -164,7 +164,7 @@ const getSitemapProducts = unstable_cache(
     const totalPages = Math.ceil(
       Math.min(firstPage.total, maximumProducts) / pageSize,
     );
-    const products: Product[] = [...firstPage.items];
+    const products: ProductListItem[] = [...firstPage.items];
     const remainingPages = Array.from(
       { length: Math.max(0, totalPages - 1) },
       (_, index) => index + 2,
@@ -504,8 +504,8 @@ export async function getSitemapCatalogData(): Promise<SitemapCatalogData> {
     return [
       {
         href,
-        updatedAt: product.updatedAt || null,
-        imageUrl: product.images[0]?.url,
+        updatedAt: null,
+        imageUrl: product.images?.[0]?.url,
       },
     ];
   });

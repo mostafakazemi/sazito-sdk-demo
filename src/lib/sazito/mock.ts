@@ -5,7 +5,6 @@ import categories from "./mocks/categories.json";
 import products from "./mocks/products.json";
 import cmsPages from "./mocks/cms-pages.json";
 import blogPages from "./mocks/blog-pages.json";
-import search from "./mocks/search.json";
 import feedbackStatistics from "./mocks/feedback-statistics.json";
 import feedbackReviews from "./mocks/feedback-reviews.json";
 import feedbackSeedFixture from "./mocks/feedback-seed.json";
@@ -149,6 +148,7 @@ function productFixture(request: MockRequest) {
         ? { ...currentImage, url: image.url, alt: image.alt, name: image.alt }
         : currentImage,
     );
+    item.imageCount = item.images.length;
     const pricing = mockProductPricing(id);
     item.variants = item.variants.map((variant: Record<string, unknown>) => ({
       ...variant,
@@ -187,12 +187,21 @@ function entityRoute(pathname: string) {
 }
 
 function searchFixture(request: MockRequest) {
-  const result = clone(search) as unknown as JsonObject;
-  result.query = request.searchParams.get("query") ?? "";
-  result.products = productFixture(request);
-  result.cmsPages = paginatedFixture(cmsPages, request);
-  result.blogPages = paginatedFixture(blogPages, request);
-  result.productCategories = paginatedFixture(categories.categories, request);
+  const groups = {
+    products: productFixture(request),
+    cms_pages: paginatedFixture(cmsPages, request),
+    blog_pages: paginatedFixture(blogPages, request),
+    product_categories: paginatedFixture(categories.categories, request),
+  };
+  const result: Record<string, unknown> = {
+    query: request.searchParams.get("query") ?? "",
+  };
+  for (const [name, group] of Object.entries(groups)) {
+    result[name] = group.items;
+    result[`${name}_count`] = group.total;
+    result[`${name}_page_number`] = group.page;
+    result[`${name}_page_size`] = group.pageSize;
+  }
   return result;
 }
 
@@ -503,10 +512,14 @@ export function mockSazitoResponse(
   }
   if (pathname === "/api/v1/scheduler/bookings" && request.method !== "GET") return jsonResult(clone(booking));
 
-  if (pathname === "/api/v1/products") return jsonResult(productFixture(request));
-  if (pathname === "/api/v1/search") return jsonResult(searchFixture(request));
+  if (pathname === "/api/v1/storefront/products") return jsonResult(productFixture(request));
+  if (pathname === "/api/v1/storefront/products/details") {
+    const slug = request.searchParams.get("url_part") ?? "";
+    return jsonResult({ product: entityRoute(`/product/${slug}`).entity });
+  }
+  if (pathname === "/api/v1/storefront/search") return jsonResult(searchFixture(request));
   if (pathname === "/api/v1/cms_pages") return jsonResult(paginatedFixture(request.searchParams.get("cmsPageTypes") === "blog" ? blogPages : cmsPages, request));
-  if (pathname === "/api/v1/entity_route/route") return jsonResult(entityRoute(request.searchParams.get("url_part") ?? "/"));
+  if (pathname === "/api/v1/storefront/entity_route/route") return jsonResult(entityRoute(request.searchParams.get("url_part") ?? "/"));
 
   const fixture = staticFixtures[pathname];
   if (fixture) return jsonResult(clone(fixture));

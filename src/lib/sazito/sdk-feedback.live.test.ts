@@ -38,12 +38,12 @@ describe(`Sazito product details live contract (${storeDomain})`, () => {
       ),
       "products.list for detail checks",
     );
-    const product = products.items.find((item) => item.variants.length > 0);
+    const product = products.items.find((item) => (item.variants?.length ?? 0) > 0);
 
     expect(product).toBeDefined();
     if (!product) throw new Error(`No product variants were returned for ${storeDomain}.`);
 
-    for (const variant of product.variants) {
+    for (const variant of product.variants ?? []) {
       expect(variant.id).toBeTypeOf("number");
       expect(variant.enabled).toBeTypeOf("boolean");
       expect(variant.price).toBeTypeOf("number");

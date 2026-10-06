@@ -4,6 +4,9 @@ import type {
   Product,
   ProductAttribute,
   ProductCategory,
+  ProductImage,
+  ProductListItem,
+  ProductListVariant,
   ProductVariant,
 } from "@sazito/client-sdk";
 
@@ -39,6 +42,8 @@ const SEO_ATTRIBUTE_NAMES = new Set([
   "canonical",
   "redirect",
 ]);
+
+type CardProduct = ProductListItem | Product;
 
 interface GeneralInfoInput {
   shop: {
@@ -358,7 +363,7 @@ export function toStoreChrome(
 }
 
 function toImage(
-  image: Product["images"][number] | undefined,
+  image: ProductImage | undefined,
   productName: string,
 ): ProductImageView | null {
   if (!image?.url) return null;
@@ -372,13 +377,12 @@ function toImage(
   };
 }
 
-export function isVariantAvailable(variant: ProductVariant) {
+export function isVariantAvailable(variant: ProductListVariant) {
   if (!variant.enabled) return false;
-  if (variant.isAvailable !== undefined) return variant.isAvailable;
   return !variant.isStockManaged || variant.stockQuantity > 0;
 }
 
-export function selectDefaultVariant(variants: ProductVariant[]) {
+export function selectDefaultVariant<T extends ProductListVariant>(variants: readonly T[]) {
   return (
     variants.find(isVariantAvailable) ??
     variants.find((variant) => variant.enabled) ??
@@ -387,7 +391,7 @@ export function selectDefaultVariant(variants: ProductVariant[]) {
   );
 }
 
-function toPrice(variant: ProductVariant) {
+function toPrice(variant: ProductListVariant) {
   const original =
     variant.originalPrice !== undefined && variant.originalPrice > variant.price
       ? variant.originalPrice
@@ -447,16 +451,17 @@ function toVariant(
   };
 }
 
-export function toProductCard(product: Product): ProductCardView {
-  const defaultVariant = selectDefaultVariant(product.variants);
+export function toProductCard(product: CardProduct): ProductCardView {
+  const variants = product.variants ?? [];
+  const defaultVariant = selectDefaultVariant(variants);
   const dynamicFormId = defaultVariant?.dynamicFormId || product.dynamicFormId;
 
   return {
     id: product.id ?? null,
     name: product.name,
     href: normalizeStoreHref(product.url).href,
-    image: toImage(product.images[0], product.name),
-    category: product.categories[0]?.name ?? null,
+    image: toImage(product.images?.[0], product.name),
+    category: "categories" in product ? product.categories?.[0]?.name ?? null : null,
     price: defaultVariant ? toPrice(defaultVariant) : null,
     available: defaultVariant ? isVariantAvailable(defaultVariant) : false,
     variantId: defaultVariant?.id ?? null,
@@ -464,7 +469,7 @@ export function toProductCard(product: Product): ProductCardView {
     canQuickAdd: Boolean(
       defaultVariant &&
         isVariantAvailable(defaultVariant) &&
-        product.variants.filter((variant) => variant.enabled).length === 1 &&
+        variants.filter((variant) => variant.enabled).length === 1 &&
         !dynamicFormId &&
         !product.eventEntityId,
     ),
@@ -485,7 +490,7 @@ export function toCategory(
 }
 
 export function toProductCollection(input: {
-  items: Product[];
+  items: CardProduct[];
   total: number;
   page: number;
   pageSize: number;
@@ -573,7 +578,7 @@ export function toProductDetail(
   entityId: number,
   product: Product,
   storeOrigin: string,
-  relatedProducts: Product[],
+  relatedProducts: CardProduct[],
   statistics?: ReviewStatisticsInput,
   reviews?: ReviewCollectionInput,
 ): ProductDetailView {
@@ -592,10 +597,11 @@ export function toProductDetail(
       name: attribute.name,
       value: attributeValue(attribute),
     }));
-  const variants = product.variants.map((variant) =>
+  const productVariants = product.variants ?? [];
+  const variants = productVariants.map((variant) =>
     toVariant(variant, product.name, product.dynamicFormId),
   );
-  const defaultVariant = selectDefaultVariant(product.variants);
+  const defaultVariant = selectDefaultVariant(productVariants);
   const summary = stripMarkup(descriptionHtml).slice(0, 190);
 
   return {
@@ -603,10 +609,10 @@ export function toProductDetail(
     name: product.name,
     href: normalizeStoreHref(product.url).href,
     productType: product.productType,
-    images: product.images
+    images: (product.images ?? [])
       .map((image) => toImage(image, product.name))
       .filter((image): image is ProductImageView => image !== null),
-    categories: product.categories.map((category) =>
+    categories: (product.categories ?? []).map((category) =>
       toCategory(category, storeOrigin),
     ),
     variants,
@@ -629,9 +635,9 @@ export function toProductDetail(
 export function toHomePageData(input: {
   store: StoreChrome;
   categories?: ProductCategory[];
-  bestSellers?: Product[];
-  newest?: Product[];
-  discounted?: Product[];
+  bestSellers?: CardProduct[];
+  newest?: CardProduct[];
+  discounted?: CardProduct[];
   hasCatalogError: boolean;
   storeOrigin: string;
 }): HomePageData {

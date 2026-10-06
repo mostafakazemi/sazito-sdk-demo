@@ -9,9 +9,10 @@ const endpointCases = [
   "/api/v2/regions",
   "/api/v1/product_categories",
   "/api/v1/product_categories/1",
-  "/api/v1/products",
-  "/api/v1/entity_route/route",
-  "/api/v1/search",
+  "/api/v1/storefront/products",
+  "/api/v1/storefront/products/details",
+  "/api/v1/storefront/entity_route/route",
+  "/api/v1/storefront/search",
   "/api/v1/cms_pages",
   "/api/v1/feedbacks",
   "/api/v1/feedbacks/comments",
@@ -96,11 +97,38 @@ describe("Sazito mock endpoint coverage", () => {
     expect(response?.status).not.toBe(501);
   });
 
+  it("serves catalog calls through the SDK storefront methods", async () => {
+    process.env.SAZITO_USE_MOCKS = "true";
+    const client = createSazitoClient({
+      domain: "mock-store.sazito.com",
+      customFetchApi: createMockSazitoFetch({ delayMs: 0 }),
+    });
+    const list = await client.products.list({ pageSize: 2 });
+    const search = await client.search.query("product", { pageSize: 2 });
+    const detail = await client.products.get("product-1");
+    const route = await client.entityRoutes.resolve("/product/product-1");
+
+    for (const response of [list, search, detail, route]) {
+      expect(response.error).toBeUndefined();
+    }
+    expect(list.data?.items).toHaveLength(2);
+    expect(list.data?.items[0]?.imageCount).toBeGreaterThan(0);
+    expect(search.data?.products.items).toHaveLength(2);
+    expect(search.data?.products).toMatchObject({ total: 48, page: 1, pageSize: 2 });
+    for (const group of [search.data?.productCategories, search.data?.cmsPages, search.data?.blogPages]) {
+      expect(group?.items.length).toBeGreaterThan(0);
+      expect(group?.total).toBe(group?.items.length);
+      expect(group).toMatchObject({ page: 1, pageSize: 2 });
+    }
+    expect(detail.data?.url).toBe("/product/product-1");
+    expect(route.data?.entityType).toBe("product");
+  });
+
   it("honors the SDK snake_case pagination parameters", () => {
     process.env.SAZITO_USE_MOCKS = "true";
 
     const response = mockSazitoResponse({
-      pathname: "/api/v1/products",
+      pathname: "/api/v1/storefront/products",
       searchParams: new URLSearchParams({ page_number: "2", page_size: "3" }),
       method: "GET",
     });
@@ -251,7 +279,7 @@ describe("Sazito mock endpoint coverage", () => {
     process.env.SAZITO_USE_MOCKS = "true";
 
     const response = mockSazitoResponse({
-      pathname: "/api/v1/products",
+      pathname: "/api/v1/storefront/products",
       searchParams: new URLSearchParams({ page_size: "4" }),
       method: "GET",
     });
