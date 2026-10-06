@@ -4,6 +4,8 @@ import {
   type SazitoConfig,
 } from "@sazito/client-sdk";
 
+import { getSazitoApiKey } from "./config";
+
 const PREFERRED_REGION_NAME = "تهران";
 const PREFERRED_CITY_NAME = "تهران";
 
@@ -50,6 +52,7 @@ export function createSazitoClient(
   initialProps: SazitoConfig,
 ): SazitoClient {
   const client = createSdkSazitoClient({
+    apiKey: getSazitoApiKey(),
     debug: defaultDebugValue(),
     ...initialProps,
   });

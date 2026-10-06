@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 
 import { sazitoStoreOrigin } from "@/lib/sazito/client";
+import { getSazitoApiKey } from "@/lib/sazito/config";
 import { mockSazitoResponse } from "@/lib/sazito/mock";
 
 type ProxyContext = {
@@ -58,6 +59,9 @@ async function proxySazitoRequest(request: Request, context: ProxyContext) {
   });
   headers.set("origin", sazitoStoreOrigin);
   headers.set("referer", `${sazitoStoreOrigin}/`);
+
+  const apiKey = getSazitoApiKey();
+  if (apiKey) headers.set("Sazito-API-Key", apiKey);
 
   const hasBody = request.method !== "GET" && request.method !== "HEAD";
 

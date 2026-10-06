@@ -21,6 +21,7 @@ host, for example `pnpm dev --hostname 0.0.0.0`.
 
 ```dotenv
 SAZITO_STORE_DOMAIN=testmosi.sazito.com
+SAZITO_API_KEY=replace-with-your-sazito-api-key
 STOREFRONT_URL=https://testmosi.sazito.com
 SAZITO_REVALIDATE_SECRET=replace-with-at-least-32-random-characters
 SAZITO_USE_MOCKS=true
@@ -30,6 +31,9 @@ NEXT_PUBLIC_SAZITO_DEBUG=true
 ```
 
 - `SAZITO_STORE_DOMAIN` is the Sazito shop domain without a protocol.
+- `SAZITO_API_KEY` is the private API key sent to the SDK through the
+  `Sazito-API-Key` header. Keep it server-only and do not rename it to a
+  `NEXT_PUBLIC_*` variable.
 - `STOREFRONT_URL` is the public origin used for canonical links, JSON-LD,
   `robots.txt`, and `sitemap.xml`. It falls back to the HTTPS Sazito shop domain.
 - `SAZITO_REVALIDATE_SECRET` protects the cache-invalidation webhook and must be
