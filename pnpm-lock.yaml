@@ -25,10 +25,10 @@ importers:
         version: 1.3.3(@types/react@19.2.18)(react@19.2.8)
       '@sazito/checkout':
         specifier: 0.4.31
-        version: 0.4.31(@sazito/client-sdk@1.3.1)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
+        version: 0.4.31(@sazito/client-sdk@1.3.2)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
       '@sazito/client-sdk':
-        specifier: 1.3.1
-        version: 1.3.1
+        specifier: 1.3.2
+        version: 1.3.2
       class-variance-authority:
         specifier: ^0.7.1
         version: 0.7.1
@@ -789,8 +789,8 @@ packages:
       react: ^18.0.0 || ^19.0.0
       react-dom: ^18.0.0 || ^19.0.0
 
-  '@sazito/client-sdk@1.3.1':
-    resolution: {integrity: sha512-nRSRMBM/GcqcXJdUHqlejAtOzElUh/2vuNrEu3momPrm9sFCAB/t3hmKL9e2Ca5Dbfs/E8Iv++qdGELrobWX5g==}
+  '@sazito/client-sdk@1.3.2':
+    resolution: {integrity: sha512-kGEM8by8g1K/hEmZpO/lIHXNKtAkmN9DrA5NYoqbXPhx1hyZiAS5gS8L4ukdQXgm+oXoQ38XpklaSo5T5OuiyQ==}
     engines: {node: '>=18'}
 
   '@standard-schema/spec@1.1.0':
@@ -3302,13 +3302,13 @@ snapshots:
 
   '@rtsao/scc@1.1.0': {}
 
-  '@sazito/checkout@0.4.31(@sazito/client-sdk@1.3.1)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)':
+  '@sazito/checkout@0.4.31(@sazito/client-sdk@1.3.2)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)':
     dependencies:
-      '@sazito/client-sdk': 1.3.1
+      '@sazito/client-sdk': 1.3.2
       react: 19.2.8
       react-dom: 19.2.8(react@19.2.8)
 
-  '@sazito/client-sdk@1.3.1': {}
+  '@sazito/client-sdk@1.3.2': {}
 
   '@standard-schema/spec@1.1.0': {}
 
