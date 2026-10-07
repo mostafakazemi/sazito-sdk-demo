@@ -192,5 +192,5 @@ the detail page supplies both values to `client.orders.get` and permits guest
 access through the complete link. Order history and review controls retain
 their account requirements. Missing credentials are rejected before fetching.
 
-This integration uses the published `@sazito/client-sdk@1.2.35` and
-`@sazito/checkout@0.4.26` packages, pinned in `package.json` and `pnpm-lock.yaml`.
+This integration uses the published `@sazito/client-sdk@1.3.3` and
+`@sazito/checkout@0.4.31` packages, pinned in `package.json` and `pnpm-lock.yaml`.
